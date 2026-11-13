@@ -38,7 +38,7 @@ Flipper is a browser game: throw a bottle so it flips in the air and lands uprig
 ## Architecture rules
 
 - `src/core` is pure, deterministic TypeScript: no Phaser, no DOM or browser APIs, no `Math.random()` (use `createRng` from `src/core/rng.ts`), no wall-clock time. The same seed and inputs must give the same result. It advances in fixed steps of `SIM_DT` (1/60 s). `tests/unit/architecture.test.ts` enforces this.
-- Units are meters, seconds and radians. y points down like the screen, and positive angles turn clockwise like Phaser's rotation. Multiply positions by `PIXELS_PER_METER` to draw. The logical canvas is 720×1280 (portrait), scaled to fit the window.
+- Units are meters, seconds and radians. y points down like the screen, and positive angles turn clockwise like Phaser's rotation. Multiply positions by `PIXELS_PER_METER` to draw. The logical canvas is 1280×720 (landscape, desktop browser), scaled to fit the window.
 - `src/game` draws snapshots of the simulation and turns input into simulation calls. Game rules don't live there, and it never imports planck directly.
 - Tunable gameplay numbers (forces, spin, tolerances) belong in one config module in `src/core`, not scattered as literals.
 - Until real art exists, draw with Phaser Graphics or generate textures in code (see `BootScene`). Only add asset files whose license allows it, and record them in `public/assets/CREDITS.md`.

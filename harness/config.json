@@ -1,9 +1,9 @@
 {
   "models": {
     "planner": null,
-    "builder": null,
+    "builder": "sonnet",
     "reviewer": null,
-    "maintainer": null
+    "maintainer": "sonnet"
   },
   "effort": {
     "planner": null,
