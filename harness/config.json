@@ -1,0 +1,28 @@
+{
+  "models": {
+    "planner": null,
+    "builder": null,
+    "reviewer": null,
+    "maintainer": null
+  },
+  "effort": {
+    "planner": null,
+    "builder": null,
+    "reviewer": null,
+    "maintainer": null
+  },
+  "permissionMode": "acceptEdits",
+  "review": true,
+  "stopAtMilestones": true,
+  "maintenanceEvery": 8,
+  "maxSessions": 20,
+  "maxAttemptsPerFeature": 3,
+  "maxConsecutiveFailures": 3,
+  "sessionTimeoutMinutes": 75,
+  "gateTimeoutMinutes": 20,
+  "maxBudgetUsdPerSession": null,
+  "pauseAtUsagePercent": 85,
+  "usageLimitWaitMinutes": 30,
+  "maxUsageLimitWaits": 16,
+  "pauseBetweenSessionsSeconds": 5
+}

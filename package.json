@@ -1,0 +1,40 @@
+{
+  "name": "flipper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Flipper: throw a bottle, flip it, land it upright. A browser game built feature by feature by autonomous Claude Code agents.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/canonical-cwd.mjs vitest/vitest.mjs run",
+    "test:watch": "node scripts/canonical-cwd.mjs vitest/vitest.mjs",
+    "test:e2e": "playwright test",
+    "format": "prettier --write . --log-level warn",
+    "format:check": "prettier --check .",
+    "verify": "npm run format:check && npm run typecheck && npm run test && npm run build && npm run test:e2e",
+    "snap": "tsx scripts/snap.ts",
+    "agents": "tsx harness/run.ts",
+    "agents:status": "tsx harness/status.ts",
+    "agents:check": "tsx harness/check.ts"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0",
+    "planck": "^1.5.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^24.19.2",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

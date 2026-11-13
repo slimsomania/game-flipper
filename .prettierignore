@@ -1,0 +1,15 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+blob-report/
+coverage/
+package-lock.json
+
+# Written by agents and the harness in a fixed format; formatting them would only add churn.
+harness/state/
+harness/logs/
+harness/artifacts/
+
+# Prose: docs, prompts and the design doc are formatted by hand.
+*.md

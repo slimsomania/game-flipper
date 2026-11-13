@@ -1,0 +1,88 @@
+import Phaser from 'phaser';
+import type { SimSnapshot, Simulation } from '../core/simulation';
+
+/**
+ * window.__FLIPPER__ lets e2e tests and `npm run snap` observe and drive the game
+ * deterministically, without reading pixels. It is installed in dev builds, and in any build
+ * whose URL contains ?testhooks.
+ *
+ * Extend it when a feature needs to be observable or controllable from a test (for example
+ * "throw with exact parameters"). Keep it thin: it calls into src/core and never reimplements
+ * game rules.
+ */
+export interface FlipperTestApi {
+  /** True once the first interactive scene is up and accepts input. */
+  ready: boolean;
+  /** Keys of the scenes that are running, e.g. ["Menu"] or ["Game"]. */
+  activeScenes(): string[];
+  /** Snapshot of the running simulation, or null when no game scene is running. */
+  state(): SimSnapshot | null;
+  /** Stop the real-time clock; the simulation then only advances through step(). */
+  pause(): void;
+  /** Resume real-time stepping. */
+  resume(): void;
+  /** Advance the simulation by exactly `frames` fixed steps (works while paused). */
+  step(frames?: number): SimSnapshot | null;
+  /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
+  startScene(key: string, data?: object): void;
+  /** Renderer and build info, for debugging test environments. */
+  info(): { renderer: 'webgl' | 'canvas' | 'other'; phaser: string; dev: boolean };
+}
+
+declare global {
+  interface Window {
+    __FLIPPER__?: FlipperTestApi;
+  }
+}
+
+/** Shared with the game scene: while paused, the scene stops stepping the simulation itself. */
+export const testControls = { paused: false };
+
+let currentSim: Simulation | null = null;
+
+/** Called by the game scene when it creates (or drops) its simulation. */
+export function registerSimulation(sim: Simulation | null): void {
+  currentSim = sim;
+}
+
+/** Called by the first interactive scene once it is ready for input. */
+export function markReady(): void {
+  if (window.__FLIPPER__) window.__FLIPPER__.ready = true;
+}
+
+export function installTestHooks(game: Phaser.Game): void {
+  const enabled =
+    import.meta.env.DEV || new URLSearchParams(window.location.search).has('testhooks');
+  if (!enabled) return;
+
+  window.__FLIPPER__ = {
+    ready: false,
+    activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
+    state: () => currentSim?.snapshot() ?? null,
+    pause: () => {
+      testControls.paused = true;
+    },
+    resume: () => {
+      testControls.paused = false;
+    },
+    step: (frames = 1) => {
+      if (!currentSim) return null;
+      for (let i = 0; i < frames; i++) currentSim.step();
+      return currentSim.snapshot();
+    },
+    startScene: (key, data) => {
+      for (const scene of game.scene.getScenes(true)) game.scene.stop(scene.scene.key);
+      game.scene.start(key, data);
+    },
+    info: () => ({
+      renderer:
+        game.config.renderType === Phaser.WEBGL
+          ? 'webgl'
+          : game.config.renderType === Phaser.CANVAS
+            ? 'canvas'
+            : 'other',
+      phaser: Phaser.VERSION,
+      dev: import.meta.env.DEV,
+    }),
+  };
+}

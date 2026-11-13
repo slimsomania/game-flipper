@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck*)",
+      "Bash(npm run test*)",
+      "Bash(npm test*)",
+      "Bash(npm run build*)",
+      "Bash(npm run format*)",
+      "Bash(npm run verify*)",
+      "Bash(npm run snap*)",
+      "Bash(npm run agents:status*)",
+      "Bash(npm run agents:check*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)"
+    ],
+    "ask": ["Bash(npm run agents)", "Bash(npm run agents -- *)"]
+  }
+}
