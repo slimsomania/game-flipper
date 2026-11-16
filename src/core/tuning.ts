@@ -55,6 +55,20 @@ export interface Tuning {
   timeoutSeconds: number;
   /** Seconds the result stays up after the outcome, before the next bottle appears. */
   resultDelaySeconds: number;
+  /** Where the power bar starts, in percent (0 to 100). It keeps its value between bottles. */
+  powerStart: number;
+  /** One tap of Up or Down (a key press) moves the bar by this many points. */
+  powerTapStep: number;
+  /** One notch of the mouse wheel moves the bar by this many points. */
+  powerWheelStep: number;
+  /** A key held longer than this many seconds starts moving the bar continuously... */
+  powerHoldDelaySeconds: number;
+  /** ...at first this many points per second... */
+  powerHoldRateStart: number;
+  /** ...speeding up in a straight line to this many points per second... */
+  powerHoldRateMax: number;
+  /** ...over this many seconds of moving. */
+  powerHoldRampSeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -87,6 +101,15 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   offTableDepth: 0.1,
   // Design section 2: the next bottle appears about 1.5 s after the result.
   resultDelaySeconds: 1.5,
+  // F006: a tap is a fine step, the wheel a coarser one, and a held key speeds up from a slow
+  // creep (for a few points) to a fast sweep (about 2.5 s for the whole bar).
+  powerStart: 50,
+  powerTapStep: 1,
+  powerWheelStep: 2,
+  powerHoldDelaySeconds: 0.25,
+  powerHoldRateStart: 12,
+  powerHoldRateMax: 60,
+  powerHoldRampSeconds: 1.5,
 };
 
 /** The defaults with `overrides` applied on top. */

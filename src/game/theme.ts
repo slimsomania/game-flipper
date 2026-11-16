@@ -15,4 +15,8 @@ export const COLORS = {
   bottle: 0x4a9be0,
   cap: 0xc4dff7,
   water: 0x2f7fd6,
+  /** The power bar: a pale track with a warm fill, so it is never mistaken for the water. */
+  powerTrack: 0xd3dce8,
+  powerFill: 0xe8963c,
+  powerOutline: 0x6b7a90,
 } as const;

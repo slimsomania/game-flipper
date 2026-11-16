@@ -159,9 +159,9 @@
       "depends_on": [
         "F005"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumptions: power starts at 50% and stays where the player left it between throws. The bar shows its value as a percentage: it is the player's own setting, not a hint about the bottle. Tap step, hold rates and wheel step are tuning values. A click anywhere on the canvas skips the result wait.",
+      "notes": "Built the PowerMeter in src/core/powerMeter.ts (taps, wheel notches, hold acceleration counted in fixed steps, clamping; numbers in tuning), owned by the Simulation with `power` in the snapshot and `throwOrSkip()` for Space; the scene forwards input in src/game/gameInput.ts (ignoring repeat keydowns) and draws the bar in src/game/view/powerBarView.ts left of the hand. Adjusting is allowed in every phase, and the value is untouched by throws and new bottles. Verified by tests/unit/powerMeter.test.ts, tests/unit/powerInput.test.ts, tests/e2e/power.spec.ts (13 tests, including real repeat keydowns) and snaps at 0, 20, 37, 80 and 100%; `npm run verify` passes.",
       "review_feedback": ""
     },
     {

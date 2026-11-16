@@ -2,6 +2,7 @@ import { World, type Body } from 'planck';
 import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT, stepsFor } from './constants';
 import { LandingJudge, type LandingSample, type Outcome } from './outcome';
+import { PowerMeter } from './powerMeter';
 import { createRng, type Rng } from './rng';
 import { createTable } from './table';
 import { clampPower, throwImpulse, type ThrowSource } from './throw';
@@ -52,6 +53,8 @@ export interface SimSnapshot {
   tick: number;
   seed: number;
   phase: Phase;
+  /** The power bar, 0 to 100: what Space throws with. It keeps its value from bottle to bottle. */
+  power: number;
   bottle: BottleSnapshot;
   /** Null until the first throw. A bottle placed with `placeBottle` doesn't set it. */
   lastThrow: LastThrow | null;
@@ -82,6 +85,11 @@ export class Simulation {
   private readonly world: World;
   private readonly rng: Rng;
   private readonly table: Body;
+  /**
+   * The power bar. The scene forwards key presses, releases and wheel notches to it, and any phase
+   * may adjust it, so the player can set the next throw while a result is still showing.
+   */
+  readonly powerMeter: PowerMeter;
   private bottle: Bottle;
   private judge: LandingJudge | null = null;
   private result: Outcome | null = null;
@@ -96,6 +104,7 @@ export class Simulation {
   constructor(options: SimulationOptions = {}) {
     this.seed = options.seed ?? 1;
     this.currentTuning = resolveTuning(options.tuning);
+    this.powerMeter = new PowerMeter(() => this.currentTuning);
     this.rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
@@ -143,6 +152,16 @@ export class Simulation {
     this.bottle.launch(throwImpulse(used, this.currentTuning));
     this.thrown = { power: used, water: this.bottle.water, source };
     return true;
+  }
+
+  /**
+   * What Space does: while `aiming` it throws the held bottle with the power bar's value, during
+   * `result` it ends the wait (`skip()`), and while `flying` it does nothing. Returns whether
+   * anything happened. The scene must not call it for a key's auto-repeat.
+   */
+  throwOrSkip(): boolean {
+    if (this.currentPhase === 'aiming') return this.throwBottle(this.powerMeter.value, 'keyboard');
+    return this.skip();
   }
 
   /** Begin judging a throw from `angle` and count it. Call it just before releasing the bottle. */
@@ -195,11 +214,13 @@ export class Simulation {
   /**
    * Advance the simulation by exactly one fixed step of SIM_DT seconds. While `flying` the judge
    * watches the bottle; the step that decides the outcome starts the `result` phase (and scores),
-   * and the result delay counts from there. The bottle keeps moving during `result`.
+   * and the result delay counts from there. The bottle keeps moving during `result`. A held
+   * power key moves the bar in every phase.
    */
   step(): void {
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
+    this.powerMeter.step();
     if (this.currentPhase === 'flying' && this.judge) {
       this.result = this.judge.observe(this.landingSample());
       if (this.result) this.showResult(this.result);
@@ -244,6 +265,7 @@ export class Simulation {
       tick: this.ticks,
       seed: this.seed,
       phase: this.currentPhase,
+      power: this.powerMeter.value,
       bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },

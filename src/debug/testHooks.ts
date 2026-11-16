@@ -32,6 +32,11 @@ export interface FlipperTestApi {
    */
   throwBottle(power: number): SimSnapshot | null;
   /**
+   * Set the power bar, 0 to 100 (clamped; a non-number is ignored), and return the new snapshot.
+   * Works in every phase. Null when no game is running.
+   */
+  setPower(power: number): SimSnapshot | null;
+  /**
    * Release the held bottle from an exact pose (meters, radians, m/s, rad/s; the velocities may be
    * left out) as if it had been thrown, so a test can create a landing directly. Returns the new
    * snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
@@ -97,6 +102,11 @@ export function installTestHooks(game: Phaser.Game): void {
     throwBottle: (power) => {
       if (!currentSim) return null;
       currentSim.throwBottle(power);
+      return currentSim.snapshot();
+    },
+    setPower: (power) => {
+      if (!currentSim) return null;
+      currentSim.powerMeter.set(power);
       return currentSim.snapshot();
     },
     placeBottle: (pose) => {

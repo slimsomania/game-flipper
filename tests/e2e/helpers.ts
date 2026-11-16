@@ -40,6 +40,38 @@ export async function stepUntilOutcome(page: Page, limit = 400): Promise<SimSnap
   return state;
 }
 
+/**
+ * Let the game process input sent just before. Phaser reads keyboard, wheel and pointer events
+ * once per frame, so after `page.keyboard`, `page.mouse` and the like, wait two animation frames
+ * before asserting that something did not change (use `expect.poll` for something that should).
+ */
+export async function settleInput(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
+}
+
+/**
+ * Start recording the `repeat` flag of every keydown the page receives, so a test can prove that
+ * it really sent auto-repeat events. Returns a function that reads the flags so far.
+ */
+export async function recordKeydownRepeats(page: Page): Promise<() => Promise<boolean[]>> {
+  await page.evaluate(() => {
+    const repeats: boolean[] = [];
+    (window as unknown as { __repeats: boolean[] }).__repeats = repeats;
+    window.addEventListener('keydown', (event) => repeats.push(event.repeat), true);
+  });
+  return () => page.evaluate(() => (window as unknown as { __repeats: boolean[] }).__repeats);
+}
+
+/** The power bar's current value. */
+export async function powerOf(page: Page): Promise<number> {
+  return (await gameState(page)).power;
+}
+
 /** Freeze the real-time clock and advance the simulation by exactly `frames` fixed steps. */
 export async function stepFrames(page: Page, frames: number): Promise<SimSnapshot> {
   const state = await page.evaluate((n) => {
