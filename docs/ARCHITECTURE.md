@@ -73,4 +73,57 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 
 ## Plan
 
-_The planner agent fills this in from `docs/GAME_DESIGN.md`._
+Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F029, milestones M1–M7); this section is the intended shape. F001 switches the canvas to landscape 1280×720 and updates the coordinates table and D5 above.
+
+### Expected modules
+
+| Path | Responsibility | Features |
+| --- | --- | --- |
+| `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number | F002 on |
+| `src/core/bottle.ts` | bottle and table shapes; mass, center of mass and inertia per water level | F001, F002 |
+| `src/core/throw.ts` | power (0–100) and water → launch impulse and spin | F003 |
+| `src/core/outcome.ts` | judging rest: upright, side, cap, off table, off screen, timeout | F004 |
+| `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |
+| `src/core/powerMeter.ts`, `push.ts` | power bar (taps, hold acceleration, wheel); mouse push → power | F006, F011 |
+| `src/core/round.ts` | round counters, streak, `updateBest` | F013, F015 |
+| `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, simulated-player benchmark | F008, F020 |
+| `src/core/replay.ts` | per-step recording and the landing clip | F026 |
+| `src/game/scenes/` | Boot → Game in M1; Summary, Title and the Pause overlay later | F001, F014, F018, F019 |
+| `src/game/view/` | bottle, table, power bar, HUD, result flash, effects | F002–F007, F021 |
+| `src/game/audio/sfx.ts`, `src/game/storage.ts` | Web Audio effects; versioned localStorage save (best score, mute) | F015–F017 |
+| `src/debug/testHooks.ts`, `tuningPanel.ts` | `window.__FLIPPER__`; the developer tuning panel (dev or `?debug`) | all, F010 |
+| `scripts/flip-windows.ts` | prints flip windows and benchmark rates per water level | F008, F020 |
+
+### Core state
+
+```ts
+type Phase = 'aiming' | 'flying' | 'result' | 'roundOver';
+interface SimSnapshot {
+  tick: number; seed: number; phase: Phase;
+  power: number; // the power bar, 0–100
+  bottle: BodySnapshot & { water: number; waterOffset?: number }; // water: filled fraction 0–1
+  lastThrow: { power: number; water: number; source: 'keyboard' | 'mouse' } | null;
+  outcome: { result: 'success' | 'fail';
+             reason: 'upright' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
+             rotation: number; turns: number } | null; // rotation: radians since release
+  score: number; throws: number; throwNumber: number; throwsPerRound: number; streak: number;
+}
+```
+
+Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `skip()` → `aiming`, or `roundOver` after throw 10. The simulation also queues events (`throw`, `impact` with speed, `outcome`) that the scene drains each frame for sound and effects.
+
+### Key decisions
+
+| # | Decision | Why |
+| --- | --- | --- |
+| P1 | Power is one number, 0–100; `throwBottle(power, source)` is the only way to throw | the design makes both inputs identical to the physics |
+| P2 | The throw is an impulse that mass and inertia divide | heavier bottles get less speed and spin without special cases |
+| P3 | Water is mass filling the bottle from the base to its level, solid until M6 | the drawn level and the physics agree |
+| P4 | Outcomes are judged from physics state; nothing moves the bottle after release | the design says physics decides |
+| P5 | Delays, hold times, timeouts and replay length count fixed steps in core | deterministic, and tests drive them with `step()` |
+| P6 | Tuning is a plain object the Simulation accepts as overrides | the tuning panel and tests change the feel without code edits |
+| P7 | Flip windows are measured by headless power sweeps and locked by unit tests | calibration can't silently regress |
+| P8 | Screens and game pause live in `src/game`; pausing just stops stepping | core has no clock to pause |
+| P9 | Sound and effects react to simulation events | core stays free of audio and Phaser |
+| P10 | Saves use one versioned localStorage key; the rules (`updateBest`) live in core | storage is a browser API; the rules stay testable |
+| P11 | Sloshing is a second body on a prismatic joint along the bottle's axis, behind a switch until recalibrated | the simplest moving mass that changes the flip |

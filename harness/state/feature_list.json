@@ -1,5 +1,577 @@
 {
   "project": "Flipper",
-  "milestones": [],
-  "features": []
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "First playable",
+      "goal": "One bottle with a random water level on one table: set power with the bar, throw with Space, watch it flip, see 'Nailed it!' or 'Down!', score, next bottle. Calibrated so every bottle has a single-flip window, with a developer tuning panel for playtesting."
+    },
+    {
+      "id": "M2",
+      "title": "Mouse push",
+      "goal": "Grab the bottle and push it upward with the mouse; the push becomes the same 0-100 power as the bar, and throw and power values are visible to tests."
+    },
+    {
+      "id": "M3",
+      "title": "Rounds and best score",
+      "goal": "Rounds of 10 throws with a streak counter, a round summary, and the best round score saved in the browser."
+    },
+    {
+      "id": "M4",
+      "title": "Screens and audio",
+      "goal": "Title screen, pause overlay, sound effects generated in code, and a mute toggle that is remembered."
+    },
+    {
+      "id": "M5",
+      "title": "Polish and tuning",
+      "goal": "Difficulty tuned to the design's targets, camera shake and small effects, and a bug-fix pass over awkward input."
+    },
+    {
+      "id": "M6",
+      "title": "Sloshing and replay",
+      "goal": "Water that moves inside the bottle and affects the flip, and a skippable slow-motion replay of each landing."
+    },
+    {
+      "id": "M7",
+      "title": "Release readiness",
+      "goal": "The 60 fps target is met with headroom, and the production build works without test hooks."
+    }
+  ],
+  "features": [
+    {
+      "id": "F001",
+      "milestone": "M1",
+      "category": "visuals",
+      "title": "Switch to a landscape 1280×720 table scene",
+      "description": "The design moves the game from the scaffold's portrait 720×1280 canvas to landscape 1280×720 for desktop browsers: change GAME_WIDTH/GAME_HEIGHT in src/core/constants.ts, the Playwright viewport, the default viewport and help examples of scripts/snap.ts, and the coordinates table and decision D5 in docs/ARCHITECTURE.md. Redraw the scene to the art direction: a calm light background and a flat wooden-brown table, which is a static physics body in src/core whose top surface and both ends are exported constants, with the ends inside the screen so a bottle can fall off. The game boots straight into the Game scene; remove the placeholder MenuScene and the placeholder text (the real title screen comes in M4). Also give `npm run snap` a `call:<method>;<arg>;...` action that calls a window.__FLIPPER__ method, parsing each argument as a number, true/false, or else a plain string, so later screenshots can set up exact situations.",
+      "acceptance": [
+        "GAME_WIDTH is 1280 and GAME_HEIGHT is 720; the Playwright viewport and the default `npm run snap` viewport are 1280×720; docs/ARCHITECTURE.md describes the landscape canvas (coordinates table and D5).",
+        "An e2e test shows the game boots straight into the 'Game' scene (activeScenes() contains 'Game' and not 'Menu') with no console errors.",
+        "A unit test shows the table's top surface lies on screen, both table ends are at least 1 m inside the screen edges, and the placeholder bottle still comes to rest on the table top.",
+        "`npm run snap -- --do 'pause,call:step;120,shot:table'` works (the call action reaches window.__FLIPPER__), and the screenshot shows a light background, a flat wooden-brown table spanning most of the width with both ends visible, the bottle on it, and no leftover placeholder text."
+      ],
+      "depends_on": [],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: the table top sits roughly 75-80% of the way down the screen and spans about two thirds of the width or more; exact numbers are the builder's choice. M1 has no title screen (design section 11), so the game boots into play. The scaffold's dark background and white text change to suit a light background.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F002",
+      "milestone": "M1",
+      "category": "physics",
+      "title": "Spawn a bottle with a random water level, held in the hand",
+      "description": "Replace the placeholder drop with the real object: one plastic water bottle of fixed shape and size (flat base, body, shoulder or neck, and cap, built from planck fixtures) whose water is extra mass filling it from the base up to the water level, so more water makes it heavier, with a center of mass lower than when empty. Each bottle's level comes from the seeded RNG, from nearly empty to nearly full in small steps; the range and step go in a new src/core/tuning.ts, the single home for tunable gameplay numbers. The bottle waits upright and still at the hand position above the table near its left end. Draw it per the art direction (translucent blue bottle, lighter cap, blue water fill whose height matches the level) from the same dimensions as the physics shape, add bottle.water to the snapshot, and add window.__FLIPPER__.setWater(level) for tests.",
+      "acceptance": [
+        "A unit test shows water levels come from the seeded RNG within the tuning range (default 10% to 90% in 5% steps): the same seed gives the same sequence, different seeds give different sequences, and every value is on a step.",
+        "A unit test of the bottle's mass properties shows the mass strictly increases with the water level, and at every level from 10% to 90% the center of mass is closer to the base than an empty bottle's.",
+        "A unit test shows the held bottle stays upright and still at the hand position (above the table, near its left end) for 300 steps.",
+        "An e2e test reads state().bottle.water, calls setWater(0.9), and sees 0.9 in the snapshot.",
+        "Snaps after `call:setWater;0.1` and `call:setWater;0.9` show a translucent blue bottle with a lighter cap whose blue fill is visibly low and visibly high; no on-screen text shows the water amount; the drawing uses the shape constants exported from src/core rather than its own numbers."
+      ],
+      "depends_on": ["F001"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: the water range is 10% to 90% in 5% steps (design open question 2). The level is the filled fraction of the bottle's body height (base to shoulder). Water moves with the bottle as one solid body until M6. With a fill-from-the-base model the center of mass is below the empty bottle's at every level, though not monotonically lower as the level rises; that is how the design's 'closer to the bottom' is read. No hand graphic: the design wants nothing on screen but the table and the background.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F003",
+      "milestone": "M1",
+      "category": "physics",
+      "title": "Throw the bottle with a power value",
+      "description": "Add Simulation.throwBottle(power, source = 'keyboard') with power from 0 to 100: it launches the held bottle in a fixed direction a few degrees forward of straight up (toward the table) with a clockwise spin. The same power gives a heavier bottle less launch speed and less spin, for example by applying the throw as linear and angular impulses that the body's mass and inertia divide. All throw numbers live in src/core/tuning.ts, and the Simulation accepts tuning overrides (a constructor option, plus setTuning(), which never changes a bottle already in flight) so tests and the later tuning panel can change them. Add phase ('aiming' while held, 'flying' after the throw) and lastThrow ({power, water, source}) to the snapshot, and window.__FLIPPER__.throwBottle(power).",
+      "acceptance": [
+        "Unit: right after throwBottle(p) the bottle moves up (vy < 0), drifts toward the table (vx > 0 with |vx| < 0.25·|vy|), and spins clockwise (omega > 0).",
+        "Unit: at a fixed water level, more power gives strictly more launch speed and spin; at a fixed power, more water gives strictly less launch speed and spin.",
+        "Unit: power is clamped to 0-100, throwBottle does nothing unless the phase is 'aiming', and the same seed, tuning, water and power give identical snapshots after 300 steps.",
+        "Unit: a tuning override passed to the Simulation (for example a stronger throw) changes the launch velocity, and calling setTuning() during a flight doesn't alter that flight.",
+        "E2E: from a paused game, throwBottle(50) followed by stepping shows phase 'flying', the bottle rising above its start and then coming down onto the table, and lastThrow.power 50.",
+        "A snap taken mid-flight (`pause,call:throwBottle;50,step:20,shot:flight`) shows the bottle rotated in the air above the table."
+      ],
+      "depends_on": ["F002"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: the design's 'small, fixed forward drift' is read as a fixed launch direction, so the drift grows with the throw. The spin is clockwise (the top moves toward the table). Gravity stays in constants.ts.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F004",
+      "milestone": "M1",
+      "category": "gameplay",
+      "title": "Judge the landing: upright success or fail",
+      "description": "Decide each throw's outcome from the physics alone, never by moving or rotating the bottle. Success: the bottle has stood on its base on the table, within 15° of upright (after any number of turns) and nearly still, for 1 s. Fail: it comes to rest on its side or cap, drops below the table top (fell off), leaves the screen through the left, right or bottom edge, or has no outcome 5 s after release. Add outcome to the snapshot ({result: 'success'|'fail', reason: 'upright'|'side'|'cap'|'offTable'|'offScreen'|'timeout', rotation: radians turned since release, turns: rotation / 2π rounded}), set once per throw, with all thresholds in the tuning module. Add Simulation.placeBottle(pose), which releases the bottle from an exact position, angle and velocity as if thrown, exposed as window.__FLIPPER__.placeBottle(pose), so tests can create landings directly.",
+      "acceptance": [
+        "Unit: a bottle placed upright just above the table is judged success with reason 'upright' once it has stood still for 1 s, and not earlier.",
+        "Unit: bottles placed lying on their side, upside down on the cap, and beyond the end of the table are judged fail with reasons 'side', 'cap' and 'offTable'; one placed moving fast toward a side edge of the screen, above the table, is 'offScreen'.",
+        "Unit: a bottle placed upright with angle 2π counts as upright (the angle is compared modulo a full turn), and outcome.rotation measures turning since release (a bottle placed upright and left alone reports turns 0).",
+        "Unit: a 50%-water bottle placed still on one corner of its base, tilted 10°, tips back onto its base by itself and succeeds.",
+        "Unit: with the timeout overridden to 0.5 s, a throw still in the air at 0.5 s is judged 'timeout', and an outcome never changes once set.",
+        "E2E: placeBottle upright followed by stepping 150 frames gives outcome.result 'success'; placeBottle on its side gives 'fail'."
+      ],
+      "depends_on": ["F003"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: the 5 s timeout counts from release. 'Leaves the screen' means the left, right or bottom edge; a bottle may fly above the top and fall back. Resting more than 135° from upright is 'cap'; any other non-upright rest is 'side'.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F005",
+      "milestone": "M1",
+      "category": "gameplay",
+      "title": "Show the result, bring the next bottle, keep score",
+      "description": "Turn single throws into a loop in src/core. When the outcome is decided the phase becomes 'result'; a success adds 1 to the score and a fail adds nothing. After the result delay (1.5 s, in tuning) the next bottle, with the next water level from the RNG, appears upright and still in the hand and the phase returns to 'aiming'; Simulation.skip() ends the wait at once. Add score and throws (throws made so far) to the snapshot, redraw the new bottle with its own water fill, and expose window.__FLIPPER__.skip().",
+      "acceptance": [
+        "Unit: a success adds 1 to score, a fail leaves it unchanged, and throws counts every throw.",
+        "Unit: 90 steps (1.5 s) after the outcome, and not before, the phase is 'aiming' with a new, still bottle at the hand position whose water is the seed's next value.",
+        "Unit: skip() during 'result' brings the next bottle at once; skip() during 'aiming' or 'flying' changes nothing.",
+        "Unit: replaying the same seed with the same five throw powers gives the same water levels, outcomes and score.",
+        "E2E: after a throw resolves and 90 more frames pass, state() shows phase 'aiming', the next water level and the updated score; a snap then shows the new bottle with its fill at its level."
+      ],
+      "depends_on": ["F004"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F006",
+      "milestone": "M1",
+      "category": "input",
+      "title": "Set power with the power bar and throw with Space",
+      "description": "Add the keyboard throw. A power bar near the hand is always on screen and shows the current power (0-100%) as a fill and a percentage. Up/Down raise and lower it (a tap moves it one step; holding moves it faster the longer the key is held), the mouse wheel adjusts it too, and Space throws the held bottle with the bar's power; during 'result', Space or a click skips the wait. The power logic (steps, hold acceleration, clamping) lives in src/core (for example powerMeter.ts) with its numbers in tuning, and the scene only forwards input. Add power to the snapshot, and window.__FLIPPER__.setPower(p) for tests and snaps.",
+      "acceptance": [
+        "Unit: power stays within 0-100; one tap or one wheel notch changes it by its configured step; holding a key for 1 s moves it farther than 10 taps, and the rate after 1 s is higher than at the start.",
+        "E2E: ArrowUp raises state().power and ArrowDown lowers it; holding ArrowUp for 1 s raises it by more than 10 points; the mouse wheel raises and lowers it.",
+        "E2E: Space while aiming throws with the bar's power (phase 'flying', lastThrow.power equals the bar value); Space while flying does nothing; Space, or a click, during 'result' brings the next bottle.",
+        "E2E: auto-repeated Space keydowns (repeat: true) are ignored, so holding Space through a result never throws the next bottle by itself.",
+        "Power starts at 50 and keeps its value when the next bottle appears.",
+        "Snaps after `call:setPower;20` and `call:setPower;80` show the bar filled to matching heights with a readable percentage, near the hand, not overlapping the bottle or the table."
+      ],
+      "depends_on": ["F005"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: power starts at 50% and stays where the player left it between throws. The bar shows its value as a percentage: it is the player's own setting, not a hint about the bottle. Tap step, hold rates and wheel step are tuning values. A click anywhere on the canvas skips the result wait.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F007",
+      "milestone": "M1",
+      "category": "ui",
+      "title": "Flash the result and show the score",
+      "description": "Show the outcome as soon as it is decided: a green flash with 'Nailed it!' on success, a red flash with 'Down!' on fail. The flash fades within about half a second so the bottle stays visible, the message stays until the next bottle appears, and the score ('Score: N') is always shown in a top corner. Add window.__FLIPPER__.texts(), which returns the visible text strings of the active scenes, so e2e tests can check UI text without reading pixels; later UI features reuse it.",
+      "acceptance": [
+        "E2E: after a success (placeBottle upright, step to the outcome) texts() contains 'Nailed it!' and 'Score: 1'; after a fail it contains 'Down!' and the score is unchanged.",
+        "E2E: once the next bottle appears (after the delay or skip()), neither message is in texts().",
+        "Snaps right after a success and right after a fail show a green flash with 'Nailed it!' and a red flash with 'Down!', with the message readable over the flash and the score visible.",
+        "A snap 40 frames after the outcome shows the message with the flash gone."
+      ],
+      "depends_on": ["F005"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F008",
+      "milestone": "M1",
+      "category": "tooling",
+      "title": "Measure flip windows with power sweeps",
+      "description": "Give agents and the human a measuring tool for calibration. Add src/core/flipWindow.ts: sweepPowers(water, tuning) runs one headless throw per power from 0 to 100, stopping each run as soon as its outcome is decided, and returns the outcome and turns for each power; findWindows() groups the results into contiguous success windows by turn count (a single flip is a success with turns 1). Add scripts/flip-windows.ts, run with `npx tsx scripts/flip-windows.ts`, which prints the single-flip window (low, high, center, width) for each water level with the default tuning.",
+      "acceptance": [
+        "Unit: findWindows() on hand-made result lists returns the right windows (several windows, windows touching 0 or 100, no window); it is pure and runs no physics.",
+        "Unit: sweepPowers() is deterministic (two runs give equal results), and the throw at power 0 fails.",
+        "`npx tsx scripts/flip-windows.ts` prints one row per water level from 10% to 90% with its single-flip window or 'none', and finishes in under a minute.",
+        "The builder's progress entry includes the printed table for the current defaults, as the baseline for F009."
+      ],
+      "depends_on": ["F004"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F009",
+      "milestone": "M1",
+      "category": "physics",
+      "title": "Calibrate the throw so every bottle has a single-flip window",
+      "description": "Tune the defaults in src/core/tuning.ts so the game matches the design's starting difficulty: every water level has a window of power that gives a clean single flip, the ideal power rises smoothly with the water (a nearly full bottle needs roughly 1.5 to 2 times the power of a nearly empty one), too little power under-rotates, and too much over-rotates. Levers include the throw speed and spin curves, the water-to-bottle mass ratio, friction, restitution, angular damping and the bottle's proportions; no rule may rotate or snap the bottle upright. Lock the targets in unit tests built on flipWindow.ts so later changes can't silently break them.",
+      "acceptance": [
+        "A unit test sweeps the default tuning at water levels 10%, 30%, 50%, 70% and 90% (power 0-100 in 1-point steps) and finds at each level a single-flip window (contiguous powers that succeed with turns 1) 12 to 28 points wide.",
+        "In the same test the window centers rise with the water level, the 90% center is 1.5 to 2.0 times the 10% center, and the 10% and 90% windows don't overlap.",
+        "Unit: 10 points below each window's low end (where that is 0 or more) the outcome rotation is less than one full turn, and 10 points above its high end (where that is 100 or less) it is more than one full turn.",
+        "Unit: a throw at the 50% bottle's window center stays on screen for the whole flight (the bottle's top never goes above y = 0) and lands on the table.",
+        "The calibration tests take under 15 s together, no code moves or rotates the bottle after release, and the progress entry includes the flip-windows table for the new defaults."
+      ],
+      "depends_on": ["F008"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Design tension: a single-flip window of about ±10 points needs spin that grows slowly with power, which may leave clean double flips out of reach below 100% power. The criteria prioritize the single-flip window and only require that too much power over-rotates (see the planner's open questions in progress.md).",
+      "review_feedback": ""
+    },
+    {
+      "id": "F010",
+      "milestone": "M1",
+      "category": "tooling",
+      "title": "Tuning panel for adjusting the feel without code changes",
+      "description": "Add a developer panel, an HTML overlay in src/debug/ installed in dev builds or with ?debug, that the human uses to tune after M1. Backquote (`) toggles it. It lists every value in the tuning module as an editable field applied through Simulation.setTuning() from the next bottle, can lock the water level to a chosen value or leave it random, shows the last throw (water, power, outcome, turns), and on a button press shows the current bottle's single-flip window from flipWindow.ts. Edited values are kept in localStorage across reloads; 'Copy' gives the full tuning as JSON to paste into src/core/tuning.ts, and 'Reset' restores the defaults. Typing in the panel never triggers game keys; expose window.__FLIPPER__.tuning() and setTuningValue(key, value).",
+      "acceptance": [
+        "E2E: the panel (#tuning-panel) is hidden at start; Backquote shows it with every key of the default tuning and its value; Backquote again hides it.",
+        "E2E: changing a value in the panel updates tuning() and affects the next bottle (a stronger throw value gives a higher launch speed at the same power); typing digits, Space or arrow keys into a field changes neither the power nor the phase.",
+        "E2E: an edited value is still applied after a reload; 'Reset' restores the defaults; 'Copy' produces JSON that parses to the full current tuning.",
+        "E2E: with the water locked at 0.5, the next three bottles all have water 0.5.",
+        "The panel is only installed in dev builds or with ?debug, and a snap with it open shows it at one side, readable, with the bottle and the power bar still visible."
+      ],
+      "depends_on": ["F006", "F008"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: Backquote is the toggle key. The panel is a plain DOM overlay (not Phaser) so it can use native inputs. Because edits persist in localStorage, the panel marks values that differ from the defaults. It may reveal answers such as the flip window; that is fine for a developer tool.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F011",
+      "milestone": "M2",
+      "category": "input",
+      "title": "Convert a mouse push into power",
+      "description": "Add src/core/push.ts: pushPower(samples) takes the pointer samples of a drag ({t: seconds, y: logical game pixels}) and returns power 0-100 from a mix of how far and how fast the pointer moved upward in the last 150 ms before release, as the design decided. The window length and the distance and speed weights live in tuning. The function is pure, and it also gives the live value during a drag by treating the latest sample as the release.",
+      "acceptance": [
+        "Unit: more upward distance within the last 150 ms gives more power, and covering the same distance in less time gives more power.",
+        "Unit: motion earlier than 150 ms before release is ignored (two drags that differ only before that window give equal power); downward or no motion gives 0; results are clamped to 0-100.",
+        "Unit: the same motion sampled at 60 Hz and at 240 Hz gives power within 2 points.",
+        "Unit: with the default tuning, 300 px upward in 150 ms gives at least 90 and 40 px upward in 150 ms gives less than 30, so the whole range is reachable with an ordinary mouse."
+      ],
+      "depends_on": ["F003"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: distances are measured in logical game pixels, so the size of the browser window doesn't change the power of a push.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F012",
+      "milestone": "M2",
+      "category": "input",
+      "title": "Grab the bottle and push it upward with the mouse to throw",
+      "description": "Pressing the left button on the held bottle grabs it; moving the mouse upward while holding is the push, and the power bar shows the live value from pushPower(); releasing throws with that power through the same throwBottle() as the keyboard, with source 'mouse'. A press away from the bottle, or a release without an upward push (power below 1), throws nothing, and a release outside the canvas still ends the grab. The cursor is a grab hand over the held bottle and a grabbing hand while dragging. Expose the drag state to tests (for example state().dragging), and extend `npm run snap` with mouse press, move and release actions so a screenshot can be taken mid-drag.",
+      "acceptance": [
+        "E2E: pressing on the bottle, moving the mouse 200 px up over about 100 ms and releasing throws it: phase 'flying', lastThrow.source 'mouse', and lastThrow.power above 0 and equal to the bar's value at release.",
+        "E2E: a fast, long push gives more power than a slow, short one, and while the button is held state().power follows the live push value.",
+        "E2E: a press away from the bottle, or a click on it without moving, throws nothing; a drag during 'flying' throws nothing; a click during 'result' still skips; releasing outside the canvas leaves no stuck grab.",
+        "Unit: a keyboard throw and a mouse throw with the same power, water and seed produce identical trajectories.",
+        "E2E: the canvas cursor is 'grab' over the held bottle and 'grabbing' while dragging, and a snap taken mid-drag shows the power bar at the live value."
+      ],
+      "depends_on": ["F006", "F011"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumptions: a release with no upward push cancels the grab instead of throwing at 0 power. After a mouse throw the bar keeps the push's power (keyboard and mouse share one power value). The bottle stays in the hand during the push rather than following the mouse.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F013",
+      "milestone": "M3",
+      "category": "progression",
+      "title": "Play rounds of 10 throws with a streak counter",
+      "description": "Group throws into rounds in src/core: a round is 10 throws (throwsPerRound in tuning); each success scores 1 and a fail scores nothing without ending the round; the streak counts consecutive successes, resets to 0 on a fail, and doesn't affect points. After the 10th throw's result wait the phase becomes 'roundOver' and no new bottle appears. R restarts the round at any time (Simulation.restartRound(): throw 1, score 0, streak 0, a new bottle in the hand). The HUD shows 'Throw 3 / 10', 'Score: 2' and 'Streak: 1', and the snapshot gains throwNumber, throwsPerRound and streak.",
+      "acceptance": [
+        "Unit: across a scripted round of successes and fails (via placeBottle), the score equals the successes, a fail resets the streak to 0, and throwNumber counts 1 to 10.",
+        "Unit: after the 10th result's wait (or skip()) the phase is 'roundOver', no 11th bottle appears, and throwBottle does nothing.",
+        "Unit: restartRound() while aiming, mid-flight, during a result, or after the round ends gives throw 1, score 0, streak 0 and a still bottle in the hand.",
+        "E2E: texts() shows 'Throw 1 / 10', 'Score: 0' and 'Streak: 0' at the start; they update after each throw, and pressing R mid-round resets them.",
+        "Snap: the throw number, score and streak sit together at the top, readable and clear of the power bar and the bottle."
+      ],
+      "depends_on": ["F007"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: restarting a round continues the seed's water sequence (new bottles) rather than repeating the same ten.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F014",
+      "milestone": "M3",
+      "category": "ui",
+      "title": "Round summary screen",
+      "description": "When the round is over, open a Round summary scene showing the score out of 10 ('7 / 10') and a Play again button that starts a new round in the Game scene. Enter or Space also chooses Play again, so the summary works from the keyboard. The best score and the Title button are added later, by F015 and F018.",
+      "acceptance": [
+        "E2E: after 10 throws (driven with placeBottle and skip()), activeScenes() contains 'Summary' and texts() contains 'N / 10' matching the number of successes.",
+        "E2E: clicking Play again, and in a separate run pressing Enter, starts a new round: 'Game' is active with throw 1 and score 0.",
+        "E2E: the summary doesn't appear before the 10th result, the Space press that skips the 10th result doesn't also start a new round (auto-repeat is ignored), and there are no console errors.",
+        "Snap: the summary is centered and readable on the light background, and the Play again button clearly looks like a button."
+      ],
+      "depends_on": ["F013"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: Enter and Space choose Play again on the summary.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F015",
+      "milestone": "M3",
+      "category": "persistence",
+      "title": "Save the best round score in the browser",
+      "description": "Keep the best round score across visits. Add a pure updateBest(previousBest, score) in src/core that returns {best, isNewBest}, and a small storage module in src/game that keeps one versioned localStorage entry (for example 'flipper.save.v1', ready to hold settings too) and falls back to defaults when the entry is missing or corrupt or storage is unavailable. The Round summary shows 'Best: N' and a 'New best!' note when the round beat the saved best.",
+      "acceptance": [
+        "Unit: updateBest treats a higher score as a new best and an equal or lower one as not; with no saved best (0), any score above 0 is a new best.",
+        "Unit: the storage module, given an in-memory Storage stand-in, returns defaults for a missing entry, invalid JSON, or a Storage that throws, and never throws itself.",
+        "E2E: a round with 3 successes shows 'Best: 3' and 'New best!'; after a reload, a round with 2 successes shows 'Best: 3' without 'New best!'.",
+        "E2E: the best score is stored under the versioned localStorage key."
+      ],
+      "depends_on": ["F014"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: 'New best!' only appears when the score is strictly higher than the saved best.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F016",
+      "milestone": "M4",
+      "category": "audio",
+      "title": "Sound effects generated in code",
+      "description": "Add sound effects made with the Web Audio API in code, with no audio files: a short whoosh on throw, a knock when the bottle hits the table (louder for harder impacts), a happy chime on success, and a low thud on fail. The simulation reports what happened as events (throw, impact with approach speed, outcome) that the scene drains each frame; src/core never touches audio. The AudioContext is created or resumed only after the first click or key press. In dev and test builds, window.__FLIPPER__.sounds() returns the log of sounds played.",
+      "acceptance": [
+        "Unit: the simulation emits a 'throw' event on throw, an 'impact' event with the approach speed when the bottle hits the table (none while it rests still), and exactly one 'outcome' event per throw.",
+        "E2E: before any input no AudioContext is running; after the first key press or click one is.",
+        "E2E: a Space throw logs 'whoosh' and, when it lands, at least one 'knock'; an upright landing logs 'chime', and a failed one logs 'thud' and no 'chime'.",
+        "Knocks are rate-limited (no two within 100 ms), and impacts below a minimum speed (in tuning) make no sound.",
+        "The e2e suite runs with no audio-related console errors."
+      ],
+      "depends_on": ["F006"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F017",
+      "milestone": "M4",
+      "category": "settings",
+      "title": "Mute toggle that is remembered",
+      "description": "Add mute: the M key and a speaker button in a corner of the Play screen toggle all sound, the button's icon (drawn in code) shows the state, and the choice is saved through the storage module from F015 and restored on load. While muted, no sound plays at all. Expose the mute state through the test hooks.",
+      "acceptance": [
+        "E2E: M toggles mute and clicking the speaker button does the same; the click neither throws the bottle nor skips a result.",
+        "E2E: while muted, a throw and a landing add nothing to sounds(); unmuting brings sounds back.",
+        "E2E: mute survives a reload, and the button then shows the muted icon.",
+        "Snaps show the speaker button in both states in a corner, clear of the HUD."
+      ],
+      "depends_on": ["F015", "F016"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F018",
+      "milestone": "M4",
+      "category": "ui",
+      "title": "Title screen",
+      "description": "Add the Title scene as the first screen: the game name, a Play button, the best score from storage ('Best: N'), a mute toggle that shares the setting from F017, and a one-line controls hint (for example 'Up/Down or wheel: power · Space: throw · or grab the bottle and push up'). Boot goes to Title, and Play, Space or Enter starts a round. The Round summary gains a Title button that returns here.",
+      "acceptance": [
+        "E2E: the game boots to 'Title' with no console errors; texts() includes the game name, 'Play', 'Best: N' (from a value placed in localStorage first) and the controls hint.",
+        "E2E: clicking Play, or pressing Space or Enter, starts the Game scene at throw 1, and that key press doesn't also throw the bottle.",
+        "E2E: the summary's Title button returns to the Title, which shows the updated best score.",
+        "E2E: the title's mute toggle changes and saves the same setting as the M key.",
+        "Snap: the title screen is centered and readable at 1280×720 with nothing overlapping."
+      ],
+      "depends_on": ["F017"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "E2E tests from earlier features that assume the game boots into play must now start the Game scene first (startScene or clicking Play); that is an intended behavior change, not a weakened test. Assumption: Space and Enter also start the game.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F019",
+      "milestone": "M4",
+      "category": "ui",
+      "title": "Pause overlay",
+      "description": "Add pause: a pause button in a corner of the Play screen, and Esc or P, toggle it. While paused the scene stops stepping the simulation (a bottle in flight freezes), gameplay input (Space, Up/Down, wheel, mouse push, R) is ignored, and an overlay offers Resume, Restart (a new round) and Quit to title. Resume continues exactly where the game stopped. Expose the game's paused state through the test hooks, separately from the hooks' own pause() clock control.",
+      "acceptance": [
+        "E2E: Esc pauses and resumes, P does the same, and the pause button pauses; clicking the pause or mute button never throws or skips.",
+        "E2E: pausing mid-flight freezes the bottle (state unchanged over 1 s of real time), and resuming continues the same flight to an outcome.",
+        "E2E: while paused, Space, ArrowUp, the wheel and a drag on the bottle change nothing.",
+        "E2E: Restart on the overlay starts a fresh, unpaused round (throw 1, score 0); Quit to title opens the Title scene.",
+        "Snap: the overlay dims the game and shows the three buttons centered and readable."
+      ],
+      "depends_on": ["F018"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the overlay has Restart as well as Resume and Quit to title, because the design's controls table puts a Restart button on it (section 6 lists only Resume and Quit).",
+      "review_feedback": ""
+    },
+    {
+      "id": "F020",
+      "milestone": "M5",
+      "category": "gameplay",
+      "title": "Tune difficulty against simulated players",
+      "description": "The design's starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10. Add src/core/difficulty.ts with a seeded benchmark of simulated players over 200 random bottles: a practiced player aims at each bottle's own single-flip window center, a new player aims at one fixed power for every bottle (the average center), both with seeded normal error (σ about 8 points). Print both success rates from scripts/flip-windows.ts and tune the defaults until they hit the targets while F009's window tests stay green. If the human retuned values after M1 (see progress.md and the git history of src/core/tuning.ts), keep their values unless the benchmark is off target.",
+      "acceptance": [
+        "Unit: the benchmark is deterministic for a seed, and its player models are described in code comments.",
+        "Unit: with the default tuning the practiced player lands 60-80% of 200 throws and the new player 20-40%.",
+        "scripts/flip-windows.ts prints both rates, and the progress entry lists the old and new tuning values with their rates.",
+        "All F009 calibration tests still pass."
+      ],
+      "depends_on": ["F009"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "The simulated players are a proxy for the design's targets; the error size and the aiming rules are assumptions for the human to confirm by playing.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F021",
+      "milestone": "M5",
+      "category": "visuals",
+      "title": "Camera shake and small effects",
+      "description": "Add small effects driven by the simulation's events: a short camera shake when the bottle hits the table, scaled by impact speed and capped; a burst of small generated particles at the bottle's base on success; and a quick pop-in scale tween for the result message. Effects live in src/game. In dev and test builds window.__FLIPPER__.effects() returns a log of triggered effects with their intensities.",
+      "acceptance": [
+        "E2E: a hard landing logs a shake with a higher intensity than a gentle one, both within the configured cap; a bottle standing still triggers none.",
+        "E2E: a success logs a particle burst and a fail doesn't.",
+        "A snap right after a success shows particles near the bottle's base and the message; a snap 0.5 s later shows the camera back at rest.",
+        "No console errors, and no text is cut off by the shake."
+      ],
+      "depends_on": ["F007", "F016"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F022",
+      "milestone": "M5",
+      "category": "gameplay",
+      "title": "Harden input and game flow against awkward play",
+      "description": "The design's M5 bug-fix pass. Write e2e tests for awkward play and fix what they find: mashing Space and the arrow keys during flight and result, pressing R or pausing mid-flight and mid-result, starting a drag during the result, releasing the mouse outside the canvas, a long frame gap (hidden tab), resizing the window mid-throw, and three full rounds in a row with mixed keyboard and mouse throws. Every case must end in a valid state with no console errors.",
+      "acceptance": [
+        "An e2e test exists for each listed scenario, and each passes.",
+        "E2E: after three full rounds, the counters are consistent (score at most 10, throw numbers restart each round) and no console errors appeared.",
+        "E2E: after a simulated long frame gap the simulation advances at most the capped number of steps, and the throw still resolves.",
+        "Each bug fixed comes with a test that covers it, and the progress entry lists the bugs found (or says none were)."
+      ],
+      "depends_on": ["F012", "F019"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F023",
+      "milestone": "M6",
+      "category": "physics",
+      "title": "Simulate sloshing water as a moving mass, behind a switch",
+      "description": "Make the water a real moving mass: a separate body for the water, joined to the bottle by a prismatic joint along the bottle's axis, limited to the empty space above the water level, with spring and damping values in tuning. Spinning flings it toward the cap and it settles back at rest, changing the bottle's balance during the flip like a real bottle. Put it behind a tuning switch, sloshing (default false in this feature), so the solid behavior and every existing test stay unchanged; the snapshot gains the water's offset along the axis.",
+      "acceptance": [
+        "Unit: with sloshing on, the water offset moves toward the cap during a spinning throw and returns to the base within 1 s at rest, and the total mass equals the solid model's at every level.",
+        "Unit: with sloshing on, results are deterministic for the same seed, tuning and power; with it off, snapshots match the solid model and all existing tests pass unchanged.",
+        "Unit: with sloshing on, some powers give different outcomes than with solid water, and the water offset always stays within its limits.",
+        "scripts/flip-windows.ts accepts a sloshing option, and the progress entry includes its table with sloshing on."
+      ],
+      "depends_on": ["F009"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: a prismatic joint is the simplest model of sloshing that changes the flip; particle or fluid simulation is out of scope.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F024",
+      "milestone": "M6",
+      "category": "visuals",
+      "title": "Draw the moving water",
+      "description": "When sloshing is on, draw the water fill where the water mass is: the fill shifts along the bottle toward the cap as the water moves, and it always stays inside the bottle's outline. Compute the fill shape with a small pure function so it can be unit-tested. With sloshing off the drawing is unchanged.",
+      "acceptance": [
+        "Unit: the fill-shape function keeps the fill inside the bottle outline for every water level and every offset within the joint limits.",
+        "A snap mid-flight with sloshing on (`call:setTuningValue;sloshing;true` before the throw) shows the fill shifted toward the cap; a snap at rest shows it at the base.",
+        "With sloshing off, snaps look the same as before this feature."
+      ],
+      "depends_on": ["F010", "F023"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F025",
+      "milestone": "M6",
+      "category": "physics",
+      "title": "Turn sloshing on by default and recalibrate",
+      "description": "Make sloshing the default and retune so the game still meets its targets: F009's window tests and F020's difficulty benchmark run with the new default and pass. Show the sloshing switch in the tuning panel. Record the old and new tuning values in the progress entry.",
+      "acceptance": [
+        "The default tuning has sloshing true, and during a normal throw state() shows the water offset moving.",
+        "All F009 window tests and the F020 benchmark pass with sloshing on.",
+        "The tuning panel shows the sloshing switch, and toggling it affects the next bottle.",
+        "The progress entry includes the new flip-windows table and the benchmark rates."
+      ],
+      "depends_on": ["F020", "F024"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F026",
+      "milestone": "M6",
+      "category": "core",
+      "title": "Record each throw for replay",
+      "description": "Record each throw in src/core: the bottle's pose (position, angle, water offset) at every step from release to the outcome, plus the landing clip, which runs from shortly before the first table contact to shortly after (lengths in tuning, for example 0.4 s before and 0.8 s after). The clip is available through the Simulation and the test hooks during the result, and is cleared when the next bottle appears.",
+      "acceptance": [
+        "Unit: after a throw the recording has one frame per step from release to the outcome, and each frame matches the snapshot pose at that step.",
+        "Unit: the landing clip starts the configured time before the first table contact and ends the configured time after it (or at the end of the recording), and is empty if the bottle never touched the table.",
+        "Unit: the recording holds at most the timeout's worth of frames and is cleared for the next bottle."
+      ],
+      "depends_on": ["F023"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F027",
+      "milestone": "M6",
+      "category": "visuals",
+      "title": "Slow-motion replay of the landing",
+      "description": "After the result flash, replay the landing clip in slow motion (about 0.4× speed, in tuning) with a small 'Replay' label, drawing the recorded poses with the normal bottle renderer; then the next bottle appears. The result phase in src/core lasts the result delay plus the replay's length when there is a clip, so the timing stays deterministic. Space or a click skips the replay and brings the next bottle; throws without a clip have no replay. The message and the score stay visible during the replay.",
+      "acceptance": [
+        "E2E: after an upright landing texts() contains 'Replay' and the hooks report a replay playing; after the result delay plus the clip length divided by the replay speed, the next bottle appears.",
+        "E2E: Space or a click during the replay brings the next bottle at once, and after the 10th throw the replay leads to the round summary.",
+        "Unit: the result phase lasts the result delay plus the clip duration divided by the replay speed, or just the result delay when there is no clip.",
+        "A snap mid-replay shows the bottle in an earlier landing pose with the 'Replay' label."
+      ],
+      "depends_on": ["F014", "F026"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the replay plays after the result flash and message, and skipping it goes straight to the next bottle.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F028",
+      "milestone": "M7",
+      "category": "performance",
+      "title": "Performance budget",
+      "description": "Check the 60 fps target with headroom and fix whatever misses it. Measure the simulation's cost in Node, the scene's per-frame update and draw time in the browser through a hook that averages it, and the number of game objects across many throws, to catch leaks.",
+      "acceptance": [
+        "Unit: simulating a full 5 s throw (300 steps, sloshing on) takes under 50 ms in Node (median of 5 runs).",
+        "E2E: over 5 s of real-time play including throws, the hook reports an average update-and-draw time under 4 ms per frame.",
+        "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
+        "The progress entry lists the measured numbers."
+      ],
+      "depends_on": ["F025", "F027"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F029",
+      "milestone": "M7",
+      "category": "release",
+      "title": "Check the production build",
+      "description": "Make sure the build players get works. Add an e2e check against the production build (vite preview of the `npm run build` output), for example as a second Playwright project that runs as part of `npm run test:e2e`: without ?testhooks, window.__FLIPPER__ is undefined and the tuning panel can't open; with ?testhooks, the game boots to the Title and a keyboard throw resolves. Add a short 'Play' section to README.md with the controls and the build and preview commands.",
+      "acceptance": [
+        "`npm run verify` runs the production-build e2e check, and it passes.",
+        "Production build without URL flags: window.__FLIPPER__ is undefined, Backquote opens no panel, and there are no console errors.",
+        "Production build with ?testhooks: the Title shows, Play starts a round, and a Space throw reaches an outcome.",
+        "README.md has a Play section with the controls table and how to build and preview."
+      ],
+      "depends_on": ["F010", "F018"],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    }
+  ]
 }
