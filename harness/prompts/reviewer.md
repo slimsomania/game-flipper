@@ -18,7 +18,7 @@ The work is in the commits `{{REVIEW_RANGE}}`: see `git log {{REVIEW_RANGE}}` an
 
 1. Read the acceptance criteria, the builder's notes, and the builder's latest entry in `harness/state/progress.md`. Then read the diff.
 2. Run `npm run verify`. Any failure means the feature fails review.
-3. Check every acceptance criterion with your own evidence: run the relevant tests, and play the feature with `npm run snap -- --do "..."` (`npm run snap -- --help` lists the actions), then look at the screenshots with the Read tool. Try at least one thing the builder may not have: an edge case, rapid or repeated input, restarting midway, or a phone-sized viewport (`--width 390 --height 844`).
+3. Check every acceptance criterion with your own evidence: run the relevant tests, and play the feature with `npm run snap -- --do "..."` (`npm run snap -- --help` lists the actions), then look at the screenshots with the Read tool. Try at least one thing the builder may not have: an edge case, rapid or repeated input, restarting midway, or a smaller desktop window (`--width 1024 --height 576`). The game is desktop-only (mouse and keyboard, landscape), so don't test phone sizes or touch.
 4. Look for regressions in nearby features that are already done.
 5. Check the code against CLAUDE.md: rules and physics in `src/core` with unit tests, nothing weakened or skipped in the tests (`git diff {{REVIEW_RANGE}} -- tests`), no leftover debug code.
 

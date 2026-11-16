@@ -34,8 +34,8 @@ This is attempt {{ATTEMPT}} of {{MAX_ATTEMPTS}} for this feature.
 
 1. Run `npm run format`, then `npm run verify`. It must pass.
 2. Look at the game. Run `npm run snap` with actions that exercise the feature, for example
-   `npm run snap -- --do "key:Space,wait:500,shot:start,drag:360;1000;380;600;120,wait:1500,shot:after"`
-   (`npm run snap -- --help` lists all actions), then open the screenshots it lists with the Read tool. Check that the feature is visibly there and nothing else looks broken: overlapping or cut-off text, elements off screen, wrong scale.
+   `npm run snap -- --do "pause,shot:start,drag:300;450;310;250;120,step:90,shot:after"`
+   (coordinates are on the 1280×720 landscape canvas; `npm run snap -- --help` lists all actions), then open the screenshots it lists with the Read tool. Check that the feature is visibly there and nothing else looks broken: overlapping or cut-off text, elements off screen, wrong scale.
 3. Go through the acceptance criteria one by one and make sure you have evidence for each: a test name, a screenshot, or command output. If a criterion can't be met, don't paper over it. Keep the status `todo` and explain in `notes`, or set it to `blocked` if it needs a human decision.
 
 ## 4. Record and commit
