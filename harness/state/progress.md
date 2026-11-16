@@ -274,3 +274,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `src/core/simulation.ts` is now about 300 lines. If F007 to F013 add more to it, split the result and round logic out.
   - As before, compound shell commands (`&&`, `;`) were denied automatically; I used single commands.
 - Next: F007 (result flash, message and score text): read `outcome` and `score` from the snapshot in a new view under `src/game/view/`; keep the power bar's corner of the screen (x 110 to 190, y 215 to 515) free, and remember a result stays up for 90 steps unless the player presses Space or clicks.
+
+> [harness] session 12 · builder F006 · todo → needs_review · ok · verify passed · 1 commit(s) · 94 tool calls · 10m 4s · ~$1.61 API-equivalent

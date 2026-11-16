@@ -1,15 +1,16 @@
 {
-  "sessions": 11,
+  "sessions": 12,
   "doneAtLastMaintenance": 0,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
     "F002": "73e5252a10e7bcc26df25d55e3cd3c0d1314e8f4",
     "F003": "174ac6a04eee869dbea1da13c435084303b73dbc",
     "F004": "a5bbf1993a9b402c731b7824b277169c846447c1",
-    "F005": "544676a281aeb618b38942635b2e41d998d2ca5a"
+    "F005": "544676a281aeb618b38942635b2e41d998d2ca5a",
+    "F006": "f40313433f9ca91042e2a7c5df72dceb61f355ac"
   },
   "lastGate": {
-    "session": 10,
+    "session": 12,
     "ok": true,
     "tail": ""
   },
