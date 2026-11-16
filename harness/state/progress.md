@@ -62,3 +62,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - planck gives every polygon a 1 cm skin, so bodies rest about 1 to 2 cm above the exact table top (about 2 px). The table test allows 1.5 cm for this; it is not worth compensating.
   - Two bash commands in this session were denied automatically (a compound `git check-ignore` call and a heredoc one-liner), so I read files with the Read tool instead. Nothing was lost.
 - Next: F002 (random water level, bottle held in the hand) replaces the placeholder drop in `src/core/simulation.ts`. Build the hand position from `TABLE_LEFT_X`/`TABLE_TOP_Y` in `src/core/table.ts` (the plan puts it near the left end), and look at it with `npm run snap -- --do 'pause,call:step;60,shot:x'`.
+
+> [harness] session 2 · builder F001 · todo → needs_review · ok · verify passed · 1 commit(s) · 86 tool calls · 5m 34s · ~$1.15 API-equivalent

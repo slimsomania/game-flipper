@@ -1,7 +1,13 @@
 {
-  "sessions": 1,
+  "sessions": 2,
   "doneAtLastMaintenance": 0,
-  "featureBase": {},
-  "lastGate": null,
+  "featureBase": {
+    "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d"
+  },
+  "lastGate": {
+    "session": 2,
+    "ok": true,
+    "tail": ""
+  },
   "lastViolations": []
 }
