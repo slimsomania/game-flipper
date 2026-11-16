@@ -1,11 +1,12 @@
 {
-  "sessions": 3,
+  "sessions": 4,
   "doneAtLastMaintenance": 0,
   "featureBase": {
-    "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d"
+    "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
+    "F002": "73e5252a10e7bcc26df25d55e3cd3c0d1314e8f4"
   },
   "lastGate": {
-    "session": 2,
+    "session": 4,
     "ok": true,
     "tail": ""
   },

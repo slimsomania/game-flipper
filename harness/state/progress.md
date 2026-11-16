@@ -97,3 +97,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - A held (kinematic) body reports zero mass, so use `bottleMassProperties` for mass before `release()`.
   - Compound shell commands such as `( ... | tail )` were auto-denied again in this session; plain `npm run verify` and the other single commands worked.
 - Next: F003 (throw by power): call `Bottle.release()` on the held bottle, then apply the launch impulse and angular impulse at the center of mass. Divide by the dynamic body's `getMass()` and `getInertia()` (P2). The `Simulation` already keeps `bottle: Bottle` and its seeded `rng` for the next bottle (`drawWaterLevel(this.rng, this.tuning)`).
+
+> [harness] session 4 · builder F002 · todo → needs_review · ok · verify passed · 1 commit(s) · 81 tool calls · 7m 5s · ~$1.34 API-equivalent
