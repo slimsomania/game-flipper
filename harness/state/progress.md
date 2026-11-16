@@ -114,3 +114,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Notes for later:
   - The bottle is drawn about 66×174 px, which is small next to the table. Revisit this once the throw exists (F003) and a full flip is visible, as the builder also noted.
   - A held (kinematic) bottle reports zero mass. F003 must call `release()` before reading `getMass()` and `getInertia()` for the impulse.
+
+> [harness] session 5 · reviewer F002 · needs_review → done · ok · 1 commit(s) · 22 tool calls · 1m 36s · ~$0.75 API-equivalent
