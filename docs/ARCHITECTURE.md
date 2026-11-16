@@ -32,6 +32,7 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | Time | seconds; fixed step `SIM_DT` = 1/60 s |
 | Screen | 1280×720 px logical canvas (landscape, for desktop browsers), scaled with `Scale.FIT`; 1 m = 100 px, so the visible world is 12.8 m × 7.2 m |
 | Table | top surface `TABLE_TOP_Y` = 5.6 m (78% of the way down); ends `TABLE_LEFT_X` = 1.6 m and `TABLE_RIGHT_X` = 11.2 m, so 1.6 m of screen on each side; all in `src/core/table.ts` |
+| Bottle | its body origin (the snapshot's `x`, `y`) is the center of the flat base; its shape extends toward negative y, so the cap is at y = −`BOTTLE_HEIGHT` in local coordinates. Held at the hand, `HAND_X` = 2.8 m, `HAND_Y` = 4.6 m (base 1 m above the table top, 1.2 m in from the left end); both in `src/core/bottle.ts` |
 
 ## Directory map
 
@@ -41,10 +42,13 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | `src/core/rng.ts` | Seeded random numbers (the only randomness allowed in core) |
 | `src/core/fixedStep.ts` | Fixed-timestep accumulator |
 | `src/core/table.ts` | The table: exported top and end constants, and `createTable(world)`, which adds it as a static body |
-| `src/core/simulation.ts` | The simulation. Currently a placeholder: a bottle dropped onto the table |
+| `src/core/tuning.ts` | `DEFAULT_TUNING` / `Tuning`: every tunable gameplay number (water range and step, shell and water density, bottle friction and bounce); `resolveTuning(overrides)` |
+| `src/core/bottleShape.ts` | The bottle as plain geometry, no physics: dimension constants, the four convex `BOTTLE_PARTS` (body, shoulder, neck, cap), `waterRect`/`waterVertices(level)`, and `bottleMassProperties(level, tuning)` (mass and center of mass height). The physics body and the drawing both build from it |
+| `src/core/bottle.ts` | `Bottle`: the planck body (shell fixtures plus one massive, non-colliding water fixture), `setWater`, `release`; `HAND_X`/`HAND_Y`; `drawWaterLevel(rng, tuning)` |
+| `src/core/simulation.ts` | The simulation: the table and the bottle held in the hand with a seeded random water level; no throw yet |
 | `src/game/config.ts` | Phaser game config and scene list |
-| `src/game/scenes/` | `BootScene` (generates placeholder textures, then starts the game), `GameScene` |
-| `src/game/view/` | Drawing helpers for scene parts, e.g. `tableView.ts` (the table, from the core constants) |
+| `src/game/scenes/` | `BootScene` (starts the game; load or generate assets here later), `GameScene` |
+| `src/game/view/` | Drawing helpers for scene parts, e.g. `tableView.ts` (the table) and `bottleView.ts` (the bottle and its water), both from the core constants |
 | `src/game/theme.ts` | Fonts and colors |
 | `src/debug/testHooks.ts` | `window.__FLIPPER__` |
 | `scripts/snap.ts` | Headless screenshot tool (`npm run snap`); `scripts/snapActions.ts` parses its `--do` actions |
@@ -73,6 +77,8 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | D4 | `window.__FLIPPER__` test hooks | A canvas can't be inspected through the DOM; the hooks give tests exact state and frame-by-frame control. |
 | D5 | Landscape 1280×720 logical canvas | The game targets desktop browsers, which are landscape; the table is wide and a toss stays comfortably on screen. `Scale.FIT` letterboxes other window shapes. The design allows changing the orientation later: only `GAME_WIDTH`/`GAME_HEIGHT` and the table constants would move. |
 | D6 | Placeholder art drawn in code | No asset pipeline until the art direction is decided. |
+| D7 | The held bottle is a kinematic body; `Bottle.release()` makes it dynamic | It can't drift or sleep while it waits, and a throw only has to call `release()` and apply an impulse. A kinematic body reports zero mass, so use `bottleMassProperties` for mass before a release. |
+| D8 | The water is one more fixture on the bottle body with density, `isSensor` and a zero collision mask | It adds mass and moves the center of mass but never collides, so no contact events come from it. `setWater` rebuilds it. |
 
 ## Plan
 
@@ -82,9 +88,9 @@ Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/fe
 
 | Path | Responsibility | Features |
 | --- | --- | --- |
-| `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number | F002 on |
+| `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number (built in F002; later features add their fields) | F002 on |
 | `src/core/table.ts` | the table: static body, top surface and end constants (built in F001) | F001 |
-| `src/core/bottle.ts` | bottle shape; mass, center of mass and inertia per water level | F002 |
+| `src/core/bottleShape.ts`, `bottle.ts` | bottle shape; mass and center of mass per water level; the physics body and the water draw (built in F002) | F002 |
 | `src/core/throw.ts` | power (0–100) and water → launch impulse and spin | F003 |
 | `src/core/outcome.ts` | judging rest: upright, side, cap, off table, off screen, timeout | F004 |
 | `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |

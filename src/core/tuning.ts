@@ -1,0 +1,46 @@
+/*
+ * Tunable gameplay numbers: the single home for every number that changes how the game feels.
+ * Features add their own fields here. The Simulation takes a `Partial<Tuning>` of overrides
+ * (see `SimulationOptions`), so tests and the developer tuning panel can change the feel without
+ * editing code. Shape and layout constants (the bottle's dimensions, the table) are not tuning:
+ * they live next to the code that builds them.
+ */
+
+export interface Tuning {
+  /** Lowest water level a new bottle can have, as a fraction of the bottle body (0 to 1). */
+  waterMin: number;
+  /** Highest water level a new bottle can have. */
+  waterMax: number;
+  /** Water levels are `waterMin` plus a whole number of steps, up to `waterMax`. */
+  waterStep: number;
+  /**
+   * Density of the plastic shell, in mass per square meter of the drawn silhouette. The shell is
+   * modelled as solid polygons, so this is an effective value rather than a real plastic density.
+   */
+  shellDensity: number;
+  /** Density of the water. Water is the reference: 1 unit of mass per square meter of fill. */
+  waterDensity: number;
+  /** Friction of the bottle's shell against the table. */
+  bottleFriction: number;
+  /** Bounciness of the bottle's shell (0 = none). */
+  bottleRestitution: number;
+}
+
+export const DEFAULT_TUNING: Readonly<Tuning> = {
+  // Design open question 2: 10% to 90% in 5% steps.
+  waterMin: 0.1,
+  waterMax: 0.9,
+  waterStep: 0.05,
+  // Starting point; F009 calibrates the throw against it. An empty bottle weighs about 40% of a
+  // 50%-full one, so water is a clear but not overwhelming part of the mass.
+  shellDensity: 0.35,
+  waterDensity: 1,
+  // Carried over from the placeholder bottle.
+  bottleFriction: 0.6,
+  bottleRestitution: 0.15,
+};
+
+/** The defaults with `overrides` applied on top. */
+export function resolveTuning(overrides: Partial<Tuning> = {}): Tuning {
+  return { ...DEFAULT_TUNING, ...overrides };
+}

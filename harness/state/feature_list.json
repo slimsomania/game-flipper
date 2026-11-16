@@ -72,9 +72,9 @@
       "depends_on": [
         "F001"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumptions: the water range is 10% to 90% in 5% steps (design open question 2). The level is the filled fraction of the bottle's body height (base to shoulder). Water moves with the bottle as one solid body until M6. With a fill-from-the-base model the center of mass is below the empty bottle's at every level, though not monotonically lower as the level rises; that is how the design's 'closer to the bottom' is read. No hand graphic: the design wants nothing on screen but the table and the background.",
+      "notes": "Built the bottle: src/core/bottleShape.ts (dimensions, four convex parts, water rectangle, analytic mass and center of mass), src/core/bottle.ts (planck body, setWater, release, HAND_X/HAND_Y, drawWaterLevel), src/core/tuning.ts (water range and step, densities, friction), src/game/view/bottleView.ts (drawn from the same shape constants), plus snapshot bottle.water and __FLIPPER__.setWater. The held bottle is a kinematic body at the hand (2.8 m, 4.6 m); F003 calls Bottle.release() to make it dynamic, and bottleMassProperties gives its mass before that. Verified with npm run verify (91 unit, 7 e2e), and snaps at setWater 0.1, 0.5 and 0.9 that I looked at. The old placeholder drop tests were rewritten because this feature removes the drop.",
       "review_feedback": ""
     },
     {

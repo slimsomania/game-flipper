@@ -11,9 +11,8 @@ export const COLORS = {
   /** Wooden-brown table: the tabletop slab and its legs. */
   table: 0x9a6b44,
   tableLegs: 0x7d5434,
-  /** Placeholder bottle, until the real bottle art lands. */
-  bottle: 0x7fb8e8,
-  cap: 0xe2504c,
-  label: 0xffffff,
+  /** The bottle: a translucent blue shell with a lighter cap, and a deeper blue water fill. */
+  bottle: 0x4a9be0,
+  cap: 0xc4dff7,
   water: 0x2f7fd6,
 } as const;

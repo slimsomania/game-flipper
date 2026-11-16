@@ -1,24 +1,16 @@
-import { Box, World, type Body } from 'planck';
+import { World, type Body } from 'planck';
+import { Bottle, drawWaterLevel } from './bottle';
 import { GRAVITY, SIM_DT } from './constants';
-import { createRng } from './rng';
-import { TABLE_CENTER_X, createTable } from './table';
-
-/*
- * PLACEHOLDER SIMULATION
- * A table and one bottle that drops onto it with a random tilt. It proves the pipeline
- * (physics -> rendering -> tests) and shows the patterns to follow. Agents replace it with the
- * real game as features land.
- */
-
-/** Placeholder bottle size as half extents, in meters. */
-export const BOTTLE_HALF_WIDTH = 0.35;
-export const BOTTLE_HALF_HEIGHT = 1;
+import { createRng, type Rng } from './rng';
+import { createTable } from './table';
+import { resolveTuning, type Tuning } from './tuning';
 
 const VELOCITY_ITERATIONS = 8;
 const POSITION_ITERATIONS = 3;
 
 /** JSON-safe view of a rigid body. */
 export interface BodySnapshot {
+  /** Position of the body's origin, in meters. For the bottle this is the center of its base. */
   x: number;
   y: number;
   /** Radians, clockwise positive. 0 means upright. */
@@ -31,44 +23,41 @@ export interface BodySnapshot {
   awake: boolean;
 }
 
+export interface BottleSnapshot extends BodySnapshot {
+  /** Water level: the filled fraction of the bottle body, 0 to 1. */
+  water: number;
+}
+
 /** Everything the renderer and the tests need to know about the simulation. */
 export interface SimSnapshot {
   tick: number;
   seed: number;
-  bottle: BodySnapshot;
+  bottle: BottleSnapshot;
 }
 
 export interface SimulationOptions {
   /** Same seed + same inputs = same result. */
   seed?: number;
+  /** Overrides for the defaults in `DEFAULT_TUNING`. */
+  tuning?: Partial<Tuning>;
 }
 
 export class Simulation {
   readonly seed: number;
+  readonly tuning: Tuning;
   private readonly world: World;
-  private readonly bottle: Body;
+  private readonly rng: Rng;
+  private readonly bottle: Bottle;
   private ticks = 0;
 
   constructor(options: SimulationOptions = {}) {
     this.seed = options.seed ?? 1;
-    const rng = createRng(this.seed);
+    this.tuning = resolveTuning(options.tuning);
+    this.rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
     createTable(this.world);
-
-    this.bottle = this.world.createBody({
-      type: 'dynamic',
-      position: { x: TABLE_CENTER_X, y: 2 },
-      angle: rng.range(-0.5, 0.5),
-      angularVelocity: rng.range(-2, 2),
-      bullet: true,
-    });
-    this.bottle.createFixture({
-      shape: new Box(BOTTLE_HALF_WIDTH, BOTTLE_HALF_HEIGHT),
-      density: 1,
-      friction: 0.6,
-      restitution: 0.15,
-    });
+    this.bottle = new Bottle(this.world, this.tuning, drawWaterLevel(this.rng, this.tuning));
   }
 
   /** Number of fixed steps simulated so far. */
@@ -82,8 +71,17 @@ export class Simulation {
     this.ticks++;
   }
 
+  /** Set the held bottle's water level (clamped to 0..1). For tests and tuning tools. */
+  setWater(level: number): void {
+    this.bottle.setWater(level);
+  }
+
   snapshot(): SimSnapshot {
-    return { tick: this.ticks, seed: this.seed, bottle: snapshotBody(this.bottle) };
+    return {
+      tick: this.ticks,
+      seed: this.seed,
+      bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
+    };
   }
 }
 

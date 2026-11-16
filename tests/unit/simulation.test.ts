@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BOTTLE_HALF_HEIGHT, BOTTLE_HALF_WIDTH, Simulation } from '../../src/core/simulation';
-import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
+import { HAND_X, HAND_Y } from '../../src/core/bottle';
+import { Simulation } from '../../src/core/simulation';
+import { TABLE_TOP_Y } from '../../src/core/table';
 
 function run(sim: Simulation, steps: number): void {
   for (let i = 0; i < steps; i++) sim.step();
 }
 
-describe('Simulation (placeholder)', () => {
+describe('Simulation', () => {
   it('is deterministic for a given seed', () => {
     const a = new Simulation({ seed: 42 });
     const b = new Simulation({ seed: 42 });
@@ -16,27 +17,40 @@ describe('Simulation (placeholder)', () => {
   });
 
   it('starts differently for different seeds', () => {
-    const angle1 = new Simulation({ seed: 1 }).snapshot().bottle.angle;
-    const angle2 = new Simulation({ seed: 2 }).snapshot().bottle.angle;
-    expect(angle1).not.toEqual(angle2);
+    const levels = [1, 2, 3, 4, 5, 6].map(
+      (seed) => new Simulation({ seed }).snapshot().bottle.water,
+    );
+    expect(new Set(levels).size).toBeGreaterThan(1);
   });
 
-  it('drops the bottle onto the table, where it comes to rest', () => {
+  it('counts fixed steps', () => {
     const sim = new Simulation({ seed: 7 });
-    const start = sim.snapshot().bottle;
-    run(sim, 600); // 10 simulated seconds
-    const end = sim.snapshot();
+    expect(sim.snapshot().tick).toBe(0);
+    run(sim, 30);
+    expect(sim.tick).toBe(30);
+    expect(sim.snapshot().tick).toBe(30);
+  });
 
-    expect(end.tick).toBe(600);
-    expect(end.bottle.y).toBeGreaterThan(start.y);
-    // Resting on one of its faces: the center sits between half its width
-    // and half its height above the table top.
-    expect(end.bottle.y).toBeLessThanOrEqual(TABLE_TOP_Y - BOTTLE_HALF_WIDTH + 0.05);
-    expect(end.bottle.y).toBeGreaterThanOrEqual(TABLE_TOP_Y - BOTTLE_HALF_HEIGHT - 0.05);
-    // ...and it stays on the table, between its ends.
-    expect(end.bottle.x).toBeGreaterThan(TABLE_LEFT_X);
-    expect(end.bottle.x).toBeLessThan(TABLE_RIGHT_X);
-    expect(Math.hypot(end.bottle.vx, end.bottle.vy)).toBeLessThan(0.01);
-    expect(Math.abs(end.bottle.omega)).toBeLessThan(0.01);
+  it('starts with the bottle held in the hand, above the table, with a water level', () => {
+    const { bottle, seed } = new Simulation({ seed: 7 }).snapshot();
+    expect(seed).toBe(7);
+    expect([bottle.x, bottle.y, bottle.angle]).toEqual([HAND_X, HAND_Y, 0]);
+    expect(bottle.y).toBeLessThan(TABLE_TOP_Y);
+    expect(bottle.water).toBeGreaterThanOrEqual(0.1);
+    expect(bottle.water).toBeLessThanOrEqual(0.9);
+  });
+
+  it('setWater changes the water level in the snapshot', () => {
+    const sim = new Simulation({ seed: 7 });
+    sim.setWater(0.9);
+    expect(sim.snapshot().bottle.water).toBe(0.9);
+    sim.setWater(0.1);
+    expect(sim.snapshot().bottle.water).toBe(0.1);
+  });
+
+  it('accepts tuning overrides', () => {
+    const sim = new Simulation({ seed: 7, tuning: { waterMin: 0.5, waterMax: 0.5 } });
+    expect(sim.tuning.waterMin).toBe(0.5);
+    expect(sim.snapshot().bottle.water).toBe(0.5);
   });
 });
