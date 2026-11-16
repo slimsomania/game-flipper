@@ -222,7 +222,7 @@
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Design tension: a single-flip window of about ±10 points needs spin that grows slowly with power, which may leave clean double flips out of reach below 100% power. The criteria prioritize the single-flip window and only require that too much power over-rotates (see the planner's open questions in progress.md).",
+      "notes": "Decided by the human (docs/GAME_DESIGN.md section 13, 2026-11-16): single flips first. Reachable double-flip windows are not required; too much power only has to over-rotate, and the single-flip window wins any conflict. The tests lock the design targets, not specific tuning values.",
       "review_feedback": ""
     },
     {

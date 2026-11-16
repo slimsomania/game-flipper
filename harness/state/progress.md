@@ -38,3 +38,11 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   5. Only Chromium is installed for tests, so Firefox and Edge aren't covered automatically. Check them by hand at milestone stops, or allow adding Playwright's Firefox later.
 
 > [harness] session 1 · planner · ok · 1 commit(s) · 37 tool calls · 17m 26s · ~$3.82 API-equivalent
+
+## Human decisions on the planner's open questions (2026-11-16)
+- Recorded in `docs/GAME_DESIGN.md` section 13 ("Decided after the first plan"), which is the reference.
+  1. Single flips first: double-flip windows are not required; the single-flip window wins any conflict (F009 notes updated).
+  2. Calibration and difficulty tests lock the design's targets, not tuning values. If the human changes a target in section 3, agents update the matching test ranges and log it.
+  3. No landing indicator; the drift is tuned so in-window throws land around the middle of the table.
+  4. Fixed: `harness/prompts/builder.md` and `reviewer.md` now use landscape desktop examples (commit 122e288).
+  5. Automated tests stay Chromium-only (covers Edge); the human checks Firefox by hand at milestone stops; revisit at M7.

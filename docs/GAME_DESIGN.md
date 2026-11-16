@@ -144,9 +144,15 @@ Decided:
 - **Mouse push mapping:** a mix of drag distance and drag speed, measured over the last 150 ms before release.
 - **Sloshing and replay:** wanted, in M6.
 
+Decided after the first plan (2026-11-16), answering the planner's open questions:
+
+- **Single flips first, no double-flip windows required.** The goal is a clean single flip. Too much power must over-rotate (it may land upright by luck, but nothing aims for that). Reachable double-flip windows are not required in M1 to M5. They come back with the later "double-flip challenge" idea, and the single-flip window wins if the two ever conflict.
+- **Tests lock targets, not tuning values.** Calibration and difficulty tests check the design's targets (window width, the full-to-empty power ratio, success rates), never specific power or tuning values. Retuning inside the targets needs no test change. When the human changes a target on purpose, they change it in section 3 first; agents then update the matching test ranges to the new target and say so in the progress log. That counts as following the design, not weakening a test.
+- **No landing indicator.** The player never sees where the bottle will land: no marker, no trajectory preview. The fixed forward drift is tuned so every throw in a bottle's flip window lands on the table, around its middle. This keeps the only guess the power.
+- **Water range:** 10% to 90% in 5% steps, as the plan assumes. Tunable.
+- **Browsers:** automated tests run in Chromium only, which also covers Edge (same engine). The human checks Firefox by hand at milestone stops. Revisit adding Playwright's Firefox at M7.
+
 Still open, to be settled by playtesting after M1:
 
 1. **Difficulty numbers.** The window width, the weight effect and the score targets in section 3 are best guesses.
-2. **Water range.** How empty and how full a bottle can be (for example 10% to 90%), and whether the level is continuous or in steps.
-3. **Forward drift.** How far the bottle travels toward the table during a throw, and whether the player ever sees where it will land.
-4. **Streak rewards.** The streak counter has no effect on points yet.
+2. **Streak rewards.** The streak counter has no effect on points yet.
