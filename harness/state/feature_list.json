@@ -116,9 +116,9 @@
       "depends_on": [
         "F003"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built src/core/outcome.ts (LandingJudge, fed once per step by Simulation.step; it only reads pose, speeds and table contact), the landing thresholds in tuning.ts, Bottle.place/touches, Simulation.placeBottle, snapshot().outcome and window.__FLIPPER__.placeBottle. Resting means nearly still and touching the table; the phase stays 'flying' after the outcome (F005 adds 'result'). Verified by tests/unit/outcome.test.ts, tests/e2e/outcome.spec.ts, npm run verify and snaps of an upright drop (success) and a side landing (fail). Assumptions: the 5 s timeout counts from release. 'Leaves the screen' means the left, right or bottom edge; a bottle may fly above the top and fall back. Resting more than 135° from upright is 'cap'; any other non-upright rest is 'side'.",
+      "notes": "Built src/core/outcome.ts (LandingJudge, fed once per step by Simulation.step; it only reads pose, speeds and table contact), the landing thresholds in tuning.ts, Bottle.place/touches, Simulation.placeBottle, snapshot().outcome and window.__FLIPPER__.placeBottle. Resting means nearly still and touching the table; the phase stays 'flying' after the outcome (F005 adds 'result'). Verified by tests/unit/outcome.test.ts, tests/e2e/outcome.spec.ts, npm run verify and snaps of an upright drop (success) and a side landing (fail). Assumptions: the 5 s timeout counts from release. 'Leaves the screen' means the left, right or bottom edge; a bottle may fly above the top and fall back. Resting more than 135° from upright is 'cap'; any other non-upright rest is 'side'. Reviewed: npm run verify passed (16 e2e incl. outcome.spec.ts; outcome.test.ts covers every criterion). A probe (20 seeds x power 0-100) gave an outcome for every throw. Edge cases decided correctly: upright at the table edge, sliding upright, angle -4pi, slammed down at 30 m/s, no success at 59 steps and success at 60. A 1024x576 snap of a side landing was judged side and stayed fixed. A repeated throw and a placeBottle mid-flight were ignored, and R gave a fresh outcome.",
       "review_feedback": ""
     },
     {

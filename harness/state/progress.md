@@ -191,3 +191,19 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F005 (result and next bottle): set `phase = 'result'` when `outcome` becomes non-null (check it after `judge.observe` in `Simulation.step`), count a throw and a success there, and start the 90-step delay from the step the outcome is set. Update the `phase` assertion in `tests/e2e/throw.spec.ts` and the `Phase` type and its comment in `simulation.ts`.
 
 > [harness] session 8 · builder F004 · todo → needs_review · ok · verify passed · 1 commit(s) · 85 tool calls · 9m 21s · ~$1.63 API-equivalent
+
+## Session 9 · reviewer · F004 Judge the landing: upright success or fail
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, unit tests, build and all 16 e2e tests. The e2e tests include `outcome.spec.ts`: upright placed and stepped 150 frames gives success, a side placement gives fail.
+  - Each unit criterion has its own test in `tests/unit/outcome.test.ts`: upright success at 1 s and not before; side, cap, offTable and offScreen; 2π counts as upright and an untouched bottle reports 0 turns; a 50%-water bottle tilted 10° on a corner tips back and succeeds; the 0.5 s timeout override; the outcome is never changed once set.
+  - The judge (`src/core/outcome.ts`) only reads the pose, speeds and table contact. All its thresholds are in `tuning.ts`. Only one existing test changed: `throw.spec.ts` gained an extra assertion, so nothing was weakened.
+  - My own probe was a temporary unit file, deleted afterwards:
+    - 20 seeds × powers 0–100 in steps of 10 gave an outcome for every throw: 36 upright, 145 side, 17 offTable, 16 offScreen, 6 timeout.
+    - I traced the timeouts. Each one was a bottle still bouncing or rolling until about 4.5 s, so the 1 s hold or the 0.5 s fail-rest couldn't finish before the limit. That matches the spec.
+    - Other cases: upright 1 cm from the right edge succeeds; an upright bottle sliding at 0.8 m/s succeeds; an upright bottle at angle −4π succeeds; one slammed down at 30 m/s succeeds; after exactly 59 steps there is no outcome, and at 60 steps it is a success.
+  - Snap at 1024×576 (seed 6): I threw at power 30 twice, waited 200 steps, called placeBottle mid-flight, then waited 200 more steps. The result was side, unchanged between the two states. The second throw and the placeBottle were ignored. I looked at the screenshot: the bottle lies on its side on the table. Pressing R then throwing at power 50 gave a new flight with outcome null. There were no console errors.
+- Problems: none
+- Notes for later:
+  - Mid-power throws (about 70) fly above the top of the screen and land only around 4.5 s, so some upright landings become 'timeout' because the 1 s hold doesn't fit inside 5 s. F009/F010 tuning, or a timeout counted from first contact, may want to address this.
+  - After the outcome is set, the phase stays 'flying' until F005 adds the result phase.
