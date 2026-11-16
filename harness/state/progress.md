@@ -207,3 +207,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Notes for later:
   - Mid-power throws (about 70) fly above the top of the screen and land only around 4.5 s, so some upright landings become 'timeout' because the 1 s hold doesn't fit inside 5 s. F009/F010 tuning, or a timeout counted from first contact, may want to address this.
   - After the outcome is set, the phase stays 'flying' until F005 adds the result phase.
+
+> [harness] session 9 · reviewer F004 · needs_review → done · ok · 1 commit(s) · 22 tool calls · 2m 53s · ~$0.72 API-equivalent
