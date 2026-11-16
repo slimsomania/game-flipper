@@ -95,7 +95,7 @@
         "F002"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built Simulation.throwBottle(power, source), setTuning(), phase and lastThrow in src/core/simulation.ts, the impulse maths in the new src/core/throw.ts, Bottle.launch/applyTuning in bottle.ts, and window.__FLIPPER__.throwBottle. The throw is a linear plus an angular impulse at the center of mass (12° toward the table, clockwise), which the body divides by its own mass and inertia; the numbers are the new throw* fields in tuning.ts, set so a full bottle's single flip lands near power 65-70 and an empty one's near 35-40, and F009 should recalibrate them. Verified by tests/unit/throw.test.ts, tests/e2e/throw.spec.ts, and a mid-flight snap that shows the bottle rotated above the table.",
       "review_feedback": ""
     },

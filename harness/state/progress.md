@@ -142,3 +142,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The bottle sleeps while held (a kinematic body at rest). Tests that compare snapshots before and after waiting must ignore the `awake` flag.
   - A mid-session shell one-liner with a heredoc was denied automatically, so I used the Edit tool for those changes. Nothing was lost.
 - Next: F004 (judge the landing) adds the `result` phase after `flying`; extend `Phase` in `src/core/simulation.ts` and keep `throwBottle` limited to `aiming`. In my scratch runs the bottle was at rest (asleep) within 600 steps (10 s) of every throw I tried at powers 30 to 80, but I did not measure rest times closely, so check them against the 5 s timeout.
+
+> [harness] session 6 · builder F003 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 6m 54s · ~$1.21 API-equivalent
