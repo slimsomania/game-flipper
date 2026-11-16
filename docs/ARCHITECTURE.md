@@ -42,10 +42,11 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | `src/core/rng.ts` | Seeded random numbers (the only randomness allowed in core) |
 | `src/core/fixedStep.ts` | Fixed-timestep accumulator |
 | `src/core/table.ts` | The table: exported top and end constants, and `createTable(world)`, which adds it as a static body |
-| `src/core/tuning.ts` | `DEFAULT_TUNING` / `Tuning`: every tunable gameplay number (water range and step, shell and water density, bottle friction and bounce); `resolveTuning(overrides)` |
+| `src/core/tuning.ts` | `DEFAULT_TUNING` / `Tuning`: every tunable gameplay number (water range and step, shell and water density, bottle friction and bounce, the throw's angle and its linear and angular impulse at power 100); `resolveTuning(overrides)` |
+| `src/core/throw.ts` | `throwImpulse(power, tuning)`: power 0–100 (`clampPower`) → a linear impulse in a fixed direction a few degrees toward the table and a clockwise angular impulse, both in proportion to the power; `ThrowSource` |
 | `src/core/bottleShape.ts` | The bottle as plain geometry, no physics: dimension constants, the four convex `BOTTLE_PARTS` (body, shoulder, neck, cap), `waterRect`/`waterVertices(level)`, and `bottleMassProperties(level, tuning)` (mass and center of mass height). The physics body and the drawing both build from it |
-| `src/core/bottle.ts` | `Bottle`: the planck body (shell fixtures plus one massive, non-colliding water fixture), `setWater`, `release`; `HAND_X`/`HAND_Y`; `drawWaterLevel(rng, tuning)` |
-| `src/core/simulation.ts` | The simulation: the table and the bottle held in the hand with a seeded random water level; no throw yet |
+| `src/core/bottle.ts` | `Bottle`: the planck body (shell fixtures plus one massive, non-colliding water fixture), `setWater`, `applyTuning` (rebuilds the held bottle), `release`, `launch(impulse)`; `HAND_X`/`HAND_Y`; `drawWaterLevel(rng, tuning)` |
+| `src/core/simulation.ts` | The simulation: the table and the bottle held in the hand with a seeded random water level; `throwBottle(power, source)`, `setTuning(overrides)`, and `phase` (`aiming` → `flying`) and `lastThrow` in the snapshot. No landing judgement yet |
 | `src/game/config.ts` | Phaser game config and scene list |
 | `src/game/scenes/` | `BootScene` (starts the game; load or generate assets here later), `GameScene` |
 | `src/game/view/` | Drawing helpers for scene parts, e.g. `tableView.ts` (the table) and `bottleView.ts` (the bottle and its water), both from the core constants |
@@ -79,6 +80,8 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | D6 | Placeholder art drawn in code | No asset pipeline until the art direction is decided. |
 | D7 | The held bottle is a kinematic body; `Bottle.release()` makes it dynamic | It can't drift or sleep while it waits, and a throw only has to call `release()` and apply an impulse. A kinematic body reports zero mass, so use `bottleMassProperties` for mass before a release. |
 | D8 | The water is one more fixture on the bottle body with density, `isSensor` and a zero collision mask | It adds mass and moves the center of mass but never collides, so no contact events come from it. `setWater` rebuilds it. |
+| D9 | `setTuning` and `setWater` only touch the bottle while the phase is `aiming` | A bottle in flight keeps the body and launch it was given, so retuning (the tuning panel) or changing the water mid-throw can never alter a flight or make `lastThrow.water` disagree with the bottle. Tuning for later throws and bottles still updates. |
+| D10 | A throw is two impulses at the center of mass, `p/100` of the tuning's linear and angular impulse at power 100, and the body divides them by its own mass and inertia | This is decision P2 in code: the water's mass and inertia lower the speed and spin without special cases. Power maps linearly for now; F009 may reshape the mapping when it calibrates. |
 
 ## Plan
 
@@ -91,7 +94,7 @@ Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/fe
 | `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number (built in F002; later features add their fields) | F002 on |
 | `src/core/table.ts` | the table: static body, top surface and end constants (built in F001) | F001 |
 | `src/core/bottleShape.ts`, `bottle.ts` | bottle shape; mass and center of mass per water level; the physics body and the water draw (built in F002) | F002 |
-| `src/core/throw.ts` | power (0–100) and water → launch impulse and spin | F003 |
+| `src/core/throw.ts` | power (0–100) → launch impulse and spin (built in F003; the bottle's mass and inertia bring the water in) | F003 |
 | `src/core/outcome.ts` | judging rest: upright, side, cap, off table, off screen, timeout | F004 |
 | `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |
 | `src/core/powerMeter.ts`, `push.ts` | power bar (taps, hold acceleration, wheel); mouse push → power | F006, F011 |

@@ -24,6 +24,19 @@ export interface Tuning {
   bottleFriction: number;
   /** Bounciness of the bottle's shell (0 = none). */
   bottleRestitution: number;
+  /** Throw direction: degrees forward of straight up, toward the table. Fixed for every throw. */
+  throwAngleDeg: number;
+  /**
+   * Linear impulse of a throw at power 100, in mass·m/s. A throw at power p applies p/100 of it
+   * at the center of mass, and the bottle divides it by its mass, so a fuller bottle launches
+   * slower.
+   */
+  throwLinearImpulse: number;
+  /**
+   * Angular impulse of a throw at power 100, in mass·m²/s, clockwise. The bottle divides it by
+   * its inertia, so a fuller bottle spins slower.
+   */
+  throwAngularImpulse: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -38,6 +51,10 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // Carried over from the placeholder bottle.
   bottleFriction: 0.6,
   bottleRestitution: 0.15,
+  // Starting values for F003; F009 calibrates them so every bottle has a single-flip window.
+  throwAngleDeg: 12,
+  throwLinearImpulse: 9,
+  throwAngularImpulse: 1,
 };
 
 /** The defaults with `overrides` applied on top. */

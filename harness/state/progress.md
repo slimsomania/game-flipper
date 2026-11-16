@@ -116,3 +116,29 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - A held (kinematic) bottle reports zero mass. F003 must call `release()` before reading `getMass()` and `getInertia()` for the impulse.
 
 > [harness] session 5 · reviewer F002 · needs_review → done · ok · 1 commit(s) · 22 tool calls · 1m 36s · ~$0.75 API-equivalent
+
+## Session 6 · builder · F003 Throw the bottle with a power value
+- Did:
+  - Throw maths, new `src/core/throw.ts`: `clampPower`, `ThrowSource` (`'keyboard' | 'mouse'`) and `throwImpulse(power, tuning)`, which returns a linear impulse (a fixed direction, `throwAngleDeg` toward +x from straight up) and a clockwise angular impulse, both `power/100` of the tuning's value at power 100.
+  - Tuning, `src/core/tuning.ts`: new `throwAngleDeg` (12), `throwLinearImpulse` (9) and `throwAngularImpulse` (1). They are starting values, not calibrated.
+  - Physics, `src/core/bottle.ts`: `Bottle.launch(impulse)` releases the held bottle (it must be dynamic before it has mass) and applies both impulses at the center of mass, so the body's own mass and inertia divide them (P2). `Bottle.applyTuning(tuning)` rebuilds the shell and water fixtures with new tuning; it is only called while held.
+  - Simulation, `src/core/simulation.ts`: `throwBottle(power, source = 'keyboard')` (returns true if it threw), `setTuning(overrides)`, `phase` (`'aiming' | 'flying'`) and `lastThrow` (`{power, water, source}`, with the clamped power) in the snapshot. `tuning` is now a getter. `setTuning` applies to the held bottle and to later throws but never to a bottle in flight. `setWater` is ignored once the bottle is thrown (decision D9), so a flying bottle never changes mass.
+  - Test hook: `window.__FLIPPER__.throwBottle(power)` returns the new snapshot.
+  - Docs: `docs/ARCHITECTURE.md` directory map, plan table, and decisions D9 (tuning and water only change the held bottle) and D10 (the throw as two impulses).
+- Verified:
+  - I did not run `npm run verify` before starting; I relied on the harness's green result after session 4, since session 5 only changed state files. At the end it passed: format check, typecheck, 119 unit, build, 11 e2e.
+  - Acceptance 1: `tests/unit/throw.test.ts` "launches the bottle up, toward the table, spinning clockwise" (3 water levels × 3 powers: vy < 0, 0 < vx < 0.25·|vy|, omega > 0). The default direction is 12° (tan = 0.21).
+  - Acceptance 2: "gives strictly more launch speed and spin for more power, at every water level" (17 levels × powers 0 to 100) and "strictly less ... for more water, at every power" (11 powers × 17 levels). A test also checks launch speed equals the impulse divided by the bottle's mass.
+  - Acceptance 3: the clamp tests (250 and Infinity equal 100, negative equals 0, `lastThrow.power` is clamped), "does nothing once the bottle is in flight", and the determinism test (same seed, tuning, water and power → equal snapshots after 300 steps).
+  - Acceptance 4: "applies overrides given to the Simulation" (doubling the impulses doubles speed and spin), "setTuning changes the throw of a bottle that is still held", and "setTuning during a flight does not alter that flight" (every tuning field changed at step 20; the snapshot at step 300 is identical to an unchanged control).
+  - Acceptance 5: `tests/e2e/throw.spec.ts` "throwBottle(50) launches the bottle ...": phase `flying`, `lastThrow` `{power: 50, water: 0.5, source: 'keyboard'}`, the apex is more than 1 m above the hand, and after 240 more steps it is on the table between its ends, turned over, and nearly still. Three more e2e tests cover aiming at the start, clamping and one throw per bottle, and browser flight equal to the core simulation.
+  - Acceptance 6: `npm run snap -- --do "pause,shot:start,call:throwBottle;50,step:20,shot:flight"`; I looked at both PNGs. The start shot shows the upright bottle in the hand. After 20 steps the bottle is turned about 100° and flying above the table's left end, completely on screen, with no text and no console errors.
+  - A throw after the held bottle has gone to sleep (planck sleeps a still kinematic body) works: unit test "throws just as hard after the held bottle has waited long enough to fall asleep" (600 steps held, then the same launch velocity as an immediate throw).
+- Status: F003 → needs_review
+- Issues / follow-ups:
+  - A scratch run (since deleted) with the starting numbers: an empty bottle (10%) turns about one full flip when thrown at power ~35 to 40 and a full one (90%) at ~65 to 70, a ratio of about 1.8, inside the design's 1.5 to 2×. The in-window flips land at x of about 5 to 6 m, left of the table's middle (6.4 m). The drift is only 12° from vertical (the acceptance caps it near 14°), so F009 may need a bigger spin or speed rather than a bigger angle to center the landings.
+  - Powers well above the window send an empty bottle far off screen: at power 100 the 10% bottle rises past y = −20 m. That is the over-power fail the design wants, but F009/F010 may want a gentler curve.
+  - Rotation grows with about the square of power (spin × flight time, both linear in power), which makes the window narrow in power. F009's target of a 12 to 28 point window may need a non-linear power to speed mapping. I left the mapping linear (D10).
+  - The bottle sleeps while held (a kinematic body at rest). Tests that compare snapshots before and after waiting must ignore the `awake` flag.
+  - A mid-session shell one-liner with a heredoc was denied automatically, so I used the Edit tool for those changes. Nothing was lost.
+- Next: F004 (judge the landing) adds the `result` phase after `flying`; extend `Phase` in `src/core/simulation.ts` and keep `throwBottle` limited to `aiming`. In my scratch runs the bottle was at rest (asleep) within 600 steps (10 s) of every throw I tried at powers 30 to 80, but I did not measure rest times closely, so check them against the 5 s timeout.

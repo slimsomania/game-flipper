@@ -25,6 +25,11 @@ export interface FlipperTestApi {
   step(frames?: number): SimSnapshot | null;
   /** Set the held bottle's water level, 0 to 1 (clamped), and return the new snapshot. */
   setWater(level: number): SimSnapshot | null;
+  /**
+   * Throw the held bottle with `power` (0 to 100, clamped) as if from the keyboard, and return the
+   * new snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
+   */
+  throwBottle(power: number): SimSnapshot | null;
   /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -75,6 +80,11 @@ export function installTestHooks(game: Phaser.Game): void {
     setWater: (level) => {
       if (!currentSim) return null;
       currentSim.setWater(level);
+      return currentSim.snapshot();
+    },
+    throwBottle: (power) => {
+      if (!currentSim) return null;
+      currentSim.throwBottle(power);
       return currentSim.snapshot();
     },
     startScene: (key, data) => {

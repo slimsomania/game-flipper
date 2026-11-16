@@ -2,6 +2,7 @@ import { Polygon, type Body, type Fixture, type World } from 'planck';
 import { BOTTLE_PARTS, waterVertices, type Point } from './bottleShape';
 import type { Rng } from './rng';
 import { TABLE_LEFT_X, TABLE_TOP_Y } from './table';
+import type { ThrowImpulse } from './throw';
 import type { Tuning } from './tuning';
 
 /*
@@ -33,6 +34,7 @@ export function drawWaterLevel(rng: Rng, tuning: Tuning): number {
 
 export class Bottle {
   readonly body: Body;
+  private shellFixtures: Fixture[] = [];
   private waterFixture: Fixture | null = null;
   private level = 0;
 
@@ -42,7 +44,7 @@ export class Bottle {
    */
   constructor(
     world: World,
-    private readonly tuning: Tuning,
+    private tuning: Tuning,
     water: number,
   ) {
     this.body = world.createBody({
@@ -50,20 +52,35 @@ export class Bottle {
       position: { x: HAND_X, y: HAND_Y },
       bullet: true,
     });
-    for (const part of BOTTLE_PARTS) {
+    this.buildShell();
+    this.setWater(water);
+  }
+
+  private buildShell(): void {
+    this.shellFixtures = BOTTLE_PARTS.map((part) =>
       this.body.createFixture({
         shape: new Polygon(toVec(part.vertices)),
-        density: tuning.shellDensity,
-        friction: tuning.bottleFriction,
-        restitution: tuning.bottleRestitution,
-      });
-    }
-    this.setWater(water);
+        density: this.tuning.shellDensity,
+        friction: this.tuning.bottleFriction,
+        restitution: this.tuning.bottleRestitution,
+      }),
+    );
   }
 
   /** Water level, the filled fraction of the body (0 to 1). */
   get water(): number {
     return this.level;
+  }
+
+  /**
+   * Rebuild the shell and the water with new tuning (density, friction, bounce). Only meant for
+   * the held bottle: the Simulation never calls it once the bottle is in flight.
+   */
+  applyTuning(tuning: Tuning): void {
+    this.tuning = tuning;
+    for (const fixture of this.shellFixtures) this.body.destroyFixture(fixture);
+    this.buildShell();
+    this.setWater(this.level);
   }
 
   /** Change the water level (clamped to 0..1), rebuilding the water's mass. */
@@ -85,5 +102,15 @@ export class Bottle {
   /** Let go of the bottle: it becomes a normal dynamic body that gravity moves. */
   release(): void {
     this.body.setType('dynamic');
+  }
+
+  /**
+   * Release the bottle and give it a throw: both impulses act at the center of mass, and the body
+   * divides them by its own mass and inertia. Call it once, on the held bottle.
+   */
+  launch(impulse: ThrowImpulse): void {
+    this.release(); // a kinematic body reports no mass, so it must be dynamic first
+    this.body.applyLinearImpulse(impulse.linear, this.body.getWorldCenter(), true);
+    this.body.applyAngularImpulse(impulse.angular, true);
   }
 }
