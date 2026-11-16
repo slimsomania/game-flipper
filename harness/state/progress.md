@@ -189,3 +189,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The snap tool's `call:` action takes only numbers, booleans and strings, so a snap can't call `placeBottle`. If a later feature needs it, give `call:` JSON arguments.
   - A heredoc-fed `python3 -` command was denied automatically, so I made the same edits with the Edit tool. Nothing was lost.
 - Next: F005 (result and next bottle): set `phase = 'result'` when `outcome` becomes non-null (check it after `judge.observe` in `Simulation.step`), count a throw and a success there, and start the 90-step delay from the step the outcome is set. Update the `phase` assertion in `tests/e2e/throw.spec.ts` and the `Phase` type and its comment in `simulation.ts`.
+
+> [harness] session 8 · builder F004 · todo → needs_review · ok · verify passed · 1 commit(s) · 85 tool calls · 9m 21s · ~$1.63 API-equivalent
