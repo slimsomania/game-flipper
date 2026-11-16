@@ -247,3 +247,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Notes for later:
   - Nothing on screen shows the score or result yet; that's expected, since F007 adds it.
   - F006 should ignore key-repeat so holding Space through a result doesn't skip and then throw right away (the builder noted this too).
+
+> [harness] session 11 · reviewer F005 · needs_review → done · ok · 1 commit(s) · 14 tool calls · 2m 1s · ~$0.51 API-equivalent
