@@ -290,3 +290,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Watch for the timeout in "Space while aiming throws with the bar value" (3 fast `keyboard.press('ArrowUp')` on a paused game). Phaser's duplicate-event bailout (same code + timeStamp + type) or a slow frame under load are the likely causes. If it recurs, wait with `settleInput` between presses.
   - Power is fractional after a hold (e.g. 63.4). The label rounds it, and the throw uses the exact value. That's fine, but F007's HUD should use the same rounding.
   - The power keys work in every phase, including while flying. That's intended and documented.
+
+> [harness] session 13 · reviewer F006 · needs_review → done · ok · 1 commit(s) · 33 tool calls · 32m 50s · ~$0.98 API-equivalent
