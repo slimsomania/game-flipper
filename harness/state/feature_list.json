@@ -138,7 +138,7 @@
         "F004"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Simulation (src/core/simulation.ts) now goes aiming -> flying -> result -> aiming: the step that sets the outcome starts 'result' and adds the success to score; 90 steps later (tuning.resultDelaySeconds) or on skip() the judged bottle is destroyed and a new one with the seed's next water level is held in the hand. The snapshot has score and throws (throws counts at release, so placeBottle counts too), and window.__FLIPPER__.skip() exists. Verified by tests/unit/result.test.ts (25 tests), tests/e2e/result.spec.ts (4) and snaps of a result and the next bottle (seed 2: 70% then 35% fill); older tests that read the thrown bottle long after the outcome now stop at the outcome (stepUntilOutcome helper) or use a long result delay.",
       "review_feedback": ""
     },

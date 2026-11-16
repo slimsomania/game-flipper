@@ -232,3 +232,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The 5 s timeout now sits right before a 1.5 s wait, so a slow throw can take over 6 s from release to the next bottle. The notes from F004 about the timeout versus slow settling still apply to F009/F010.
   - Heredoc and shell-loop commands (`python3 -`, a heredoc-written scratch `.ts`, a `for` loop with a variable) were denied automatically again; I used the Edit tool and single commands instead.
 - Next: F006 (power bar and Space): the scene calls `sim.skip()` for Space or a click during `result` and `sim.throwBottle(power, 'keyboard')` while `aiming`, and should ignore `repeat` keydowns so holding Space through a result can't throw the next bottle. `Simulation.phase` is the thing to switch on.
+
+> [harness] session 10 · builder F005 · todo → needs_review · ok · verify passed · 1 commit(s) · 102 tool calls · 10m 18s · ~$1.61 API-equivalent
