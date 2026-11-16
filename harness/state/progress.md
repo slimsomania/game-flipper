@@ -99,3 +99,18 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F003 (throw by power): call `Bottle.release()` on the held bottle, then apply the launch impulse and angular impulse at the center of mass. Divide by the dynamic body's `getMass()` and `getInertia()` (P2). The `Simulation` already keeps `bottle: Bottle` and its seeded `rng` for the next bottle (`drawWaterLevel(this.rng, this.tuning)`).
 
 > [harness] session 4 · builder F002 · todo → needs_review · ok · verify passed · 1 commit(s) · 81 tool calls · 7m 5s · ~$1.34 API-equivalent
+
+## Session 5 · reviewer · F002 Spawn a bottle with a random water level, held in the hand
+- Verdict: pass
+- Evidence: I read the full diff `73e5252a..HEAD`. `npm run verify` passed: format, typecheck, unit, build and 7 e2e.
+  - Criterion 1: `tests/unit/waterLevel.test.ts` checks 30 seeds × 100 draws stay in range and on a step, all 17 steps get reached, the same seed gives the same sequence and different seeds give different ones. The defaults (0.1, 0.9, 0.05) live in `src/core/tuning.ts`.
+  - Criterion 2: `tests/unit/bottle.test.ts` checks the mass strictly increases and the center of mass sits below the empty bottle's at all 17 levels. It also checks the analytic values against planck's `getMass()` and `getLocalCenter()`.
+  - Criterion 3: a 300-step test for seeds 1 to 3 checks x, y, angle and velocities are exactly unchanged, and that the hand is above the table and in its left quarter.
+  - Criterion 4: `tests/e2e/bottle.spec.ts` "setWater(0.9)…" passes.
+  - Criterion 5: I took my own snaps. At `setWater;0.1` the fill is a thin strip at the base; at `0.9` it fills most of the body. The bottle is translucent blue with a lighter cap, there is no text, and `bottleView.ts` draws only from `BOTTLE_PARTS` and `waterVertices`.
+  - Edge cases: `key:R` twice moved the seed to +2, then `setWater;1` and 300 steps kept the bottle at (2.8, 4.6) with the fill reaching the shoulder. At 1024×576, `setWater;0` drew an empty bottle, `setWater;-5` clamped to 0, and `0.45` drew a fill a little under half. There were no console errors.
+  - Test changes: the placeholder drop tests (unit and smoke e2e) were replaced, not weakened. This feature removes the drop on purpose, and the determinism test is unchanged.
+- Problems: none
+- Notes for later:
+  - The bottle is drawn about 66×174 px, which is small next to the table. Revisit this once the throw exists (F003) and a full flip is visible, as the builder also noted.
+  - A held (kinematic) bottle reports zero mass. F003 must call `release()` before reading `getMass()` and `getInertia()` for the impulse.

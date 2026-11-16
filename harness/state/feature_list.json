@@ -72,9 +72,9 @@
       "depends_on": [
         "F001"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built the bottle: src/core/bottleShape.ts (dimensions, four convex parts, water rectangle, analytic mass and center of mass), src/core/bottle.ts (planck body, setWater, release, HAND_X/HAND_Y, drawWaterLevel), src/core/tuning.ts (water range and step, densities, friction), src/game/view/bottleView.ts (drawn from the same shape constants), plus snapshot bottle.water and __FLIPPER__.setWater. The held bottle is a kinematic body at the hand (2.8 m, 4.6 m); F003 calls Bottle.release() to make it dynamic, and bottleMassProperties gives its mass before that. Verified with npm run verify (91 unit, 7 e2e), and snaps at setWater 0.1, 0.5 and 0.9 that I looked at. The old placeholder drop tests were rewritten because this feature removes the drop.",
+      "notes": "Built the bottle: src/core/bottleShape.ts (dimensions, four convex parts, water rectangle, analytic mass and center of mass), src/core/bottle.ts (planck body, setWater, release, HAND_X/HAND_Y, drawWaterLevel), src/core/tuning.ts (water range and step, densities, friction), src/game/view/bottleView.ts (drawn from the same shape constants), plus snapshot bottle.water and __FLIPPER__.setWater. The held bottle is a kinematic body at the hand (2.8 m, 4.6 m); F003 calls Bottle.release() to make it dynamic, and bottleMassProperties gives its mass before that. Verified with npm run verify (91 unit, 7 e2e), and snaps at setWater 0.1, 0.5 and 0.9 that I looked at. The old placeholder drop tests were rewritten because this feature removes the drop. Reviewed: npm run verify green (format, typecheck, unit, build, 7 e2e); waterLevel.test.ts and bottle.test.ts cover criteria 1-3; e2e bottle.spec.ts covers setWater(0.9); my snaps at setWater 0.1/0.9/1/0/0.45, after two R restarts and at 1024x576 show a translucent blue bottle, lighter cap and a fill that tracks the level, with no text and no console errors; bottleView draws only from the bottleShape exports.",
       "review_feedback": ""
     },
     {
