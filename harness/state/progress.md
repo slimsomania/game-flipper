@@ -144,3 +144,18 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F004 (judge the landing) adds the `result` phase after `flying`; extend `Phase` in `src/core/simulation.ts` and keep `throwBottle` limited to `aiming`. In my scratch runs the bottle was at rest (asleep) within 600 steps (10 s) of every throw I tried at powers 30 to 80, but I did not measure rest times closely, so check them against the 5 s timeout.
 
 > [harness] session 6 · builder F003 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 6m 54s · ~$1.21 API-equivalent
+
+## Session 7 · reviewer · F003 Throw the bottle with a power value
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, 119 unit tests (12 files), build, 11 e2e tests.
+  - Read the diff. The throw is in `src/core/throw.ts` and `simulation.ts`, and its numbers are in `tuning.ts`. The test hook only calls `Simulation.throwBottle`. The test diff only adds files (`throw.test.ts`, `throw.spec.ts`), so nothing was removed or weakened.
+  - Criteria 1 to 4: the unit tests check each one directly. They cover direction, drift below 0.25·|vy| and clockwise spin at 3×3 water/power pairs; strict monotonicity over 17 levels × 11 powers; clamping, NaN, the aiming-only guard and determinism over 300 steps; and that the override doubles speed and spin while setTuning mid-flight changes every field and the flight still matches the control.
+  - Criterion 5: in `throw.spec.ts`, the bottle peaks more than 1 m above the hand and ends on the table between its ends, nearly still, with lastThrow `{50, 0.5, keyboard}`.
+  - Criterion 6: snap `pause,call:throwBottle;50,step:20,shot:flight`. I looked at the PNG: the bottle is turned about 100° and is high above the table's left part.
+  - Edge cases at 1024×576 (seed 403169): `setWater;0.1` plus `throwBottle;100` sends the bottle off the top of the screen (vy −22.6 m/s). A `throwBottle;10` mid-flight was ignored (lastThrow stayed 100). `key:R` then `throwBottle;40` gave a fresh seed, phase flying, and a full bottle turned in the air. There were no console errors.
+- Problems: none
+- Notes for later:
+  - An empty bottle at high power goes far off screen (it reaches y < −6 m within 30 steps). The design accepts this as an over-power fail, but F009/F010 may want a gentler power curve, as the builder noted.
+  - The water is drawn fixed in the bottle's frame, so mid-flight it lies along the base, not under gravity. This is fine until sloshing (M6).
+  - The hook's `throwBottle` returns a snapshot even when the throw is refused. The e2e tests rely on this, but a later UI may want the boolean too.
