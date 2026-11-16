@@ -3,7 +3,7 @@ import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { BOTTLE_HEIGHT } from '../../src/core/bottleShape';
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
-import { gameState, openGame, stepFrames } from './helpers';
+import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
 
 test('the game starts in the aiming phase with no throw recorded', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
@@ -32,18 +32,18 @@ test('throwBottle(50) launches the bottle: it rises above its start, then comes 
   expect(thrown!.bottle.vx).toBeGreaterThan(0);
   expect(thrown!.bottle.omega).toBeGreaterThan(0);
 
-  // Step through the flight one frame at a time and track the highest point.
+  // Step through the first second of the flight one frame at a time and track the highest point.
   const apex = await page.evaluate(() => {
     let highest = Infinity;
-    for (let i = 0; i < 240; i++)
-      highest = Math.min(highest, window.__FLIPPER__!.step(1)!.bottle.y);
+    for (let i = 0; i < 60; i++) highest = Math.min(highest, window.__FLIPPER__!.step(1)!.bottle.y);
     return highest;
   });
   expect(apex).toBeLessThan(HAND_Y - 1); // it rose well above where it started
 
-  const landed = await stepFrames(page, 240);
-  expect(landed.phase).toBe('flying'); // the 'result' phase is a later feature (F005)
-  expect(landed.outcome).not.toBeNull(); // but the landing is judged (see outcome.spec.ts)
+  // Look at the landing in the step the outcome is decided: 90 steps later the bottle is replaced.
+  const landed = await stepUntilOutcome(page);
+  expect(landed.phase).toBe('result');
+  expect(landed.outcome).not.toBeNull(); // the landing is judged (see outcome.spec.ts)
   expect(landed.lastThrow?.power).toBe(50);
   expect(landed.bottle.angle).toBeGreaterThan(Math.PI / 2); // it turned over in the air
   // It is down on the table, between its ends, not below the top and not hanging in the air.

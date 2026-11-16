@@ -138,11 +138,13 @@ describe('Simulation.throwBottle', () => {
     const sim = thrown(0.5, 50);
     const start = sim.snapshot().bottle.y;
     let apex = start;
-    for (let i = 0; i < 300; i++) {
+    // Until the landing is judged: after the result delay the next bottle takes its place.
+    for (let i = 0; i < 300 && sim.snapshot().outcome === null; i++) {
       sim.step();
       apex = Math.min(apex, sim.snapshot().bottle.y);
     }
-    const { bottle } = sim.snapshot();
+    const { bottle, outcome } = sim.snapshot();
+    expect(outcome).not.toBeNull();
     expect(apex).toBeLessThan(start - 1);
     expect(bottle.y).toBeGreaterThan(start); // lower than the hand: it is on the table
   });
@@ -269,8 +271,9 @@ describe('Simulation.throwBottle', () => {
     it('gives different flights for different powers', () => {
       const a = thrown(0.5, 40);
       const b = thrown(0.5, 41);
-      run(a, 300);
-      run(b, 300);
+      // Mid-flight: later, both have been replaced by the same next bottle from the same seed.
+      run(a, 30);
+      run(b, 30);
       expect(a.snapshot().bottle).not.toEqual(b.snapshot().bottle);
     });
   });

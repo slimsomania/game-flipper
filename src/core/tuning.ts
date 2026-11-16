@@ -53,6 +53,8 @@ export interface Tuning {
   offTableDepth: number;
   /** A throw with no outcome this many seconds after release is a fail. */
   timeoutSeconds: number;
+  /** Seconds the result stays up after the outcome, before the next bottle appears. */
+  resultDelaySeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -83,6 +85,8 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // A fail is decided sooner than a success, so a lost bottle doesn't make the player wait.
   failRestSeconds: 0.5,
   offTableDepth: 0.1,
+  // Design section 2: the next bottle appears about 1.5 s after the result.
+  resultDelaySeconds: 1.5,
 };
 
 /** The defaults with `overrides` applied on top. */

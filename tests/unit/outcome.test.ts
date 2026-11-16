@@ -535,7 +535,9 @@ describe('judging a landing in the simulation', () => {
   });
 
   it('never changes an outcome once it is set', () => {
-    const sim = placed(UPRIGHT);
+    // A long result delay keeps this bottle on the table (the result phase) for the whole test.
+    const stay = { resultDelaySeconds: 100 };
+    const sim = placed(UPRIGHT, { tuning: stay });
     runToOutcome(sim);
     const first = sim.snapshot().outcome;
     expect(first?.reason).toBe('upright');
@@ -544,7 +546,7 @@ describe('judging a landing in the simulation', () => {
 
     const timed = placed(
       { x: TABLE_CENTER_X, y: 0, angle: 0 },
-      { tuning: { timeoutSeconds: 0.5 } },
+      { tuning: { timeoutSeconds: 0.5, ...stay } },
     );
     const timeout = run(timed, 30).outcome;
     expect(timeout?.reason).toBe('timeout');

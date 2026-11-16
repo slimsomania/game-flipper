@@ -1,4 +1,4 @@
-import { WORLD_HEIGHT_M, WORLD_WIDTH_M, SIM_HZ } from './constants';
+import { WORLD_HEIGHT_M, WORLD_WIDTH_M, stepsFor } from './constants';
 import { BOTTLE_PARTS } from './bottleShape';
 import { TABLE_TOP_Y } from './table';
 import type { Tuning } from './tuning';
@@ -75,8 +75,6 @@ export function bottleExtent(x: number, y: number, angle: number): Extent {
   }
   return extent;
 }
-
-const stepsFor = (seconds: number): number => Math.max(1, Math.round(seconds * SIM_HZ));
 
 /**
  * Judges one throw. Create it at the moment of release with the bottle's angle, then call

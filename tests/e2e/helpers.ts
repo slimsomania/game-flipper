@@ -23,6 +23,23 @@ export async function gameState(page: Page): Promise<SimSnapshot> {
   return state;
 }
 
+/**
+ * Freeze the real-time clock and step one frame at a time until the throw's outcome is decided (at
+ * most `limit` frames). Returns the snapshot of that very step, with the phase `result`: the
+ * thrown bottle is replaced 90 steps later, so tests that look at where it landed stop here.
+ */
+export async function stepUntilOutcome(page: Page, limit = 400): Promise<SimSnapshot> {
+  const state = await page.evaluate((max) => {
+    const hooks = window.__FLIPPER__!;
+    hooks.pause();
+    let snapshot = hooks.state();
+    for (let i = 0; i < max && snapshot && snapshot.outcome === null; i++) snapshot = hooks.step(1);
+    return snapshot;
+  }, limit);
+  if (!state) throw new Error('No simulation is running (is the Game scene active?)');
+  return state;
+}
+
 /** Freeze the real-time clock and advance the simulation by exactly `frames` fixed steps. */
 export async function stepFrames(page: Page, frames: number): Promise<SimSnapshot> {
   const state = await page.evaluate((n) => {

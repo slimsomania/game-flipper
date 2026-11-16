@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { BOTTLE_BODY_WIDTH } from '../../src/core/bottleShape';
 import { TABLE_CENTER_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
-import { gameState, openGame, stepFrames } from './helpers';
+import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
 
 const HALF_WIDTH = BOTTLE_BODY_WIDTH / 2;
 
-test('a bottle placed upright just above the table is judged a success after 150 frames', async ({
+test('a bottle placed upright just above the table is judged a success once it stood still for a second', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -22,9 +22,13 @@ test('a bottle placed upright just above the table is judged a success after 150
   // Not decided while it is still settling...
   const early = await stepFrames(page, 30);
   expect(early.outcome).toBeNull();
-  // ...and judged once it has stood still for a second.
-  const done = await stepFrames(page, 120);
+  // ...and judged once it has stood still for a second (60 steps), within 150 frames of the start.
+  const done = await stepUntilOutcome(page, 120);
+  expect(done.tick - placed!.tick).toBeGreaterThan(60);
+  expect(done.tick - placed!.tick).toBeLessThanOrEqual(150);
+  expect(done.phase).toBe('result');
   expect(done.outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 0 });
+  expect(done.score).toBe(1);
   expect(errors).toEqual([]);
 });
 
@@ -37,7 +41,7 @@ test('a bottle placed on its side is judged a fail', async ({ page }) => {
     [TABLE_CENTER_X, TABLE_TOP_Y - HALF_WIDTH - 0.05],
   );
   expect(side?.outcome).toBeNull();
-  const done = await stepFrames(page, 150);
+  const done = await stepUntilOutcome(page);
   expect(done.outcome).toMatchObject({ result: 'fail', reason: 'side' });
   expect(errors).toEqual([]);
 });
@@ -51,7 +55,7 @@ test('a bottle placed beyond the end of the table falls off, and one thrown side
     ([x, y]) => window.__FLIPPER__!.placeBottle({ x, y, angle: 0 }),
     [TABLE_RIGHT_X + 0.6, TABLE_TOP_Y - 0.5],
   );
-  expect((await stepFrames(page, 150)).outcome).toMatchObject({
+  expect((await stepUntilOutcome(page)).outcome).toMatchObject({
     result: 'fail',
     reason: 'offTable',
   });
@@ -61,14 +65,14 @@ test('a bottle placed beyond the end of the table falls off, and one thrown side
   await page.waitForFunction(() => window.__FLIPPER__!.state()?.phase === 'aiming');
   await page.evaluate(() => window.__FLIPPER__!.pause());
   await page.evaluate(() => window.__FLIPPER__!.placeBottle({ x: 8, y: 2, angle: 0, vx: 40 }));
-  expect((await stepFrames(page, 60)).outcome).toMatchObject({
+  expect((await stepUntilOutcome(page)).outcome).toMatchObject({
     result: 'fail',
     reason: 'offScreen',
   });
   expect(errors).toEqual([]);
 });
 
-test('every throw gets an outcome within the timeout, which never changes afterwards', async ({
+test('every throw gets an outcome within the timeout, which stays the same through the result', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -77,12 +81,14 @@ test('every throw gets an outcome within the timeout, which never changes afterw
     window.__FLIPPER__!.throwBottle(50);
   });
   // 5 s after release is 300 steps.
-  const first = await stepFrames(page, 300);
+  const first = await stepUntilOutcome(page, 300);
   expect(first.outcome).not.toBeNull();
   expect(Number.isInteger(first.outcome!.turns)).toBe(true);
   expect(first.outcome!.rotation).toBeGreaterThan(0); // thrown with a clockwise spin
 
-  const later = await stepFrames(page, 300);
+  // Still the same 89 steps later, when the result is about to give way to the next bottle.
+  const later = await stepFrames(page, 89);
+  expect(later.phase).toBe('result');
   expect(later.outcome).toEqual(first.outcome);
   expect(errors).toEqual([]);
 });

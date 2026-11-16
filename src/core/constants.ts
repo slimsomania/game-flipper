@@ -21,5 +21,8 @@ export const WORLD_HEIGHT_M = GAME_HEIGHT / PIXELS_PER_METER;
 export const SIM_HZ = 60;
 export const SIM_DT = 1 / SIM_HZ;
 
+/** Whole fixed steps in `seconds` (at least 1), for delays, holds and timeouts that count steps. */
+export const stepsFor = (seconds: number): number => Math.max(1, Math.round(seconds * SIM_HZ));
+
 /** Gravity in m/s², pointing down the screen. */
 export const GRAVITY = 10;

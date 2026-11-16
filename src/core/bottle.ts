@@ -57,7 +57,7 @@ export class Bottle {
    * body). A throw makes it dynamic with `release()`.
    */
   constructor(
-    world: World,
+    private readonly world: World,
     private tuning: Tuning,
     water: number,
   ) {
@@ -111,6 +111,11 @@ export class Bottle {
       isSensor: true,
       filterMaskBits: 0,
     });
+  }
+
+  /** Remove the bottle from the world, for good. The Simulation does this when the next one comes. */
+  destroy(): void {
+    this.world.destroyBody(this.body);
   }
 
   /** Let go of the bottle: it becomes a normal dynamic body that gravity moves. */

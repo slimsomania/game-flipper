@@ -1,6 +1,6 @@
 import { World, type Body } from 'planck';
 import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
-import { GRAVITY, SIM_DT } from './constants';
+import { GRAVITY, SIM_DT, stepsFor } from './constants';
 import { LandingJudge, type LandingSample, type Outcome } from './outcome';
 import { createRng, type Rng } from './rng';
 import { createTable } from './table';
@@ -31,11 +31,12 @@ export interface BottleSnapshot extends BodySnapshot {
 }
 
 /**
- * Where the current throw is: `aiming` while the bottle waits in the hand, `flying` once it has
- * been thrown (the landing is judged during this phase, and `outcome` is set when it is decided).
- * The result screens add later phases.
+ * Where the current throw is: `aiming` while a bottle waits in the hand, `flying` once it has been
+ * thrown (the landing is judged during this phase), and `result` from the step its `outcome` is
+ * decided until the next bottle appears (after the result delay, or at once on `skip()`), which
+ * returns the phase to `aiming`. Later features add the end-of-round phase.
  */
-export type Phase = 'aiming' | 'flying';
+export type Phase = 'aiming' | 'flying' | 'result';
 
 /** The throw that launched the current bottle. */
 export interface LastThrow {
@@ -54,8 +55,18 @@ export interface SimSnapshot {
   bottle: BottleSnapshot;
   /** Null until the first throw. A bottle placed with `placeBottle` doesn't set it. */
   lastThrow: LastThrow | null;
-  /** How the current throw ended: null until it is decided, then fixed for that throw. */
+  /**
+   * How the current throw ended: null until it is decided, then fixed for that throw and kept
+   * through the `result` phase. The next bottle starts with null again.
+   */
   outcome: Outcome | null;
+  /** Successful throws so far. A fail adds nothing. */
+  score: number;
+  /**
+   * Throws made so far, counted when the bottle is released: by `throwBottle` or `placeBottle`,
+   * so a throw still in the air is already counted (and not yet in `score`).
+   */
+  throws: number;
 }
 
 export interface SimulationOptions {
@@ -71,11 +82,15 @@ export class Simulation {
   private readonly world: World;
   private readonly rng: Rng;
   private readonly table: Body;
-  private readonly bottle: Bottle;
+  private bottle: Bottle;
   private judge: LandingJudge | null = null;
   private result: Outcome | null = null;
   private currentPhase: Phase = 'aiming';
   private thrown: LastThrow | null = null;
+  private points = 0;
+  private throwCount = 0;
+  /** Steps since the outcome was decided, counted during `result`. */
+  private resultSteps = 0;
   private ticks = 0;
 
   constructor(options: SimulationOptions = {}) {
@@ -124,11 +139,43 @@ export class Simulation {
   throwBottle(power: number, source: ThrowSource = 'keyboard'): boolean {
     if (this.currentPhase !== 'aiming' || Number.isNaN(power)) return false;
     const used = clampPower(power);
-    this.judge = new LandingJudge(this.currentTuning, this.bottle.body.getAngle());
+    this.startFlight(this.bottle.body.getAngle());
     this.bottle.launch(throwImpulse(used, this.currentTuning));
     this.thrown = { power: used, water: this.bottle.water, source };
-    this.currentPhase = 'flying';
     return true;
+  }
+
+  /** Begin judging a throw from `angle` and count it. Call it just before releasing the bottle. */
+  private startFlight(angle: number): void {
+    this.judge = new LandingJudge(this.currentTuning, angle);
+    this.throwCount++;
+    this.currentPhase = 'flying';
+  }
+
+  /**
+   * End the result wait at once: the next bottle appears now. Does nothing, and returns false,
+   * unless the phase is `result`.
+   */
+  skip(): boolean {
+    if (this.currentPhase !== 'result') return false;
+    this.nextBottle();
+    return true;
+  }
+
+  /**
+   * Replace the bottle that has been judged with a fresh one in the hand: upright, still, with
+   * the next water level from the seeded random numbers. Back to `aiming` with no outcome.
+   */
+  private nextBottle(): void {
+    this.bottle.destroy();
+    this.bottle = new Bottle(
+      this.world,
+      this.currentTuning,
+      drawWaterLevel(this.rng, this.currentTuning),
+    );
+    this.judge = null;
+    this.result = null;
+    this.currentPhase = 'aiming';
   }
 
   /**
@@ -140,17 +187,32 @@ export class Simulation {
   placeBottle(pose: BottlePose): boolean {
     const numbers = [pose.x, pose.y, pose.angle, pose.vx ?? 0, pose.vy ?? 0, pose.omega ?? 0];
     if (this.currentPhase !== 'aiming' || !numbers.every(Number.isFinite)) return false;
-    this.judge = new LandingJudge(this.currentTuning, pose.angle);
+    this.startFlight(pose.angle);
     this.bottle.place(pose);
-    this.currentPhase = 'flying';
     return true;
   }
 
-  /** Advance the simulation by exactly one fixed step of SIM_DT seconds. */
+  /**
+   * Advance the simulation by exactly one fixed step of SIM_DT seconds. While `flying` the judge
+   * watches the bottle; the step that decides the outcome starts the `result` phase (and scores),
+   * and the result delay counts from there. The bottle keeps moving during `result`.
+   */
   step(): void {
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
-    if (this.judge && !this.result) this.result = this.judge.observe(this.landingSample());
+    if (this.currentPhase === 'flying' && this.judge) {
+      this.result = this.judge.observe(this.landingSample());
+      if (this.result) this.showResult(this.result);
+    } else if (this.currentPhase === 'result') {
+      this.resultSteps++;
+      if (this.resultSteps >= stepsFor(this.currentTuning.resultDelaySeconds)) this.nextBottle();
+    }
+  }
+
+  private showResult(outcome: Outcome): void {
+    if (outcome.result === 'success') this.points++;
+    this.resultSteps = 0;
+    this.currentPhase = 'result';
   }
 
   /** What the judge sees: the bottle's pose and speeds, and whether it rests on the table. */
@@ -185,6 +247,8 @@ export class Simulation {
       bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
+      score: this.points,
+      throws: this.throwCount,
     };
   }
 }

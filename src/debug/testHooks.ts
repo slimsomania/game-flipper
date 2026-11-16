@@ -37,6 +37,11 @@ export interface FlipperTestApi {
    * snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
    */
   placeBottle(pose: BottlePose): SimSnapshot | null;
+  /**
+   * End the wait after a result at once, so the next bottle appears, and return the new snapshot.
+   * Does nothing unless the phase is "result". Null when no game is running.
+   */
+  skip(): SimSnapshot | null;
   /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -97,6 +102,11 @@ export function installTestHooks(game: Phaser.Game): void {
     placeBottle: (pose) => {
       if (!currentSim) return null;
       currentSim.placeBottle(pose);
+      return currentSim.snapshot();
+    },
+    skip: () => {
+      if (!currentSim) return null;
+      currentSim.skip();
       return currentSim.snapshot();
     },
     startScene: (key, data) => {
