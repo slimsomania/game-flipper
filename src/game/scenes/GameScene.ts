@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, PIXELS_PER_METER, SIM_DT } from '../../core/constants';
+import { PIXELS_PER_METER, SIM_DT } from '../../core/constants';
 import { createFixedStepper } from '../../core/fixedStep';
-import { Simulation, TABLE_Y } from '../../core/simulation';
-import { registerSimulation, testControls } from '../../debug/testHooks';
-import { COLORS, FONT_FAMILY } from '../theme';
+import { Simulation } from '../../core/simulation';
+import { markReady, registerSimulation, testControls } from '../../debug/testHooks';
 import { intParam } from '../urlParams';
+import { createTableView } from '../view/tableView';
 
 interface GameSceneData {
   seed?: number;
@@ -31,37 +31,13 @@ export class GameScene extends Phaser.Scene {
     registerSimulation(this.sim);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => registerSimulation(null));
 
-    const tableTop = TABLE_Y * PIXELS_PER_METER;
-    const tableHeight = GAME_HEIGHT - tableTop;
-    this.add.rectangle(
-      GAME_WIDTH / 2,
-      tableTop + tableHeight / 2,
-      GAME_WIDTH,
-      tableHeight,
-      COLORS.table,
-    );
-    this.add.rectangle(GAME_WIDTH / 2, tableTop + 6, GAME_WIDTH, 12, COLORS.tableEdge);
+    createTableView(this);
     this.bottle = this.add.image(0, 0, 'bottle');
 
-    this.add
-      .text(GAME_WIDTH / 2, 60, 'Placeholder scene: gameplay not built yet', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '28px',
-        color: COLORS.accent,
-      })
-      .setOrigin(0.5);
-    this.add
-      .text(GAME_WIDTH / 2, 100, `seed ${seed} · R restart · Esc menu`, {
-        fontFamily: FONT_FAMILY,
-        fontSize: '24px',
-        color: COLORS.muted,
-      })
-      .setOrigin(0.5);
-
     this.input.keyboard?.on('keydown-R', () => this.scene.restart({ seed: seed + 1 }));
-    this.input.keyboard?.on('keydown-ESC', () => this.scene.start('Menu'));
 
     this.draw();
+    markReady();
   }
 
   update(_time: number, delta: number): void {

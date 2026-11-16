@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  BOTTLE_HALF_HEIGHT,
-  BOTTLE_HALF_WIDTH,
-  Simulation,
-  TABLE_Y,
-} from '../../src/core/simulation';
+import { BOTTLE_HALF_HEIGHT, BOTTLE_HALF_WIDTH, Simulation } from '../../src/core/simulation';
+import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
 
 function run(sim: Simulation, steps: number): void {
   for (let i = 0; i < steps; i++) sim.step();
@@ -35,8 +31,11 @@ describe('Simulation (placeholder)', () => {
     expect(end.bottle.y).toBeGreaterThan(start.y);
     // Resting on one of its faces: the center sits between half its width
     // and half its height above the table top.
-    expect(end.bottle.y).toBeLessThanOrEqual(TABLE_Y - BOTTLE_HALF_WIDTH + 0.05);
-    expect(end.bottle.y).toBeGreaterThanOrEqual(TABLE_Y - BOTTLE_HALF_HEIGHT - 0.05);
+    expect(end.bottle.y).toBeLessThanOrEqual(TABLE_TOP_Y - BOTTLE_HALF_WIDTH + 0.05);
+    expect(end.bottle.y).toBeGreaterThanOrEqual(TABLE_TOP_Y - BOTTLE_HALF_HEIGHT - 0.05);
+    // ...and it stays on the table, between its ends.
+    expect(end.bottle.x).toBeGreaterThan(TABLE_LEFT_X);
+    expect(end.bottle.x).toBeLessThan(TABLE_RIGHT_X);
     expect(Math.hypot(end.bottle.vx, end.bottle.vy)).toBeLessThan(0.01);
     expect(Math.abs(end.bottle.omega)).toBeLessThan(0.01);
   });

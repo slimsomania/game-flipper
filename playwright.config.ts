@@ -15,8 +15,8 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL: `http://localhost:${PORT}`,
-    // Portrait, phone-like viewport; the game scales its 720×1280 canvas to fit.
-    viewport: { width: 450, height: 800 },
+    // Desktop landscape viewport, the same size as the game's 1280×720 logical canvas.
+    viewport: { width: 1280, height: 720 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

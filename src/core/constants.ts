@@ -6,9 +6,9 @@
  * position by PIXELS_PER_METER.
  */
 
-/** Logical canvas size in pixels (portrait). Phaser scales it to fit the browser. */
-export const GAME_WIDTH = 720;
-export const GAME_HEIGHT = 1280;
+/** Logical canvas size in pixels (landscape, for desktop). Phaser scales it to fit the browser. */
+export const GAME_WIDTH = 1280;
+export const GAME_HEIGHT = 720;
 
 /** 1 m in the simulation is 100 px on the logical canvas. */
 export const PIXELS_PER_METER = 100;

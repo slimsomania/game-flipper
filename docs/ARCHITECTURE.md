@@ -30,7 +30,8 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | Position | meters; origin at the top-left; x to the right, y down |
 | Angle | radians; positive is clockwise (same as Phaser's rotation); 0 is upright |
 | Time | seconds; fixed step `SIM_DT` = 1/60 s |
-| Screen | 720×1280 px logical canvas (portrait), scaled with `Scale.FIT`; 1 m = 100 px |
+| Screen | 1280×720 px logical canvas (landscape, for desktop browsers), scaled with `Scale.FIT`; 1 m = 100 px, so the visible world is 12.8 m × 7.2 m |
+| Table | top surface `TABLE_TOP_Y` = 5.6 m (78% of the way down); ends `TABLE_LEFT_X` = 1.6 m and `TABLE_RIGHT_X` = 11.2 m, so 1.6 m of screen on each side; all in `src/core/table.ts` |
 
 ## Directory map
 
@@ -39,12 +40,14 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | `src/core/constants.ts` | Canvas size, units, fixed step, gravity |
 | `src/core/rng.ts` | Seeded random numbers (the only randomness allowed in core) |
 | `src/core/fixedStep.ts` | Fixed-timestep accumulator |
-| `src/core/simulation.ts` | The simulation. Currently a placeholder: a bottle dropped onto a table |
+| `src/core/table.ts` | The table: exported top and end constants, and `createTable(world)`, which adds it as a static body |
+| `src/core/simulation.ts` | The simulation. Currently a placeholder: a bottle dropped onto the table |
 | `src/game/config.ts` | Phaser game config and scene list |
-| `src/game/scenes/` | `BootScene` (generates placeholder textures), `MenuScene`, `GameScene` |
+| `src/game/scenes/` | `BootScene` (generates placeholder textures, then starts the game), `GameScene` |
+| `src/game/view/` | Drawing helpers for scene parts, e.g. `tableView.ts` (the table, from the core constants) |
 | `src/game/theme.ts` | Fonts and colors |
 | `src/debug/testHooks.ts` | `window.__FLIPPER__` |
-| `scripts/snap.ts` | Headless screenshot tool (`npm run snap`) |
+| `scripts/snap.ts` | Headless screenshot tool (`npm run snap`); `scripts/snapActions.ts` parses its `--do` actions |
 | `scripts/canonical-cwd.mjs` | Runs Vitest from the canonical path (Windows drive-letter workaround) |
 | `tests/` | `unit/` (Vitest), `e2e/` (Playwright), `harness/` (harness logic) |
 
@@ -68,19 +71,20 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 | D2 | planck.js (Box2D) for physics instead of Phaser's bundled Matter.js | Stable resting contacts and sleep detection (needed to judge a landing), continuous collision for a fast-spinning bottle, joints if the water gets simulated, and it runs headless in Node for unit tests. |
 | D3 | All rules in a deterministic, fixed-step `src/core` | Tests can reproduce any situation exactly (seed plus inputs), and agents can verify gameplay without a browser. |
 | D4 | `window.__FLIPPER__` test hooks | A canvas can't be inspected through the DOM; the hooks give tests exact state and frame-by-frame control. |
-| D5 | Portrait 720×1280 logical canvas | Mobile first: a toss is a vertical motion. Desktop shows it letterboxed. |
+| D5 | Landscape 1280×720 logical canvas | The game targets desktop browsers, which are landscape; the table is wide and a toss stays comfortably on screen. `Scale.FIT` letterboxes other window shapes. The design allows changing the orientation later: only `GAME_WIDTH`/`GAME_HEIGHT` and the table constants would move. |
 | D6 | Placeholder art drawn in code | No asset pipeline until the art direction is decided. |
 
 ## Plan
 
-Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F029, milestones M1–M7); this section is the intended shape. F001 switches the canvas to landscape 1280×720 and updates the coordinates table and D5 above.
+Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F029, milestones M1–M7); this section is the intended shape. F001 switched the canvas to landscape 1280×720 and updated the coordinates table and D5 above.
 
 ### Expected modules
 
 | Path | Responsibility | Features |
 | --- | --- | --- |
 | `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number | F002 on |
-| `src/core/bottle.ts` | bottle and table shapes; mass, center of mass and inertia per water level | F001, F002 |
+| `src/core/table.ts` | the table: static body, top surface and end constants (built in F001) | F001 |
+| `src/core/bottle.ts` | bottle shape; mass, center of mass and inertia per water level | F002 |
 | `src/core/throw.ts` | power (0–100) and water → launch impulse and spin | F003 |
 | `src/core/outcome.ts` | judging rest: upright, side, cap, off table, off screen, timeout | F004 |
 | `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |
@@ -88,7 +92,7 @@ Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/fe
 | `src/core/round.ts` | round counters, streak, `updateBest` | F013, F015 |
 | `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, simulated-player benchmark | F008, F020 |
 | `src/core/replay.ts` | per-step recording and the landing clip | F026 |
-| `src/game/scenes/` | Boot → Game in M1; Summary, Title and the Pause overlay later | F001, F014, F018, F019 |
+| `src/game/scenes/` | Boot → Game in M1 (the placeholder Menu is gone); Summary, Title and the Pause overlay later | F001, F014, F018, F019 |
 | `src/game/view/` | bottle, table, power bar, HUD, result flash, effects | F002–F007, F021 |
 | `src/game/audio/sfx.ts`, `src/game/storage.ts` | Web Audio effects; versioned localStorage save (best score, mute) | F015–F017 |
 | `src/debug/testHooks.ts`, `tuningPanel.ts` | `window.__FLIPPER__`; the developer tuning panel (dev or `?debug`) | all, F010 |

@@ -11,14 +11,15 @@ import { parseArgs } from 'node:util';
 import { chromium, type Page } from '@playwright/test';
 import { createServer } from 'vite';
 import { GAME_HEIGHT, GAME_WIDTH } from '../src/core/constants';
+import { parseAction, type Action } from './snapActions';
 
 const USAGE = `Usage: npm run snap -- [options]
 
 Options:
   --do "<actions>"   Comma-separated actions, run in order (see below).
   --url <path>       Page to open, e.g. "/?seed=7". Default "/".
-  --width <px>       Viewport width. Default 450.
-  --height <px>      Viewport height. Default 800.
+  --width <px>       Viewport width. Default ${GAME_WIDTH}.
+  --height <px>      Viewport height. Default ${GAME_HEIGHT}.
   --out <dir>        Output folder (emptied first). Default harness/artifacts/snap.
 
 Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} logical canvas):
@@ -30,24 +31,18 @@ Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} lo
   scene:<Key>                       jump to a scene (window.__FLIPPER__.startScene)
   pause / resume                    freeze / unfreeze the real-time simulation clock
   step:<frames>                     advance the simulation by exactly <frames> fixed steps
+  call:<method>;<arg>;...           call window.__FLIPPER__.<method>(args); each arg is a number,
+                                    true/false, or else a plain string (no "," or ";" inside).
+                                    The return value goes into the report's "calls" list.
+                                    e.g. call:step;120  call:startScene;Game
   shot:<name>                       save a screenshot
   state:<name>                      save window.__FLIPPER__.state() into the report
 
 Examples:
   npm run snap
   npm run snap -- --do "key:Space,wait:800,shot:game"
-  npm run snap -- --url "/?seed=7" --do "scene:Game,pause,step:120,shot:after-2s"
-  npm run snap -- --width 390 --height 844 --do "click:360;1000,wait:500,shot:tapped"`;
-
-type Action =
-  | { kind: 'wait'; ms: number }
-  | { kind: 'key' | 'down' | 'up'; key: string }
-  | { kind: 'click'; x: number; y: number }
-  | { kind: 'drag'; x1: number; y1: number; x2: number; y2: number; ms: number }
-  | { kind: 'scene'; key: string }
-  | { kind: 'pause' | 'resume' }
-  | { kind: 'step'; frames: number }
-  | { kind: 'shot' | 'state'; name: string };
+  npm run snap -- --url "/?seed=7" --do "pause,call:step;120,shot:after-2s"
+  npm run snap -- --width 1000 --height 800 --do "click:640;360,wait:500,shot:clicked"`;
 
 interface Report {
   url: string;
@@ -55,56 +50,12 @@ interface Report {
   actions: string;
   shots: string[];
   states: Record<string, unknown>;
+  /** Return values of the `call:` actions, in order. */
+  calls: { call: string; result: unknown }[];
   errors: string[];
   activeScenes: string[];
   finalState: unknown;
   info: unknown;
-}
-
-function parseAction(token: string): Action {
-  const colon = token.indexOf(':');
-  const kind = colon === -1 ? token : token.slice(0, colon);
-  const arg = colon === -1 ? '' : token.slice(colon + 1);
-  const numbers = (count: number): number[] => {
-    const parts = arg.split(';').map((p) => Number(p.trim()));
-    if (parts.length !== count || parts.some((p) => !Number.isFinite(p))) {
-      throw new Error(`"${token}": expected ${count} number(s) separated by ";"`);
-    }
-    return parts;
-  };
-  const text = (): string => {
-    if (!arg) throw new Error(`"${token}": missing value after ":"`);
-    return arg;
-  };
-
-  switch (kind) {
-    case 'wait':
-      return { kind, ms: numbers(1)[0] };
-    case 'key':
-    case 'down':
-    case 'up':
-      return { kind, key: text() };
-    case 'click': {
-      const [x, y] = numbers(2);
-      return { kind, x, y };
-    }
-    case 'drag': {
-      const [x1, y1, x2, y2, ms] = numbers(5);
-      return { kind, x1, y1, x2, y2, ms };
-    }
-    case 'scene':
-      return { kind, key: text() };
-    case 'pause':
-    case 'resume':
-      return { kind };
-    case 'step':
-      return { kind, frames: numbers(1)[0] };
-    case 'shot':
-    case 'state':
-      return { kind, name: text() };
-    default:
-      throw new Error(`Unknown action "${token}". Run "npm run snap -- --help" for the list.`);
-  }
 }
 
 /** Convert game coordinates to page coordinates, wherever the scaled canvas sits. */
@@ -172,6 +123,24 @@ async function perform(
       await page.evaluate((n) => window.__FLIPPER__!.step(n), action.frames);
       await page.waitForTimeout(50); // let the next frame draw the new state
       break;
+    case 'call': {
+      const result = await page.evaluate(
+        ({ method, args }) => {
+          const api = window.__FLIPPER__ as unknown as Record<string, unknown> | undefined;
+          const fn = api?.[method];
+          if (typeof fn !== 'function')
+            throw new Error(`window.__FLIPPER__.${method} is not a function`);
+          return (fn as (...a: unknown[]) => unknown).apply(api, args) ?? null;
+        },
+        { method: action.method, args: action.args },
+      );
+      report.calls.push({
+        call: `${action.method}(${action.args.map(String).join(', ')})`,
+        result,
+      });
+      await page.waitForTimeout(50); // let the next frame draw the new state
+      break;
+    }
     case 'shot':
       await shot(action.name);
       break;
@@ -186,8 +155,8 @@ async function main(): Promise<number> {
     options: {
       do: { type: 'string', default: '' },
       url: { type: 'string', default: '/' },
-      width: { type: 'string', default: '450' },
-      height: { type: 'string', default: '800' },
+      width: { type: 'string', default: String(GAME_WIDTH) },
+      height: { type: 'string', default: String(GAME_HEIGHT) },
       out: { type: 'string', default: 'harness/artifacts/snap' },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -213,6 +182,7 @@ async function main(): Promise<number> {
     actions: values.do,
     shots: [],
     states: {},
+    calls: [],
     errors: [],
     activeScenes: [],
     finalState: null,

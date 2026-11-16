@@ -1,6 +1,7 @@
-import { Box, Edge, World, type Body } from 'planck';
-import { GRAVITY, SIM_DT, WORLD_WIDTH_M } from './constants';
+import { Box, World, type Body } from 'planck';
+import { GRAVITY, SIM_DT } from './constants';
 import { createRng } from './rng';
+import { TABLE_CENTER_X, createTable } from './table';
 
 /*
  * PLACEHOLDER SIMULATION
@@ -9,8 +10,6 @@ import { createRng } from './rng';
  * real game as features land.
  */
 
-/** Top surface of the table, in meters from the top of the screen. */
-export const TABLE_Y = 11;
 /** Placeholder bottle size as half extents, in meters. */
 export const BOTTLE_HALF_WIDTH = 0.35;
 export const BOTTLE_HALF_HEIGHT = 1;
@@ -55,15 +54,11 @@ export class Simulation {
     const rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
-    const table = this.world.createBody({ type: 'static' });
-    table.createFixture({
-      shape: new Edge({ x: -WORLD_WIDTH_M, y: TABLE_Y }, { x: 2 * WORLD_WIDTH_M, y: TABLE_Y }),
-      friction: 0.8,
-    });
+    createTable(this.world);
 
     this.bottle = this.world.createBody({
       type: 'dynamic',
-      position: { x: WORLD_WIDTH_M / 2, y: 5 },
+      position: { x: TABLE_CENTER_X, y: 2 },
       angle: rng.range(-0.5, 0.5),
       angularVelocity: rng.range(-2, 2),
       bullet: true,

@@ -13,7 +13,7 @@ import type { SimSnapshot, Simulation } from '../core/simulation';
 export interface FlipperTestApi {
   /** True once the first interactive scene is up and accepts input. */
   ready: boolean;
-  /** Keys of the scenes that are running, e.g. ["Menu"] or ["Game"]. */
+  /** Keys of the scenes that are running, e.g. ["Game"]. */
   activeScenes(): string[];
   /** Snapshot of the running simulation, or null when no game scene is running. */
   state(): SimSnapshot | null;

@@ -3,7 +3,7 @@ import { PIXELS_PER_METER } from '../../core/constants';
 import { BOTTLE_HALF_HEIGHT, BOTTLE_HALF_WIDTH } from '../../core/simulation';
 import { COLORS } from '../theme';
 
-/** Creates placeholder textures in code (there are no image files yet), then opens the menu. */
+/** Creates placeholder textures in code (there are no image files yet), then starts the game. */
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
@@ -11,7 +11,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     this.createBottleTexture();
-    this.scene.start('Menu');
+    this.scene.start('Game');
   }
 
   /** A bottle the same size as the physics body, with a red cap so its orientation is obvious. */
