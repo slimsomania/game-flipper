@@ -137,9 +137,9 @@
       "depends_on": [
         "F004"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Simulation (src/core/simulation.ts) now goes aiming -> flying -> result -> aiming: the step that sets the outcome starts 'result' and adds the success to score; 90 steps later (tuning.resultDelaySeconds) or on skip() the judged bottle is destroyed and a new one with the seed's next water level is held in the hand. The snapshot has score and throws (throws counts at release, so placeBottle counts too), and window.__FLIPPER__.skip() exists. Verified by tests/unit/result.test.ts (25 tests), tests/e2e/result.spec.ts (4) and snaps of a result and the next bottle (seed 2: 70% then 35% fill); older tests that read the thrown bottle long after the outcome now stop at the outcome (stepUntilOutcome helper) or use a long result delay.",
+      "notes": "Simulation (src/core/simulation.ts) now goes aiming -> flying -> result -> aiming: the step that sets the outcome starts 'result' and adds the success to score; 90 steps later (tuning.resultDelaySeconds) or on skip() the judged bottle is destroyed and a new one with the seed's next water level is held in the hand. The snapshot has score and throws (throws counts at release, so placeBottle counts too), and window.__FLIPPER__.skip() exists. Verified by tests/unit/result.test.ts (25 tests), tests/e2e/result.spec.ts (4) and snaps of a result and the next bottle (seed 2: 70% then 35% fill); older tests that read the thrown bottle long after the outcome now stop at the outcome (stepUntilOutcome helper) or use a long result delay.\nReviewed: npm run verify green (20 e2e); result.test.ts covers all four unit criteria; changed old tests are justified, none weakened; snaps at 1024x576 (seed 2) confirmed throw/skip ignored while flying, throw ignored during result, triple skip advances exactly one bottle (70% -> 35%, score 1, throws 1), next bottle thrown normally, R restart resets score/throws, no console errors.",
       "review_feedback": ""
     },
     {

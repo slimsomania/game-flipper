@@ -234,3 +234,16 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F006 (power bar and Space): the scene calls `sim.skip()` for Space or a click during `result` and `sim.throwBottle(power, 'keyboard')` while `aiming`, and should ignore `repeat` keydowns so holding Space through a result can't throw the next bottle. `Simulation.phase` is the thing to switch on.
 
 > [harness] session 10 · builder F005 · todo → needs_review · ok · verify passed · 1 commit(s) · 102 tool calls · 10m 18s · ~$1.61 API-equivalent
+
+## Session 11 · reviewer · F005 Show the result, bring the next bottle, keep score
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, unit tests, build, 20 e2e tests (including the 4 in `result.spec.ts`).
+  - Each unit criterion has a test in `tests/unit/result.test.ts`: success/fail scoring and throw counting; next bottle at exactly 90 steps (still `result` at 89) at the hand, still, with the seed's next water; skip() in result vs. aiming/flying; seed replay with five powers. The e2e criterion is covered by `result.spec.ts` (throwBottle(50), stepUntilOutcome + 89 + 1 frames).
+  - Changed old tests (`throw.test.ts`, `outcome.test.ts`, `throw.spec.ts`, `outcome.spec.ts`) only adapt to the bottle now being replaced 90 steps after the outcome. The assertions are the same or stricter, and nothing is skipped or weakened.
+  - Code: the rules live in `src/core/simulation.ts` and the delay in `tuning.ts`. The hook just calls `sim.skip()`, and I found no debug leftovers.
+  - Snaps at 1024×576, seed 2: during flight, throwBottle(80) and skip() changed nothing. In `result` (upright, score 1), throwBottle(80) was ignored. Three skip() calls advanced exactly one bottle (water 0.7 → 0.35, score 1, throws 1, lastThrow unchanged). Throwing the new bottle at power 30 then skip() mid-flight gave a normal flight with throws 2. Letting the delay run out brought the 35% bottle into the hand. Pressing R reset tick, score, throws and lastThrow. I looked at the screenshots: the new bottle is in the hand with a lower fill and no leftover old bottle, and the second throw shows the bottle mid-air. No console errors.
+- Problems: none
+- Notes for later:
+  - Nothing on screen shows the score or result yet; that's expected, since F007 adds it.
+  - F006 should ignore key-repeat so holding Space through a result doesn't skip and then throw right away (the builder noted this too).
