@@ -159,9 +159,9 @@
       "depends_on": [
         "F005"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built the PowerMeter in src/core/powerMeter.ts (taps, wheel notches, hold acceleration counted in fixed steps, clamping; numbers in tuning), owned by the Simulation with `power` in the snapshot and `throwOrSkip()` for Space; the scene forwards input in src/game/gameInput.ts (ignoring repeat keydowns) and draws the bar in src/game/view/powerBarView.ts left of the hand. Adjusting is allowed in every phase, and the value is untouched by throws and new bottles. Verified by tests/unit/powerMeter.test.ts, tests/unit/powerInput.test.ts, tests/e2e/power.spec.ts (13 tests, including real repeat keydowns) and snaps at 0, 20, 37, 80 and 100%; `npm run verify` passes.",
+      "notes": "Built the PowerMeter in src/core/powerMeter.ts (taps, wheel notches, hold acceleration counted in fixed steps, clamping; numbers in tuning), owned by the Simulation with `power` in the snapshot and `throwOrSkip()` for Space; the scene forwards input in src/game/gameInput.ts (ignoring repeat keydowns) and draws the bar in src/game/view/powerBarView.ts left of the hand. Adjusting is allowed in every phase, and the value is untouched by throws and new bottles. Verified by tests/unit/powerMeter.test.ts, tests/unit/powerInput.test.ts, tests/e2e/power.spec.ts (13 tests, including real repeat keydowns) and snaps at 0, 20, 37, 80 and 100%; `npm run verify` passes. Reviewed: verify passed twice (221 unit, 33 e2e), with one unreproduced e2e timeout in a third run; power.spec.ts repeated 8x and 3 tap/throw tests 20x serially, all green; snaps at 1024x576 (setPower 20/80/100, keyboard throw at 80, held Space, ArrowDown taps, hold to 100) checked visually.",
       "review_feedback": ""
     },
     {

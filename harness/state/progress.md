@@ -276,3 +276,17 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F007 (result flash, message and score text): read `outcome` and `score` from the snapshot in a new view under `src/game/view/`; keep the power bar's corner of the screen (x 110 to 190, y 215 to 515) free, and remember a result stays up for 90 steps unless the player presses Space or clicks.
 
 > [harness] session 12 · builder F006 · todo → needs_review · ok · verify passed · 1 commit(s) · 94 tool calls · 10m 4s · ~$1.61 API-equivalent
+
+## Session 13 · reviewer · F006 Set power with the power bar and throw with Space
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: the first run had one e2e failure ("Space while aiming throws with the bar value": the poll for power 53 after three ArrowUp taps timed out after 5 s). Two later runs passed (221 unit tests, 33 e2e). I couldn't reproduce the failure: `power.spec.ts` ran 8× per test with all 104 passing, and the 3 tap/throw tests ran 20× each serially (60/60).
+  - A 15× run with 4 workers overloaded the machine. Every test failed the same way ("Tearing down context exceeded 30000ms"), including `setPower`, which sends no input, so it says nothing about the feature. The config uses 1 worker.
+  - Unit: `powerMeter.test.ts` and `powerInput.test.ts` cover clamping, tap and wheel steps from tuning, 1 s hold > 10 taps, rate rising, repeat-press ignored, throwOrSkip by phase, power kept across bottles. E2E `power.spec.ts` covers every e2e criterion, using real `repeat: true` keydowns (recorded and asserted).
+  - Snaps at 1024×576, seed 3: setPower 20 and 80 show the bar at matching heights with "20%" and "80%". The bar is left of the hand, level with the bottle, and well clear of the table and the bottle. Space threw at 80 (source keyboard), and the bar stayed at 80 in flight. After the next bottle appeared, down:Space threw it once (throws 2) and holding it did nothing more. Two ArrowDown taps gave 78, and holding ArrowUp for 200 steps stopped at exactly 100 ("100%" drawn). No console errors.
+  - Code: the rules are in `src/core/powerMeter.ts` and their numbers are in tuning. `gameInput.ts` only forwards input and checks `event.repeat`. The test hook calls `powerMeter.set`. The test diff only adds tests. No debug leftovers.
+- Problems: none
+- Notes for later:
+  - Watch for the timeout in "Space while aiming throws with the bar value" (3 fast `keyboard.press('ArrowUp')` on a paused game). Phaser's duplicate-event bailout (same code + timeStamp + type) or a slow frame under load are the likely causes. If it recurs, wait with `settleInput` between presses.
+  - Power is fractional after a hold (e.g. 63.4). The label rounds it, and the throw uses the exact value. That's fine, but F007's HUD should use the same rounding.
+  - The power keys work in every phase, including while flying. That's intended and documented.
