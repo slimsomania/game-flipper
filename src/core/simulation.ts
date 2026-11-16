@@ -1,6 +1,7 @@
 import { World, type Body } from 'planck';
-import { Bottle, drawWaterLevel } from './bottle';
+import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT } from './constants';
+import { LandingJudge, type LandingSample, type Outcome } from './outcome';
 import { createRng, type Rng } from './rng';
 import { createTable } from './table';
 import { clampPower, throwImpulse, type ThrowSource } from './throw';
@@ -31,7 +32,8 @@ export interface BottleSnapshot extends BodySnapshot {
 
 /**
  * Where the current throw is: `aiming` while the bottle waits in the hand, `flying` once it has
- * been thrown. Landing judgement (F004) and the result screens add later phases.
+ * been thrown (the landing is judged during this phase, and `outcome` is set when it is decided).
+ * The result screens add later phases.
  */
 export type Phase = 'aiming' | 'flying';
 
@@ -50,8 +52,10 @@ export interface SimSnapshot {
   seed: number;
   phase: Phase;
   bottle: BottleSnapshot;
-  /** Null until the first throw. */
+  /** Null until the first throw. A bottle placed with `placeBottle` doesn't set it. */
   lastThrow: LastThrow | null;
+  /** How the current throw ended: null until it is decided, then fixed for that throw. */
+  outcome: Outcome | null;
 }
 
 export interface SimulationOptions {
@@ -66,7 +70,10 @@ export class Simulation {
   private currentTuning: Tuning;
   private readonly world: World;
   private readonly rng: Rng;
+  private readonly table: Body;
   private readonly bottle: Bottle;
+  private judge: LandingJudge | null = null;
+  private result: Outcome | null = null;
   private currentPhase: Phase = 'aiming';
   private thrown: LastThrow | null = null;
   private ticks = 0;
@@ -77,7 +84,7 @@ export class Simulation {
     this.rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
-    createTable(this.world);
+    this.table = createTable(this.world);
     this.bottle = new Bottle(
       this.world,
       this.currentTuning,
@@ -117,8 +124,24 @@ export class Simulation {
   throwBottle(power: number, source: ThrowSource = 'keyboard'): boolean {
     if (this.currentPhase !== 'aiming' || Number.isNaN(power)) return false;
     const used = clampPower(power);
+    this.judge = new LandingJudge(this.currentTuning, this.bottle.body.getAngle());
     this.bottle.launch(throwImpulse(used, this.currentTuning));
     this.thrown = { power: used, water: this.bottle.water, source };
+    this.currentPhase = 'flying';
+    return true;
+  }
+
+  /**
+   * Release the held bottle from an exact pose, as if it had been thrown from there: position,
+   * angle and (optionally) velocities, with its current water level. For tests and tuning tools,
+   * so a landing can be set up directly. Like a throw it only works while `aiming`, and returns
+   * false otherwise (or if a number in the pose isn't finite). It leaves `lastThrow` as it was.
+   */
+  placeBottle(pose: BottlePose): boolean {
+    const numbers = [pose.x, pose.y, pose.angle, pose.vx ?? 0, pose.vy ?? 0, pose.omega ?? 0];
+    if (this.currentPhase !== 'aiming' || !numbers.every(Number.isFinite)) return false;
+    this.judge = new LandingJudge(this.currentTuning, pose.angle);
+    this.bottle.place(pose);
     this.currentPhase = 'flying';
     return true;
   }
@@ -127,6 +150,23 @@ export class Simulation {
   step(): void {
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
+    if (this.judge && !this.result) this.result = this.judge.observe(this.landingSample());
+  }
+
+  /** What the judge sees: the bottle's pose and speeds, and whether it rests on the table. */
+  private landingSample(): LandingSample {
+    const body = this.bottle.body;
+    const p = body.getPosition();
+    const v = body.getLinearVelocity();
+    return {
+      x: p.x,
+      y: p.y,
+      angle: body.getAngle(),
+      vx: v.x,
+      vy: v.y,
+      omega: body.getAngularVelocity(),
+      onTable: this.bottle.touches(this.table),
+    };
   }
 
   /**
@@ -144,6 +184,7 @@ export class Simulation {
       phase: this.currentPhase,
       bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
       lastThrow: this.thrown && { ...this.thrown },
+      outcome: this.result && { ...this.result },
     };
   }
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
 
 /**
@@ -30,6 +31,12 @@ export interface FlipperTestApi {
    * new snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
    */
   throwBottle(power: number): SimSnapshot | null;
+  /**
+   * Release the held bottle from an exact pose (meters, radians, m/s, rad/s; the velocities may be
+   * left out) as if it had been thrown, so a test can create a landing directly. Returns the new
+   * snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
+   */
+  placeBottle(pose: BottlePose): SimSnapshot | null;
   /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -85,6 +92,11 @@ export function installTestHooks(game: Phaser.Game): void {
     throwBottle: (power) => {
       if (!currentSim) return null;
       currentSim.throwBottle(power);
+      return currentSim.snapshot();
+    },
+    placeBottle: (pose) => {
+      if (!currentSim) return null;
+      currentSim.placeBottle(pose);
       return currentSim.snapshot();
     },
     startScene: (key, data) => {

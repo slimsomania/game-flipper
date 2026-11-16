@@ -42,7 +42,8 @@ test('throwBottle(50) launches the bottle: it rises above its start, then comes 
   expect(apex).toBeLessThan(HAND_Y - 1); // it rose well above where it started
 
   const landed = await stepFrames(page, 240);
-  expect(landed.phase).toBe('flying'); // judging the landing is a later feature
+  expect(landed.phase).toBe('flying'); // the 'result' phase is a later feature (F005)
+  expect(landed.outcome).not.toBeNull(); // but the landing is judged (see outcome.spec.ts)
   expect(landed.lastThrow?.power).toBe(50);
   expect(landed.bottle.angle).toBeGreaterThan(Math.PI / 2); // it turned over in the air
   // It is down on the table, between its ends, not below the top and not hanging in the air.

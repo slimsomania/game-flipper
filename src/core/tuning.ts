@@ -37,6 +37,22 @@ export interface Tuning {
    * its inertia, so a fuller bottle spins slower.
    */
   throwAngularImpulse: number;
+  /** A bottle standing within this many degrees of upright (after any whole turns) is upright. */
+  uprightToleranceDeg: number;
+  /** Seconds the bottle must stand upright, on the table and nearly still, to succeed. */
+  uprightHoldSeconds: number;
+  /** Resting more than this many degrees from upright is on the cap; any other tilt is a side. */
+  capAngleDeg: number;
+  /** "Nearly still" means slower than this, in m/s... */
+  stillSpeed: number;
+  /** ...and turning slower than this, in rad/s. */
+  stillSpin: number;
+  /** Seconds a bottle must lie nearly still on the table (not upright) to be judged a fail. */
+  failRestSeconds: number;
+  /** The bottle is off the table once its lowest point is this many meters below the tabletop. */
+  offTableDepth: number;
+  /** A throw with no outcome this many seconds after release is a fail. */
+  timeoutSeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -55,6 +71,18 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   throwAngleDeg: 12,
   throwLinearImpulse: 9,
   throwAngularImpulse: 1,
+  // Design section 2: upright within 15° for 1 s; a throw with no outcome after 5 s fails.
+  uprightToleranceDeg: 15,
+  uprightHoldSeconds: 1,
+  timeoutSeconds: 5,
+  // Past 135° from upright the bottle is on its cap, otherwise on its side.
+  capAngleDeg: 135,
+  // Planck puts a body to sleep below 0.01 m/s and 2°/s; "nearly still" is a little looser.
+  stillSpeed: 0.05,
+  stillSpin: 0.1,
+  // A fail is decided sooner than a success, so a lost bottle doesn't make the player wait.
+  failRestSeconds: 0.5,
+  offTableDepth: 0.1,
 };
 
 /** The defaults with `overrides` applied on top. */

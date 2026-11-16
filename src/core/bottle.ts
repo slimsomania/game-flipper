@@ -18,6 +18,20 @@ import type { Tuning } from './tuning';
 export const HAND_X = TABLE_LEFT_X + 1.2;
 export const HAND_Y = TABLE_TOP_Y - 1;
 
+/**
+ * An exact starting state for a bottle (see `Simulation.placeBottle`): the position of the center
+ * of its base in meters, the angle in radians (clockwise, any number of turns) and, optionally,
+ * the linear velocity in m/s and angular velocity in rad/s (each 0 when left out).
+ */
+export interface BottlePose {
+  x: number;
+  y: number;
+  angle: number;
+  vx?: number;
+  vy?: number;
+  omega?: number;
+}
+
 const toVec = (points: readonly Point[]): { x: number; y: number }[] =>
   points.map((p) => ({ x: p.x, y: p.y }));
 
@@ -102,6 +116,26 @@ export class Bottle {
   /** Let go of the bottle: it becomes a normal dynamic body that gravity moves. */
   release(): void {
     this.body.setType('dynamic');
+  }
+
+  /**
+   * Release the bottle from an exact pose, as if it had been thrown there: it starts at the given
+   * position and angle with the given velocities. Call it once, on the held bottle.
+   */
+  place(pose: BottlePose): void {
+    this.body.setTransform({ x: pose.x, y: pose.y }, pose.angle);
+    this.release();
+    this.body.setLinearVelocity({ x: pose.vx ?? 0, y: pose.vy ?? 0 });
+    this.body.setAngularVelocity(pose.omega ?? 0);
+    this.body.setAwake(true);
+  }
+
+  /** True while the bottle's shell is touching `other`. */
+  touches(other: Body): boolean {
+    for (let edge = this.body.getContactList(); edge; edge = edge.next) {
+      if (edge.other === other && edge.contact.isTouching()) return true;
+    }
+    return false;
   }
 
   /**
