@@ -159,3 +159,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - An empty bottle at high power goes far off screen (it reaches y < −6 m within 30 steps). The design accepts this as an over-power fail, but F009/F010 may want a gentler power curve, as the builder noted.
   - The water is drawn fixed in the bottle's frame, so mid-flight it lies along the base, not under gravity. This is fine until sloshing (M6).
   - The hook's `throwBottle` returns a snapshot even when the throw is refused. The e2e tests rely on this, but a later UI may want the boolean too.
+
+> [harness] session 7 · reviewer F003 · needs_review → done · ok · 1 commit(s) · 14 tool calls · 2m 4s · ~$0.56 API-equivalent
