@@ -51,9 +51,9 @@
         "`npm run snap -- --do 'pause,call:step;120,shot:table'` works (the call action reaches window.__FLIPPER__), and the screenshot shows a light background, a flat wooden-brown table spanning most of the width with both ends visible, the bottle on it, and no leftover placeholder text."
       ],
       "depends_on": [],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Canvas is now 1280×720. The table is a static slab in src/core/table.ts (TABLE_TOP_Y 5.6 m, TABLE_LEFT_X 1.6 m, TABLE_RIGHT_X 11.2 m; createTable(world)), drawn by src/game/view/tableView.ts on a light #eaf0f6 background; Boot now starts Game directly and MenuScene and the placeholder text are gone. `call:<method>;<arg>;...` is in scripts/snap.ts (parsing in scripts/snapActions.ts, results in the report's `calls`). Verified with npm run verify (60 unit tests, 3 e2e tests) and npm run snap -- --do 'pause,call:step;120,shot:table', whose screenshot I looked at.",
+      "notes": "Canvas is now 1280×720. The table is a static slab in src/core/table.ts (TABLE_TOP_Y 5.6 m, TABLE_LEFT_X 1.6 m, TABLE_RIGHT_X 11.2 m; createTable(world)), drawn by src/game/view/tableView.ts on a light #eaf0f6 background; Boot now starts Game directly and MenuScene and the placeholder text are gone. `call:<method>;<arg>;...` is in scripts/snap.ts (parsing in scripts/snapActions.ts, results in the report's `calls`). Verified with npm run verify (60 unit tests, 3 e2e tests) and npm run snap -- --do 'pause,call:step;120,shot:table', whose screenshot I looked at.\nReviewed: session 3 npm run verify passed (3 e2e incl. boots into Game not Menu, table.test.ts); snap 'pause,call:step;120,shot:table' showed light background, brown table 160–1120 px with both ends, bottle resting on it, no text, calls report filled; 1024×576 with 3× R restart scales cleanly (seed 3→6); call:nope reports an error.",
       "review_feedback": ""
     },
     {
