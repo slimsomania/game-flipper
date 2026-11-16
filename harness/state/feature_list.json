@@ -69,7 +69,9 @@
         "An e2e test reads state().bottle.water, calls setWater(0.9), and sees 0.9 in the snapshot.",
         "Snaps after `call:setWater;0.1` and `call:setWater;0.9` show a translucent blue bottle with a lighter cap whose blue fill is visibly low and visibly high; no on-screen text shows the water amount; the drawing uses the shape constants exported from src/core rather than its own numbers."
       ],
-      "depends_on": ["F001"],
+      "depends_on": [
+        "F001"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: the water range is 10% to 90% in 5% steps (design open question 2). The level is the filled fraction of the bottle's body height (base to shoulder). Water moves with the bottle as one solid body until M6. With a fill-from-the-base model the center of mass is below the empty bottle's at every level, though not monotonically lower as the level rises; that is how the design's 'closer to the bottom' is read. No hand graphic: the design wants nothing on screen but the table and the background.",
@@ -89,7 +91,9 @@
         "E2E: from a paused game, throwBottle(50) followed by stepping shows phase 'flying', the bottle rising above its start and then coming down onto the table, and lastThrow.power 50.",
         "A snap taken mid-flight (`pause,call:throwBottle;50,step:20,shot:flight`) shows the bottle rotated in the air above the table."
       ],
-      "depends_on": ["F002"],
+      "depends_on": [
+        "F002"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: the design's 'small, fixed forward drift' is read as a fixed launch direction, so the drift grows with the throw. The spin is clockwise (the top moves toward the table). Gravity stays in constants.ts.",
@@ -109,7 +113,9 @@
         "Unit: with the timeout overridden to 0.5 s, a throw still in the air at 0.5 s is judged 'timeout', and an outcome never changes once set.",
         "E2E: placeBottle upright followed by stepping 150 frames gives outcome.result 'success'; placeBottle on its side gives 'fail'."
       ],
-      "depends_on": ["F003"],
+      "depends_on": [
+        "F003"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: the 5 s timeout counts from release. 'Leaves the screen' means the left, right or bottom edge; a bottle may fly above the top and fall back. Resting more than 135° from upright is 'cap'; any other non-upright rest is 'side'.",
@@ -128,7 +134,9 @@
         "Unit: replaying the same seed with the same five throw powers gives the same water levels, outcomes and score.",
         "E2E: after a throw resolves and 90 more frames pass, state() shows phase 'aiming', the next water level and the updated score; a snap then shows the new bottle with its fill at its level."
       ],
-      "depends_on": ["F004"],
+      "depends_on": [
+        "F004"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -148,7 +156,9 @@
         "Power starts at 50 and keeps its value when the next bottle appears.",
         "Snaps after `call:setPower;20` and `call:setPower;80` show the bar filled to matching heights with a readable percentage, near the hand, not overlapping the bottle or the table."
       ],
-      "depends_on": ["F005"],
+      "depends_on": [
+        "F005"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: power starts at 50% and stays where the player left it between throws. The bar shows its value as a percentage: it is the player's own setting, not a hint about the bottle. Tap step, hold rates and wheel step are tuning values. A click anywhere on the canvas skips the result wait.",
@@ -166,7 +176,9 @@
         "Snaps right after a success and right after a fail show a green flash with 'Nailed it!' and a red flash with 'Down!', with the message readable over the flash and the score visible.",
         "A snap 40 frames after the outcome shows the message with the flash gone."
       ],
-      "depends_on": ["F005"],
+      "depends_on": [
+        "F005"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -184,7 +196,9 @@
         "`npx tsx scripts/flip-windows.ts` prints one row per water level from 10% to 90% with its single-flip window or 'none', and finishes in under a minute.",
         "The builder's progress entry includes the printed table for the current defaults, as the baseline for F009."
       ],
-      "depends_on": ["F004"],
+      "depends_on": [
+        "F004"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -203,7 +217,9 @@
         "Unit: a throw at the 50% bottle's window center stays on screen for the whole flight (the bottle's top never goes above y = 0) and lands on the table.",
         "The calibration tests take under 15 s together, no code moves or rotates the bottle after release, and the progress entry includes the flip-windows table for the new defaults."
       ],
-      "depends_on": ["F008"],
+      "depends_on": [
+        "F008"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Design tension: a single-flip window of about ±10 points needs spin that grows slowly with power, which may leave clean double flips out of reach below 100% power. The criteria prioritize the single-flip window and only require that too much power over-rotates (see the planner's open questions in progress.md).",
@@ -222,7 +238,10 @@
         "E2E: with the water locked at 0.5, the next three bottles all have water 0.5.",
         "The panel is only installed in dev builds or with ?debug, and a snap with it open shows it at one side, readable, with the bottle and the power bar still visible."
       ],
-      "depends_on": ["F006", "F008"],
+      "depends_on": [
+        "F006",
+        "F008"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: Backquote is the toggle key. The panel is a plain DOM overlay (not Phaser) so it can use native inputs. Because edits persist in localStorage, the panel marks values that differ from the defaults. It may reveal answers such as the flip window; that is fine for a developer tool.",
@@ -240,7 +259,9 @@
         "Unit: the same motion sampled at 60 Hz and at 240 Hz gives power within 2 points.",
         "Unit: with the default tuning, 300 px upward in 150 ms gives at least 90 and 40 px upward in 150 ms gives less than 30, so the whole range is reachable with an ordinary mouse."
       ],
-      "depends_on": ["F003"],
+      "depends_on": [
+        "F003"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: distances are measured in logical game pixels, so the size of the browser window doesn't change the power of a push.",
@@ -259,7 +280,10 @@
         "Unit: a keyboard throw and a mouse throw with the same power, water and seed produce identical trajectories.",
         "E2E: the canvas cursor is 'grab' over the held bottle and 'grabbing' while dragging, and a snap taken mid-drag shows the power bar at the live value."
       ],
-      "depends_on": ["F006", "F011"],
+      "depends_on": [
+        "F006",
+        "F011"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumptions: a release with no upward push cancels the grab instead of throwing at 0 power. After a mouse throw the bar keeps the push's power (keyboard and mouse share one power value). The bottle stays in the hand during the push rather than following the mouse.",
@@ -278,7 +302,9 @@
         "E2E: texts() shows 'Throw 1 / 10', 'Score: 0' and 'Streak: 0' at the start; they update after each throw, and pressing R mid-round resets them.",
         "Snap: the throw number, score and streak sit together at the top, readable and clear of the power bar and the bottle."
       ],
-      "depends_on": ["F007"],
+      "depends_on": [
+        "F007"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: restarting a round continues the seed's water sequence (new bottles) rather than repeating the same ten.",
@@ -296,7 +322,9 @@
         "E2E: the summary doesn't appear before the 10th result, the Space press that skips the 10th result doesn't also start a new round (auto-repeat is ignored), and there are no console errors.",
         "Snap: the summary is centered and readable on the light background, and the Play again button clearly looks like a button."
       ],
-      "depends_on": ["F013"],
+      "depends_on": [
+        "F013"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: Enter and Space choose Play again on the summary.",
@@ -314,7 +342,9 @@
         "E2E: a round with 3 successes shows 'Best: 3' and 'New best!'; after a reload, a round with 2 successes shows 'Best: 3' without 'New best!'.",
         "E2E: the best score is stored under the versioned localStorage key."
       ],
-      "depends_on": ["F014"],
+      "depends_on": [
+        "F014"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: 'New best!' only appears when the score is strictly higher than the saved best.",
@@ -333,7 +363,9 @@
         "Knocks are rate-limited (no two within 100 ms), and impacts below a minimum speed (in tuning) make no sound.",
         "The e2e suite runs with no audio-related console errors."
       ],
-      "depends_on": ["F006"],
+      "depends_on": [
+        "F006"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -351,7 +383,10 @@
         "E2E: mute survives a reload, and the button then shows the muted icon.",
         "Snaps show the speaker button in both states in a corner, clear of the HUD."
       ],
-      "depends_on": ["F015", "F016"],
+      "depends_on": [
+        "F015",
+        "F016"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -370,7 +405,9 @@
         "E2E: the title's mute toggle changes and saves the same setting as the M key.",
         "Snap: the title screen is centered and readable at 1280×720 with nothing overlapping."
       ],
-      "depends_on": ["F017"],
+      "depends_on": [
+        "F017"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "E2E tests from earlier features that assume the game boots into play must now start the Game scene first (startScene or clicking Play); that is an intended behavior change, not a weakened test. Assumption: Space and Enter also start the game.",
@@ -389,7 +426,9 @@
         "E2E: Restart on the overlay starts a fresh, unpaused round (throw 1, score 0); Quit to title opens the Title scene.",
         "Snap: the overlay dims the game and shows the three buttons centered and readable."
       ],
-      "depends_on": ["F018"],
+      "depends_on": [
+        "F018"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: the overlay has Restart as well as Resume and Quit to title, because the design's controls table puts a Restart button on it (section 6 lists only Resume and Quit).",
@@ -407,7 +446,9 @@
         "scripts/flip-windows.ts prints both rates, and the progress entry lists the old and new tuning values with their rates.",
         "All F009 calibration tests still pass."
       ],
-      "depends_on": ["F009"],
+      "depends_on": [
+        "F009"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "The simulated players are a proxy for the design's targets; the error size and the aiming rules are assumptions for the human to confirm by playing.",
@@ -425,7 +466,10 @@
         "A snap right after a success shows particles near the bottle's base and the message; a snap 0.5 s later shows the camera back at rest.",
         "No console errors, and no text is cut off by the shake."
       ],
-      "depends_on": ["F007", "F016"],
+      "depends_on": [
+        "F007",
+        "F016"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -443,7 +487,10 @@
         "E2E: after a simulated long frame gap the simulation advances at most the capped number of steps, and the throw still resolves.",
         "Each bug fixed comes with a test that covers it, and the progress entry lists the bugs found (or says none were)."
       ],
-      "depends_on": ["F012", "F019"],
+      "depends_on": [
+        "F012",
+        "F019"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -461,7 +508,9 @@
         "Unit: with sloshing on, some powers give different outcomes than with solid water, and the water offset always stays within its limits.",
         "scripts/flip-windows.ts accepts a sloshing option, and the progress entry includes its table with sloshing on."
       ],
-      "depends_on": ["F009"],
+      "depends_on": [
+        "F009"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: a prismatic joint is the simplest model of sloshing that changes the flip; particle or fluid simulation is out of scope.",
@@ -478,7 +527,10 @@
         "A snap mid-flight with sloshing on (`call:setTuningValue;sloshing;true` before the throw) shows the fill shifted toward the cap; a snap at rest shows it at the base.",
         "With sloshing off, snaps look the same as before this feature."
       ],
-      "depends_on": ["F010", "F023"],
+      "depends_on": [
+        "F010",
+        "F023"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -496,7 +548,10 @@
         "The tuning panel shows the sloshing switch, and toggling it affects the next bottle.",
         "The progress entry includes the new flip-windows table and the benchmark rates."
       ],
-      "depends_on": ["F020", "F024"],
+      "depends_on": [
+        "F020",
+        "F024"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -513,7 +568,9 @@
         "Unit: the landing clip starts the configured time before the first table contact and ends the configured time after it (or at the end of the recording), and is empty if the bottle never touched the table.",
         "Unit: the recording holds at most the timeout's worth of frames and is cleared for the next bottle."
       ],
-      "depends_on": ["F023"],
+      "depends_on": [
+        "F023"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -531,7 +588,10 @@
         "Unit: the result phase lasts the result delay plus the clip duration divided by the replay speed, or just the result delay when there is no clip.",
         "A snap mid-replay shows the bottle in an earlier landing pose with the 'Replay' label."
       ],
-      "depends_on": ["F014", "F026"],
+      "depends_on": [
+        "F014",
+        "F026"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: the replay plays after the result flash and message, and skipping it goes straight to the next bottle.",
@@ -549,7 +609,10 @@
         "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
         "The progress entry lists the measured numbers."
       ],
-      "depends_on": ["F025", "F027"],
+      "depends_on": [
+        "F025",
+        "F027"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
@@ -567,7 +630,10 @@
         "Production build with ?testhooks: the Title shows, Play starts a round, and a Space throw reaches an outcome.",
         "README.md has a Play section with the controls table and how to build and preview."
       ],
-      "depends_on": ["F010", "F018"],
+      "depends_on": [
+        "F010",
+        "F018"
+      ],
       "status": "todo",
       "attempts": 0,
       "notes": "",
