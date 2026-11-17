@@ -729,3 +729,6 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Notes for later: as the builder said, a round that is not a new best leaves an empty row between "Best: N" and Play again. F018 can rebalance the card when it adds the Title button. Snap starts each run with fresh storage and can't pass a pose to `placeBottle`, so I couldn't produce a scoring round by hand in snap. The e2e tests cover the new-best path. The session's tooling denied compound shell commands (until loops in Bash or Monitor), so I waited for the background task notification instead.
 
 > [harness] session 34 · reviewer F015 · needs_review → done · ok · 1 commit(s) · 26 tool calls · 10m 17s · ~$0.75 API-equivalent
+
+> [harness] session 35 · builder F016 · todo → todo · usage_limit · verify passed · 1 commit(s) · 126 tool calls · 20m 51s · ~$2.90 API-equivalent
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)

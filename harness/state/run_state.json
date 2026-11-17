@@ -1,5 +1,5 @@
 {
-  "sessions": 34,
+  "sessions": 35,
   "doneAtLastMaintenance": 8,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -16,12 +16,15 @@
     "F012": "c524874d3da840d9e4b8cb9ac4c6af206c75a827",
     "F013": "3c890430bb6a7eb8ffa8fa137dbd39f2879b25dd",
     "F014": "b46846a0b25fdb6952b75273e5115a89bee3b648",
-    "F015": "cff0742341217530f4d3ebf8a28ad985c6537443"
+    "F015": "cff0742341217530f4d3ebf8a28ad985c6537443",
+    "F016": "7c2a13377faebe00f570eeb9431016dd96a7f2a8"
   },
   "lastGate": {
-    "session": 33,
+    "session": 35,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "ended with uncommitted changes (the harness committed them as WIP)"
+  ]
 }
