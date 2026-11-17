@@ -750,3 +750,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Sounds are made only from the Game scene's frame loop. F019 (pause) should check that a paused Game scene does not queue up sounds.
   - Process: compound shell commands joined with `;` and a `git -C` form were auto-denied this session, so I used single `cd ... && ...` commands and the Read and Grep tools, and waited for the background verify with a short foreground `node -e setTimeout` instead of a loop.
 - Next: F017: add `muted` to `SaveData`/`parseSave`, make `Sfx.play` honor it (and not log while muted), and add the M key and the speaker button in a corner of the Game scene clear of the HUD, with a press that doesn't reach the bottle or skip a result.
+
+> [harness] session 36 · builder F016 · todo → needs_review · ok · verify passed · 1 commit(s) · 40 tool calls · 9m 55s · ~$0.71 API-equivalent

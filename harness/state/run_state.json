@@ -1,5 +1,5 @@
 {
-  "sessions": 35,
+  "sessions": 36,
   "doneAtLastMaintenance": 8,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -20,11 +20,9 @@
     "F016": "7c2a13377faebe00f570eeb9431016dd96a7f2a8"
   },
   "lastGate": {
-    "session": 35,
+    "session": 36,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": [
-    "ended with uncommitted changes (the harness committed them as WIP)"
-  ]
+  "lastViolations": []
 }
