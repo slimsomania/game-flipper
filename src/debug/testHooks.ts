@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
 import type { Tuning } from '../core/tuning';
+import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
@@ -38,6 +39,13 @@ export interface FlipperTestApi {
    * what the scene last drew, so wait a frame after stepping.
    */
   flash(): FlashView | null;
+  /**
+   * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime' or 'thud'),
+   * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to
+   * hear, so it fills even where the browser keeps the audio context locked until the first click
+   * or key press. Like `texts()` it shows what the scene last drained: wait a frame after stepping.
+   */
+  sounds(): SoundLogEntry[];
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -132,6 +140,7 @@ export function installTestHooks(game: Phaser.Game): void {
     state: () => currentSimulation()?.snapshot() ?? null,
     texts: () => visibleTexts(game.scene.getScenes(true)),
     flash: () => visibleFlash(game.scene.getScenes(true)),
+    sounds: () => sharedSfx().log(),
     pause: () => {
       testControls.paused = true;
     },

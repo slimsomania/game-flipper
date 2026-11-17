@@ -113,6 +113,15 @@ export interface Tuning {
    * throw's result the phase is `roundOver`.
    */
   throwsPerRound: number;
+  /**
+   * An impact with the table slower than this, in m/s, makes no sound: it is the settling taps of
+   * a bottle coming to rest, not a knock.
+   */
+  knockMinSpeed: number;
+  /** An impact at or above this speed, in m/s, is a knock at full volume; slower ones are quieter. */
+  knockFullSpeed: number;
+  /** No knock sounds within this many seconds of the one before it (a bounce is not a roll of drums). */
+  knockGapSeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -175,6 +184,11 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   grabPadding: 12,
   // F013: design section 2, a round is 10 throws.
   throwsPerRound: 10,
+  // F016: a thrown bottle first hits the table at 3 to 8 m/s, and its later bounces are 2 m/s or
+  // less; the taps of a bottle settling are about 0.1 m/s. Design: no two knocks within 100 ms.
+  knockMinSpeed: 0.35,
+  knockFullSpeed: 8,
+  knockGapSeconds: 0.1,
 };
 
 /** The defaults with `overrides` applied on top. */

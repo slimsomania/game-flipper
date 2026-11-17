@@ -1,0 +1,190 @@
+
+> flipper@0.1.0 verify
+> npm run format:check && npm run typecheck && npm run test && npm run build && npm run test:e2e
+
+
+> flipper@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> flipper@0.1.0 typecheck
+> tsc --noEmit
+
+
+> flipper@0.1.0 test
+> node scripts/canonical-cwd.mjs vitest/vitest.mjs run
+
+
+ RUN  v5.1.0 C:/Projects/Game-flipper
+
+
+ Test Files  46 passed (46)
+      Tests  624 passed (624)
+   Start at  16:19:58
+   Duration  4.63s (tests 86%, import 8%, transform 3%, worker 2%)
+
+    Isolate  46 workers spawned · ~249ms startup each (spawn + environment, per file)
+             at least ~1.39s faster with isolate: false — reuses workers across files instead of one per file
+
+
+> flipper@0.1.0 build
+> vite build
+
+[36mvite v8.3.8 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 58 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                    0.78 kB │ gzip:   0.48 kB
+dist/assets/index-79V-ak7d.js  1,444.03 kB │ gzip: 379.42 kB
+
+[32m✓ built in 658ms[39m
+
+> flipper@0.1.0 test:e2e
+> playwright test
+
+
+Running 137 tests using 1 worker
+
+  ✓    1 tests\e2e\bestScore.spec.ts:57:1 › a first round that scores 3 points shows Best: 3 and New best! (2.5s)
+  ✓    2 tests\e2e\bestScore.spec.ts:65:1 › the best score is stored under the versioned localStorage key (2.4s)
+  ✓    3 tests\e2e\bestScore.spec.ts:78:1 › the best score carries over a reload: 3, then 2 (no new best), then 12 (new best) (9.2s)
+  ✓    4 tests\e2e\bestScore.spec.ts:104:1 › a round that only ties the best is not a new best (7.6s)
+  ✓    5 tests\e2e\bestScore.spec.ts:115:1 › a round with no points is no new best, even with no saved best (2.7s)
+  ✓    6 tests\e2e\bestScore.spec.ts:123:1 › a full 10-throw round saves its points as the best (4.6s)
+  ✓    7 tests\e2e\bestScore.spec.ts:133:1 › a damaged save is ignored and then replaced (2.8s)
+  ✓    8 tests\e2e\bestScore.spec.ts:145:1 › a save for another version is ignored (2.3s)
+  ✓    9 tests\e2e\bestScore.spec.ts:158:1 › with localStorage blocked the game still plays and keeps the best for the visit (4.1s)
+  ✓   10 tests\e2e\bottle.spec.ts:7:1 › the bottle starts with a water level on a 5% step between 10% and 90% (1.5s)
+  ✓   11 tests\e2e\bottle.spec.ts:19:1 › different seeds give different bottles, the same seed gives the same one (2.6s)
+  ✓   12 tests\e2e\bottle.spec.ts:37:1 › setWater(0.9) changes bottle.water in the snapshot (1.7s)
+  ✓   13 tests\e2e\bottle.spec.ts:56:1 › the held bottle stays still at the hand while the water changes (1.4s)
+  ✓   14 tests\e2e\calibration.spec.ts:27:1 › the 50% bottle has a single-flip window and a double-flip window above it (0ms)
+  ✓   15 tests\e2e\calibration.spec.ts:37:3 › a throw at the center of the 50% bottle's single-flip window shows "Nailed it! +1" (2.3s)
+  ✓   16 tests\e2e\calibration.spec.ts:37:3 › a throw at the center of the 50% bottle's double-flip window shows "Double! +2" (2.4s)
+  ✓   17 tests\e2e\calibration.spec.ts:57:1 › 10 points below the single-flip window the bottle under-rotates, 10 above it over-rotates (2.3s)
+  ✓   18 tests\e2e\flipRule.spec.ts:23:1 › an upright landing with no turn shows the red fail flash and "No flip!", and the score stays (2.1s)
+  ✓   19 tests\e2e\flipRule.spec.ts:46:1 › a no flip after a success leaves the score where it was (2.2s)
+  ✓   20 tests\e2e\flipRule.spec.ts:60:1 › a landing on its side still shows "Down!" with the red flash, even with turns (2.0s)
+  ✓   21 tests\e2e\flipRule.spec.ts:75:1 › upright landings with 1 and 2 turns show "Nailed it! +1" and "Double! +2" and raise the score by 1 and 2 (2.8s)
+  ✓   22 tests\e2e\flipRule.spec.ts:99:1 › three and more turns show "Triple! +3" and "Flip ×N! +N", and score N (3.0s)
+  ✓   23 tests\e2e\flipRule.spec.ts:119:1 › a real throw lands by the same rules: its message and score follow its turns (2.2s)
+  ✓   24 tests\e2e\flipRule.spec.ts:139:1 › a power-0 throw is a plain drop: "No flip!", not a point (2.1s)
+  ✓   25 tests\e2e\mouse.spec.ts:23:1 › pressing on the bottle, pushing 200 px up in about 100 ms and releasing throws it (1.7s)
+  ✓   26 tests\e2e\mouse.spec.ts:47:1 › the same with the real mouse, at whatever pace the machine manages (2.7s)
+  ✓   27 tests\e2e\mouse.spec.ts:67:1 › while the button is held, state().power follows the live push and the bar shows it (2.9s)
+  ✓   28 tests\e2e\mouse.spec.ts:111:1 › a push on a precise clock: the bar shows the live value as the push builds up, then holds it (1.9s)
+  ✓   29 tests\e2e\mouse.spec.ts:137:1 › a fast, long push gives more power than a slow, short one (2.0s)
+  ✓   30 tests\e2e\mouse.spec.ts:158:1 › a pointer that stops moving makes the bar fall back to 0, and a release then throws nothing (1.8s)
+  ✓   31 tests\e2e\mouseNothing.spec.ts:31:3 › presses and releases that throw nothing › a press away from the bottle, then a push upward, throws nothing and grabs nothing (2.7s)
+  ✓   32 tests\e2e\mouseNothing.spec.ts:56:3 › presses and releases that throw nothing › a click on the bottle without moving throws nothing and leaves the bar as it was (1.7s)
+  ✓   33 tests\e2e\mouseNothing.spec.ts:80:3 › presses and releases that throw nothing › a push downward, or a tiny jitter upward, throws nothing (1.6s)
+  ✓   34 tests\e2e\mouseNothing.spec.ts:98:3 › presses and releases that throw nothing › a drag while the bottle is flying throws nothing and grabs nothing (2.5s)
+  ✓   35 tests\e2e\mouseNothing.spec.ts:119:3 › presses and releases that throw nothing › a click during the result still skips it, and the press does not turn into a grab (2.9s)
+  ✓   36 tests\e2e\mouseNothing.spec.ts:158:3 › the end of a grab outside the usual way › releasing outside the canvas ends the grab, and the next press grabs again (3.0s)
+  ✓   37 tests\e2e\mouseNothing.spec.ts:182:3 › the end of a grab outside the usual way › a flick that leaves the canvas and lets go outside throws with what the game saw (1.8s)
+  ✓   38 tests\e2e\mouseNothing.spec.ts:206:3 › the end of a grab outside the usual way › the window losing focus drops the grab and gives the bar back (1.9s)
+  ✓   39 tests\e2e\mouseNothing.spec.ts:228:1 › the cursor is a grab hand over the held bottle and a grabbing hand while dragging (2.5s)
+  ✓   40 tests\e2e\outcome.spec.ts:8:1 › a bottle placed upright just above the table is judged a success once it stood still for a second (1.7s)
+  ✓   41 tests\e2e\outcome.spec.ts:41:1 › a bottle placed on its side is judged a fail (1.5s)
+  ✓   42 tests\e2e\outcome.spec.ts:55:1 › a bottle placed beyond the end of the table falls off, and one thrown sideways leaves the screen (1.8s)
+  ✓   43 tests\e2e\outcome.spec.ts:81:1 › every throw gets an outcome within the timeout, which stays the same through the result (1.6s)
+  ✓   44 tests\e2e\outcome.spec.ts:102:1 › placeBottle does nothing once a bottle is in flight (1.4s)
+  ✓   45 tests\e2e\power.spec.ts:17:1 › the power bar starts at 50, and a tap on ArrowUp or ArrowDown moves it one step (1.6s)
+  ✓   46 tests\e2e\power.spec.ts:35:1 › holding ArrowUp for 1 s raises the power by more than 10 points, faster the longer it is held (1.7s)
+  ✓   47 tests\e2e\power.spec.ts:65:1 › a held arrow key moves the bar in real time and stops when released (2.5s)
+  ✓   48 tests\e2e\power.spec.ts:79:1 › auto-repeated arrow keydowns are not extra taps (1.6s)
+  ✓   49 tests\e2e\power.spec.ts:94:1 › the mouse wheel raises and lowers the power by one step per notch (1.8s)
+  ✓   50 tests\e2e\power.spec.ts:110:1 › setPower(p) sets the bar, clamps it to 0-100 and ignores a non-number (1.5s)
+  ✓   51 tests\e2e\power.spec.ts:123:1 › Space while aiming throws with the bar value (1.6s)
+  ✓   52 tests\e2e\power.spec.ts:142:1 › Space while flying does nothing (1.6s)
+  ✓   53 tests\e2e\power.spec.ts:161:3 › Space during the result brings the next bottle (1.5s)
+  ✓   54 tests\e2e\power.spec.ts:161:3 › a click during the result brings the next bottle (1.6s)
+  ✓   55 tests\e2e\power.spec.ts:183:1 › a click while aiming or flying does not throw or skip (1.8s)
+  ✓   56 tests\e2e\power.spec.ts:200:1 › auto-repeated Space keydowns are ignored: holding Space through a result never throws (2.4s)
+  ✓   57 tests\e2e\power.spec.ts:236:1 › the power starts at 50 and keeps its value when the next bottle appears (1.8s)
+  ✓   58 tests\e2e\result.spec.ts:6:1 › after a throw resolves and 90 more frames pass, the next bottle waits in the hand (1.6s)
+  ✓   59 tests\e2e\result.spec.ts:37:1 › a success adds a point, a fail does not, and the bottles follow the seed (2.1s)
+  ✓   60 tests\e2e\result.spec.ts:61:1 › skip() brings the next bottle at once during a result, and changes nothing otherwise (1.7s)
+  ✓   61 tests\e2e\result.spec.ts:92:1 › the real-time clock brings the next bottle by itself (4.4s)
+  ✓   62 tests\e2e\resultText.spec.ts:16:1 › texts() lists the score and the power bar before anything is thrown, and no message (1.3s)
+  ✓   63 tests\e2e\resultText.spec.ts:29:1 › a single flip shows "Nailed it! +1" and the new score (2.0s)
+  ✓   64 tests\e2e\resultText.spec.ts:42:1 › a fail shows "Down!" and leaves the score as it was (2.7s)
+  ✓   65 tests\e2e\resultText.spec.ts:66:1 › a real throw shows the message and the score that match its outcome (2.0s)
+  ✓   66 tests\e2e\resultText.spec.ts:91:3 › the success message stays for the whole wait and goes with the next bottle (2.1s)
+  ✓   67 tests\e2e\resultText.spec.ts:113:3 › skip() removes the success message at once (1.8s)
+  ✓   68 tests\e2e\resultText.spec.ts:91:3 › the fail message stays for the whole wait and goes with the next bottle (2.1s)
+  ✓   69 tests\e2e\resultText.spec.ts:113:3 › skip() removes the fail message at once (1.9s)
+  ✓   70 tests\e2e\resultText.spec.ts:127:1 › Space during a result removes the message, and the next result shows its own (2.5s)
+  ✓   71 tests\e2e\resultText.spec.ts:148:1 › in real time the message appears with the result and goes when the next bottle comes (5.6s)
+  ✓   72 tests\e2e\round.spec.ts:19:1 › the HUD shows "Throw 1 / 10", "Score: 0" and "Streak: 0" at the start (1.4s)
+  ✓   73 tests\e2e\round.spec.ts:33:1 › the HUD updates after each throw: a landing, a double, a fail and the next bottle (3.5s)
+  ✓   74 tests\e2e\round.spec.ts:65:1 › pressing R mid-round puts the HUD back to the start, with a new bottle in the hand (2.3s)
+  ✓   75 tests\e2e\round.spec.ts:99:1 › pressing R works in the middle of a flight and during a result (2.7s)
+  ✓   76 tests\e2e\round.spec.ts:123:1 › after the 10th throw the round is over: no new bottle, throws and clicks do nothing, R restarts (8.4s)
+  ✓   77 tests\e2e\round.spec.ts:161:1 › the 10th result can be skipped straight to the end of the round (5.5s)
+  ✓   78 tests\e2e\round.spec.ts:173:1 › window.__FLIPPER__.restartRound() restarts like R, in any phase (1.8s)
+  ✓   79 tests\e2e\smoke.spec.ts:6:1 › boots straight into the Game scene without errors (1.5s)
+  ✓   80 tests\e2e\smoke.spec.ts:16:1 › the landscape 1280×720 canvas fills the desktop viewport (1.6s)
+  ✓   81 tests\e2e\smoke.spec.ts:31:1 › the bottle waits in the hand above the table instead of dropping (1.7s)
+  ✓   82 tests\e2e\sound.spec.ts:52:1 › before any input there is no sound and no AudioContext, and moving or scrolling the mouse changes nothing (2.2s)
+  ✓   83 tests\e2e\sound.spec.ts:68:1 › the first key press creates one running AudioContext, and more key presses make no more (2.2s)
+  ✓   84 tests\e2e\sound.spec.ts:85:1 › the first click creates one running AudioContext, and does not throw the bottle (2.4s)
+  ✓   85 tests\e2e\sound.spec.ts:99:1 › a throw made by a hook before any input is logged, but starts no AudioContext (1.9s)
+  ✓   86 tests\e2e\sound.spec.ts:110:1 › a Space throw plays a whoosh, then knocks when it lands, then a chime for an upright landing (2.2s)
+  ✓   87 tests\e2e\sound.spec.ts:137:1 › a failed Space throw plays a whoosh, a knock and a thud, and no chime (2.1s)
+  ✓   88 tests\e2e\sound.spec.ts:152:1 › a throw in real time (the clock running) plays its sounds through to the outcome (4.8s)
+  ✓   89 tests\e2e\sound.spec.ts:170:1 › a harder impact is a louder knock (2.5s)
+  ✓   90 tests\e2e\sound.spec.ts:195:1 › an impact below the minimum speed makes no knock, and one above it does (2.6s)
+  ✓   91 tests\e2e\sound.spec.ts:221:1 › the minimum impact speed is in the tuning: raised, a normal landing makes no knock (2.0s)
+  ✓   92 tests\e2e\sound.spec.ts:240:1 › no two knocks sound within 100 ms, though the bottle hits the table more often than that (2.9s)
+  ✓   93 tests\e2e\soundRender.spec.ts:61:1 › every sound is audible, never clips, and dies away to silence (1.5s)
+  ✓   94 tests\e2e\soundRender.spec.ts:74:1 › the sounds are as long as they should be: knock short, whoosh and thud medium, chime longest (1.6s)
+  ✓   95 tests\e2e\soundRender.spec.ts:86:1 › the thud is low and the chime high (1.5s)
+  ✓   96 tests\e2e\soundRender.spec.ts:96:1 › a lower volume is quieter, but still audible (1.7s)
+  ✓   97 tests\e2e\summary.spec.ts:20:1 › after the 10th throw the Summary shows the round’s points and its landings (5.7s)
+  ✓   98 tests\e2e\summary.spec.ts:45:1 › the summary also opens when the 10th result’s wait runs out (5.0s)
+  ✓   99 tests\e2e\summary.spec.ts:56:1 › the summary does not appear before the 10th result is over (17.0s)
+  ✓  100 tests\e2e\summary.spec.ts:81:1 › clicking Play again starts a new round in the Game scene (6.0s)
+  ✓  101 tests\e2e\summary.spec.ts:101:1 › the summary closes when something else starts a round again (4.9s)
+  ✓  102 tests\e2e\summary.spec.ts:111:1 › a second round ends in a summary of its own, with its own points (9.8s)
+  ✓  103 tests\e2e\summary.spec.ts:134:1 › a round that scores far above 10 points is summarized in full (5.0s)
+  ✓  104 tests\e2e\summaryInput.spec.ts:26:3 › pressing Enter on the summary starts a new round (5.4s)
+  ✓  105 tests\e2e\summaryInput.spec.ts:26:3 › pressing Space on the summary starts a new round (4.8s)
+  ✓  106 tests\e2e\summaryInput.spec.ts:26:3 › pressing R on the summary starts a new round (4.7s)
+  ✓  107 tests\e2e\summaryInput.spec.ts:43:1 › the Space press that skips the 10th result does not also start a new round (7.7s)
+  ✓  108 tests\e2e\summaryInput.spec.ts:71:1 › a click that skips the 10th result does not also press Play again (6.1s)
+  ✓  109 tests\e2e\summaryInput.spec.ts:92:1 › a press on Play again that is released somewhere else is not a click (10.5s)
+  ✓  110 tests\e2e\summaryInput.spec.ts:121:1 › the pointer is a hand over Play again and an arrow elsewhere and afterwards (9.0s)
+  ✓  111 tests\e2e\throw.spec.ts:8:1 › the game starts in the aiming phase with no throw recorded (1.4s)
+  ✓  112 tests\e2e\throw.spec.ts:17:1 › throwBottle(50) launches the bottle: it rises above its start, then comes down onto the table (1.9s)
+  ✓  113 tests\e2e\throw.spec.ts:58:1 › throwBottle clamps power to 0-100 and only throws while aiming (1.7s)
+  ✓  114 tests\e2e\throw.spec.ts:74:1 › the browser flight is the same as the core simulation for the same seed and power (1.5s)
+  ✓  115 tests\e2e\tuningPanel.spec.ts:38:1 › the panel is hidden at start; Backquote shows it with every tuning key and its value, and hides it again (6.4s)
+  ✓  116 tests\e2e\tuningPanel.spec.ts:58:1 › the panel is a side overlay: it does not cover the bottle or the power bar (1.8s)
+  ✓  117 tests\e2e\tuningPanel.spec.ts:72:1 › changing a value in the panel updates tuning() and the next throw: a stronger impulse launches faster (2.1s)
+  ✓  118 tests\e2e\tuningPanel.spec.ts:94:1 › typing digits, Space, letters or arrow keys into a field changes neither the power nor the phase (2.8s)
+  ✓  119 tests\e2e\tuningPanel.spec.ts:124:1 › Backquote works from inside a field, and gives the keys back to the game (2.0s)
+  ✓  120 tests\e2e\tuningPanel.spec.ts:144:1 › clicking and scrolling inside the panel does not reach the game (no skip, no power change) (4.8s)
+  ✓  121 tests\e2e\tuningPanel.spec.ts:172:1 › an edited value is still applied after a reload, and is marked as changed (3.3s)
+  ✓  122 tests\e2e\tuningPanel.spec.ts:197:1 › Reset restores the defaults, in the fields, in tuning() and after a reload (3.1s)
+  ✓  123 tests\e2e\tuningPanel.spec.ts:220:3 › Copy › gives the full current tuning as JSON, in the box and on the clipboard (2.6s)
+  ✓  124 tests\e2e\tuningPanel.spec.ts:242:1 › the hooks edit the tuning like the panel: setTuningValue shows in the fields, and bad input is refused (1.8s)
+  ✓  125 tests\e2e\tuningPanel.spec.ts:260:1 › an empty or half-typed field is not applied, and shows the value in effect when left (2.6s)
+  ✓  126 tests\e2e\tuningPanelBuild.spec.ts:15:1 › this server really is a production build (the dev flag is off) (1.4s)
+  ✓  127 tests\e2e\tuningPanelBuild.spec.ts:21:1 › a player’s page has no panel: not with no query, and not with ?testhooks (2.8s)
+  ✓  128 tests\e2e\tuningPanelBuild.spec.ts:33:1 › with ?debug the panel is installed, hidden, and Backquote shows it (no test hooks needed) (1.8s)
+  ✓  129 tests\e2e\tuningPanelBuild.spec.ts:52:1 › with ?debug an edit is applied and kept; without it the kept edit is ignored (4.0s)
+  ✓  130 tests\e2e\tuningPanelBuild.spec.ts:74:1 › without ?debug the hooks still edit the tuning in memory, and write nothing to localStorage (1.9s)
+  ✓  131 tests\e2e\tuningPanelReadout.spec.ts:29:3 › the water lock › with the water locked at 0.5, the next three bottles all have water 0.5 (3.3s)
+  ✓  132 tests\e2e\tuningPanelReadout.spec.ts:47:3 › the water lock › without the lock the water follows the seed, and unlocking goes back to it (2.9s)
+  ✓  133 tests\e2e\tuningPanelReadout.spec.ts:65:3 › the water lock › the lock is kept after a reload, and moving the level moves the lock (3.5s)
+  ✓  134 tests\e2e\tuningPanelReadout.spec.ts:82:3 › the water lock › the lockWater hook does what the box does (1.9s)
+  ✓  135 tests\e2e\tuningPanelReadout.spec.ts:94:1 › the last throw shows its water, power, outcome and turns, and keeps them after the next bottle comes (2.5s)
+  ✓  136 tests\e2e\tuningPanelReadout.spec.ts:126:1 › the flip window button shows the single flip window of the bottle in the hand (2.8s)
+  ✓  137 tests\e2e\tuningPanelReadout.spec.ts:153:1 › the flip window follows an edited tuning: a stronger spin moves the window (3.1s)
+
+  137 passed (6.9m)
+exit 0

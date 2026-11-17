@@ -13,6 +13,9 @@ export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
     height: GAME_HEIGHT,
     backgroundColor: COLORS.background,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    // Phaser's own sound manager is not used (the effects are made in src/game/audio): without this
+    // it would open an AudioContext of its own at boot and unlock it on the first click or key.
+    audio: { noAudio: true },
     scene: [BootScene, GameScene, SummaryScene],
   };
 }

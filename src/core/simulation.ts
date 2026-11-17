@@ -1,6 +1,7 @@
 import { World, type Body } from 'planck';
 import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT, stepsFor } from './constants';
+import { SimEvents, type SimEvent } from './events';
 import { MouseControl } from './mouseControl';
 import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
@@ -36,6 +37,8 @@ export class Simulation {
   private readonly world: World;
   private readonly rng: Rng;
   private readonly table: Body;
+  /** What happened, for the scene to drain each frame (sound, effects): see `drainEvents`. */
+  private readonly events: SimEvents;
   /**
    * The power bar. The scene forwards key presses, releases and wheel notches to it, and any phase
    * may adjust it, so the player can set the next throw while a result is still showing.
@@ -80,6 +83,7 @@ export class Simulation {
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
     this.table = createTable(this.world);
+    this.events = new SimEvents(this.world, this.table, () => this.ticks);
     this.bottle = new Bottle(this.world, this.currentTuning, this.nextWaterLevel());
   }
 
@@ -145,6 +149,7 @@ export class Simulation {
     this.startFlight(this.bottle.body.getAngle());
     this.bottle.launch(throwImpulse(used, this.currentTuning));
     this.thrown = { power: used, water: this.bottle.water, source };
+    this.events.threw(used, source);
     return true;
   }
 
@@ -250,6 +255,7 @@ export class Simulation {
   step(): void {
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
+    this.events.stepped();
     this.powerMeter.step();
     this.mouse.step(); // a pointer that stops is still: the live push (and the bar) fades
     if (this.currentPhase === 'flying' && this.judge) {
@@ -263,6 +269,7 @@ export class Simulation {
 
   private showResult(outcome: Outcome): void {
     this.round.judged(outcome);
+    this.events.judged(outcome);
     this.resultSteps = 0;
     this.currentPhase = 'result';
   }
@@ -273,6 +280,16 @@ export class Simulation {
    */
   setWater(level: number): void {
     if (this.currentPhase === 'aiming') this.bottle.setWater(level);
+  }
+
+  /**
+   * Everything that happened since the last call, oldest first, and then forget it: a `throw` for
+   * each throw, an `impact` (with its approach speed) for each time the bottle hits the table, and
+   * one `outcome` per throw. Events carry the tick they happened at. The scene calls this every
+   * frame; nothing else reads or clears the queue.
+   */
+  drainEvents(): SimEvent[] {
+    return this.events.drain();
   }
 
   snapshot(): SimSnapshot {
