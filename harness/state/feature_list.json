@@ -308,9 +308,9 @@
       "depends_on": [
         "F007"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built a Round (src/core/round.ts: throws, score, landings, streak) owned by Simulation, with the roundOver phase, restartRound() and the snapshot fields throwNumber, throwsPerRound, landings and streak; throwsPerRound (10) is a tuning value. R now calls sim.restartRound() on the same Simulation (it used to start a new scene with seed+1), so a restart continues the seed's water sequence as assumed; `throws` stays a lifetime count (the tuning panel's last-throw readout relies on it). The HUD is a top-left stack (hudView.ts, words in hudText.ts); tests: round, roundPlay, restartRound and hudText unit tests plus e2e round.spec.ts, verify green, snaps at 1280x720 checked.",
+      "notes": "Built a Round (src/core/round.ts: throws, score, landings, streak) owned by Simulation, with the roundOver phase, restartRound() and the snapshot fields throwNumber, throwsPerRound, landings and streak; throwsPerRound (10) is a tuning value. R now calls sim.restartRound() on the same Simulation (it used to start a new scene with seed+1), so a restart continues the seed's water sequence as assumed; `throws` stays a lifetime count (the tuning panel's last-throw readout relies on it). The HUD is a top-left stack (hudView.ts, words in hudText.ts); tests: round, roundPlay, restartRound and hudText unit tests plus e2e round.spec.ts, verify green, snaps at 1280x720 checked. Reviewed: verify green (476 unit, 99 e2e incl. 7 in round.spec.ts), each criterion matched to a named test (roundPlay, restartRound, round.spec), test diff only strengthens; own snap of a full 10-throw round at 1024x576 /?seed=3 (triple R mid-flight gave one clean restart, roundOver ignored Space/click/drag, R restarted), HUD readable top-left and clear of the power bar and bottle.",
       "review_feedback": ""
     },
     {
