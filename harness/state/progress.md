@@ -719,3 +719,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - A full 10-throw e2e round varies between 8 and 18 s on this machine under load (the default timeout is 30 s); the other tests here use 1 to 6 throws.
   - Process: a compound command with a `/tmp` redirect, a heredoc and a variable-setting `Monitor` command were auto-denied; I used the Write/Edit tools and single commands, and waited for verify with a background `until grep` loop (my first pattern matched Vitest's "42 passed (42)" and ended early; it needs `passed \(` followed by a duration).
 - Next: F016 and F017 can add their fields to `SaveData` and `parseSave` in `src/game/storage.ts` (mute for F017) and read or write them through `saveStore().load()` / `update({...})`; F018's Title screen can show the best with `saveStore().load().best`.
+
+> [harness] session 33 · builder F015 · todo → needs_review · ok · verify passed · 1 commit(s) · 93 tool calls · 16m 29s · ~$1.57 API-equivalent
