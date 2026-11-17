@@ -3,7 +3,7 @@ import { expect } from 'vitest';
 import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import type { Tuning } from '../../src/core/tuning';
-import { FLIPPED } from '../shared';
+import { FLIPPED, flipped, type PlacedPose } from '../shared';
 
 /** The result wait: 1.5 s at 60 steps per second. */
 export const RESULT_STEPS = 90;
@@ -36,6 +36,18 @@ export function judged(
   expect(sim.placeBottle(pose)).toBe(true);
   runToOutcome(sim);
   return sim;
+}
+
+/** Place a bottle, let it be judged and sit out the result wait, as a player who throws on. */
+export function play(sim: Simulation, pose: PlacedPose): void {
+  expect(sim.placeBottle(pose)).toBe(true);
+  runToOutcome(sim);
+  run(sim, RESULT_STEPS);
+}
+
+/** Ten throws that all land (a double on the 5th, so 11 points), to bring a round to its end. */
+export function playRound(sim: Simulation): void {
+  for (let i = 0; i < 10; i++) play(sim, i === 4 ? flipped(2) : FLIPPED);
 }
 
 /** Check that `snapshot` is a bottle standing still in the hand: upright, at rest, not moving. */

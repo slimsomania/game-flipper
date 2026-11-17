@@ -2,8 +2,9 @@ import { World, type Body } from 'planck';
 import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT, stepsFor } from './constants';
 import { MouseControl } from './mouseControl';
-import { LandingJudge, type LandingSample, type Outcome } from './outcome';
+import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
+import { Round } from './round';
 import { createRng, type Rng } from './rng';
 import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
 import { createTable } from './table';
@@ -50,7 +51,9 @@ export class Simulation {
   private result: Outcome | null = null;
   private currentPhase: Phase = 'aiming';
   private thrown: LastThrow | null = null;
-  private points = 0;
+  /** The books of the current round: its throws, points, landings and streak. */
+  private readonly round = new Round(() => this.currentTuning);
+  /** Every bottle released since the simulation began (a restart doesn't reset it). */
   private throwCount = 0;
   /** Steps since the outcome was decided, counted during `result`. */
   private resultSteps = 0;
@@ -163,17 +166,30 @@ export class Simulation {
     this.mouse.bottleLeft();
     this.judge = new LandingJudge(this.currentTuning, angle, turns);
     this.throwCount++;
+    this.round.released();
     this.currentPhase = 'flying';
   }
 
   /**
-   * End the result wait at once: the next bottle appears now. Does nothing, and returns false,
-   * unless the phase is `result`.
+   * End the result wait at once: the next bottle appears now, or the round is over if that was its
+   * last throw. Does nothing, and returns false, unless the phase is `result`.
    */
   skip(): boolean {
     if (this.currentPhase !== 'result') return false;
-    this.nextBottle();
+    this.endResult();
     return true;
+  }
+
+  /** The result has been shown: on to the next bottle, or to the end of the round after the last. */
+  private endResult(): void {
+    if (!this.round.complete) {
+      this.nextBottle();
+      return;
+    }
+    // No new bottle: the last one stays where it landed. Nothing can be thrown until a restart.
+    this.judge = null;
+    this.result = null;
+    this.currentPhase = 'roundOver';
   }
 
   /**
@@ -186,6 +202,19 @@ export class Simulation {
     this.judge = null;
     this.result = null;
     this.currentPhase = 'aiming';
+  }
+
+  /**
+   * Start the round again from any phase (aiming, in flight, during a result, or after the round
+   * ended): throw 1, no points, no landings, no streak, and a new bottle waiting in the hand. A
+   * bottle in flight is gone and a grab with the mouse is dropped. The seed's sequence of water
+   * levels carries on (the new bottle is its next one), so a restart never repeats the same ten
+   * bottles. The power bar, `throws`, `lastThrow` and the clock (`tick`) are left as they are.
+   */
+  restartRound(): void {
+    this.mouse.cancel();
+    this.round.reset();
+    this.nextBottle();
   }
 
   /**
@@ -224,34 +253,18 @@ export class Simulation {
     this.powerMeter.step();
     this.mouse.step(); // a pointer that stops is still: the live push (and the bar) fades
     if (this.currentPhase === 'flying' && this.judge) {
-      this.result = this.judge.observe(this.landingSample());
+      this.result = this.judge.observe(this.bottle.landingSample(this.table));
       if (this.result) this.showResult(this.result);
     } else if (this.currentPhase === 'result') {
       this.resultSteps++;
-      if (this.resultSteps >= stepsFor(this.currentTuning.resultDelaySeconds)) this.nextBottle();
+      if (this.resultSteps >= stepsFor(this.currentTuning.resultDelaySeconds)) this.endResult();
     }
   }
 
   private showResult(outcome: Outcome): void {
-    this.points += outcome.points;
+    this.round.judged(outcome);
     this.resultSteps = 0;
     this.currentPhase = 'result';
-  }
-
-  /** What the judge sees: the bottle's pose and speeds, and whether it rests on the table. */
-  private landingSample(): LandingSample {
-    const body = this.bottle.body;
-    const p = body.getPosition();
-    const v = body.getLinearVelocity();
-    return {
-      x: p.x,
-      y: p.y,
-      angle: body.getAngle(),
-      vx: v.x,
-      vy: v.y,
-      omega: body.getAngularVelocity(),
-      onTable: this.bottle.touches(this.table),
-    };
   }
 
   /**
@@ -273,8 +286,12 @@ export class Simulation {
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
       resultSteps: this.currentPhase === 'result' ? this.resultSteps : null,
-      score: this.points,
+      score: this.round.score,
       throws: this.throwCount,
+      throwNumber: this.round.throwNumber(this.currentPhase === 'aiming'),
+      throwsPerRound: this.round.length,
+      landings: this.round.landings,
+      streak: this.round.streak,
     };
   }
 }

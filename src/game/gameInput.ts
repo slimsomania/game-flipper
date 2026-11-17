@@ -20,6 +20,7 @@ const isLeftButton = (pointer: Phaser.Input.Pointer): boolean => pointer.button 
  * - Mouse wheel: one notch per wheel event, up (away from you) raises the power.
  * - Space: throws while aiming, ends the result wait during a result. Repeated keydowns are
  *   ignored, so holding Space through a result can't throw the next bottle.
+ * - R: restarts the round (`Simulation.restartRound`), in any phase. Repeats are ignored too.
  * - Left button down: grabs the held bottle if the press is on it, otherwise (in a result) ends the
  *   result wait, like any click. Moving while the button is down is the push; letting go throws
  *   (see `MouseControl.release`). A release outside the canvas, which the game sees only as the
@@ -45,6 +46,11 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
     keyboard.on(
       'keydown-SPACE',
       firstPress(() => sim.throwOrSkip()),
+    );
+    // R starts the round again at any time. The same simulation carries on (same seed, next bottle).
+    keyboard.on(
+      'keydown-R',
+      firstPress(() => sim.restartRound()),
     );
   }
 

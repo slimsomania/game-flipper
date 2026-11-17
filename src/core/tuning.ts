@@ -108,6 +108,11 @@ export interface Tuning {
    * a press still grabs it, so the bottle is easy to catch with the mouse.
    */
   grabPadding: number;
+  /**
+   * Throws in a round (design section 2). Read as a whole number of at least 1; after the last
+   * throw's result the phase is `roundOver`.
+   */
+  throwsPerRound: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -168,6 +173,8 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // the 100 px wide bottle still grabs it.
   pushMinPower: 1,
   grabPadding: 12,
+  // F013: design section 2, a round is 10 throws.
+  throwsPerRound: 10,
 };
 
 /** The defaults with `overrides` applied on top. */

@@ -9,9 +9,9 @@ import { bindGameInput } from '../gameInput';
 import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
+import { createHudView, type HudView } from '../view/hudView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createResultView, type ResultView } from '../view/resultView';
-import { createScoreView, type ScoreView } from '../view/scoreView';
 import { createTableView } from '../view/tableView';
 
 interface GameSceneData {
@@ -29,7 +29,7 @@ export class GameScene extends Phaser.Scene {
   private bottleView!: BottleView;
   private powerBarView!: PowerBarView;
   private resultView!: ResultView;
-  private scoreView!: ScoreView;
+  private hudView!: HudView;
   private cursorView!: CursorView;
 
   constructor() {
@@ -48,10 +48,9 @@ export class GameScene extends Phaser.Scene {
     this.bottleView = createBottleView(this);
     this.powerBarView = createPowerBarView(this);
     this.resultView = createResultView(this);
-    this.scoreView = createScoreView(this);
+    this.hudView = createHudView(this);
     this.cursorView = createCursorView(this);
 
-    this.input.keyboard?.on('keydown-R', () => this.scene.restart({ seed: seed + 1 }));
     bindGameInput(this, this.sim);
 
     this.draw();
@@ -68,7 +67,7 @@ export class GameScene extends Phaser.Scene {
     this.bottleView.update(snapshot.bottle);
     this.powerBarView.update(snapshot.power);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);
-    this.scoreView.update(snapshot.score);
+    this.hudView.update(snapshot);
     const pointer = this.input.activePointer;
     this.cursorView.update(snapshot.dragging, this.sim.mouse.canGrab(pointer.x, pointer.y));
   }

@@ -31,9 +31,11 @@ export interface BottleSnapshot extends BodySnapshot {
  * Where the current throw is: `aiming` while a bottle waits in the hand, `flying` once it has been
  * thrown (the landing is judged during this phase), and `result` from the step its `outcome` is
  * decided until the next bottle appears (after the result delay, or at once on `skip()`), which
- * returns the phase to `aiming`. Later features add the end-of-round phase.
+ * returns the phase to `aiming`. After the last throw of a round the result wait leads to
+ * `roundOver` instead: no bottle is in the hand and nothing more can be thrown, until
+ * `restartRound()` starts the next round (back to `aiming`).
  */
-export type Phase = 'aiming' | 'flying' | 'result';
+export type Phase = 'aiming' | 'flying' | 'result' | 'roundOver';
 
 /** The throw that launched the current bottle. */
 export interface LastThrow {
@@ -71,15 +73,33 @@ export interface SimSnapshot {
    */
   resultSteps: number | null;
   /**
-   * Points so far: each upright landing adds its number of turns (`outcome.points`: 1 for a single
-   * flip, 2 for a double, ...). A fail, "no flip" included, adds nothing.
+   * Points so far this round: each upright landing adds its number of turns (`outcome.points`: 1
+   * for a single flip, 2 for a double, ...). A fail, "no flip" included, adds nothing. Back to 0
+   * on `restartRound()`.
    */
   score: number;
   /**
-   * Throws made so far, counted when the bottle is released: by `throwBottle` or `placeBottle`,
-   * so a throw still in the air is already counted (and not yet in `score`).
+   * Throws made so far by this simulation, counted when the bottle is released: by `throwBottle`
+   * or `placeBottle`, so a throw still in the air is already counted (and not yet in `score`).
+   * It never goes back, not even on `restartRound()`: it counts bottles thrown, where
+   * `throwNumber` says how far into the round the player is.
    */
   throws: number;
+  /**
+   * The number of the throw the player is on, 1 to `throwsPerRound`: the bottle in the hand (the
+   * next throw) while `aiming`, the throw in the air or being judged during `flying` and `result`,
+   * and the last throw once the round is over.
+   */
+  throwNumber: number;
+  /** How many throws a round has (the tuning's `throwsPerRound`, a whole number of at least 1). */
+  throwsPerRound: number;
+  /** Upright landings (successes) so far this round. Back to 0 on `restartRound()`. */
+  landings: number;
+  /**
+   * Consecutive landings up to now: a landing adds one, a fail sets it back to 0. It has no effect
+   * on the score. Back to 0 on `restartRound()`.
+   */
+  streak: number;
 }
 
 /** The pose, speeds and sleep state of a planck body as plain numbers. */

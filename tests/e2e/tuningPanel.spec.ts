@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { DEFAULT_TUNING, type Tuning } from '../../src/core/tuning';
+import { FLIPPED } from '../shared';
 import { gameState, openGame, settleInput, stepUntilOutcome } from './helpers';
 
 /*
@@ -95,7 +96,13 @@ test('typing digits, Space, letters or arrow keys into a field changes neither t
 }) => {
   const errors = await openGame(page, '?seed=7');
   await page.evaluate(() => window.__FLIPPER__!.pause());
+  // One landing first, so a restart of the round (R) would show: it would put the score, the throw
+  // number and the landings back to the start (F013: R restarts the round, not the whole game).
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
+  await stepUntilOutcome(page);
+  await page.evaluate(() => window.__FLIPPER__!.skip());
   const start = await gameState(page);
+  expect(start).toMatchObject({ phase: 'aiming', throwNumber: 2, score: 1, landings: 1 });
   await showPanel(page);
 
   await page.locator(field('throwAngularImpulse')).click();
@@ -108,8 +115,9 @@ test('typing digits, Space, letters or arrow keys into a field changes neither t
   const after = await gameState(page);
   expect(after.power).toBe(start.power);
   expect(after.phase).toBe('aiming');
-  expect(after.throws).toBe(0);
-  expect(after.seed).toBe(start.seed); // R did not restart the game
+  expect(after.throws).toBe(start.throws); // Space did not throw
+  expect(after).toMatchObject({ throwNumber: 2, score: 1, landings: 1 }); // R did not restart
+  expect(after.seed).toBe(start.seed);
   expect(errors).toEqual([]);
 });
 

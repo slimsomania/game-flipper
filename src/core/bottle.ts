@@ -1,5 +1,6 @@
 import { Polygon, type Body, type Fixture, type World } from 'planck';
 import { BOTTLE_PARTS, waterVertices, type Point } from './bottleShape';
+import type { LandingSample } from './outcome';
 import type { Rng } from './rng';
 import { TABLE_LEFT_X, TABLE_TOP_Y } from './table';
 import type { ThrowImpulse } from './throw';
@@ -151,6 +152,21 @@ export class Bottle {
       if (edge.other === other && edge.contact.isTouching()) return true;
     }
     return false;
+  }
+
+  /** What the landing judge sees: the bottle's pose and speeds, and whether it rests on `table`. */
+  landingSample(table: Body): LandingSample {
+    const p = this.body.getPosition();
+    const v = this.body.getLinearVelocity();
+    return {
+      x: p.x,
+      y: p.y,
+      angle: this.body.getAngle(),
+      vx: v.x,
+      vy: v.y,
+      omega: this.body.getAngularVelocity(),
+      onTable: this.touches(table),
+    };
   }
 
   /**

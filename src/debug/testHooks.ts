@@ -67,6 +67,12 @@ export interface FlipperTestApi {
    */
   skip(): SimSnapshot | null;
   /**
+   * Start the round again, as the R key does: throw 1, no points, landings or streak, and a new
+   * bottle in the hand (the same seed carries on). Works in every phase, and returns the new
+   * snapshot. Null when no game is running.
+   */
+  restartRound(): SimSnapshot | null;
+  /**
    * The tuning in effect: the running simulation's, or (with no game running) the defaults with
    * the edits made so far. A copy: changing it changes nothing.
    */
@@ -138,6 +144,7 @@ export function installTestHooks(game: Phaser.Game): void {
     setPower: (power) => acting((sim) => sim.powerMeter.set(power)),
     placeBottle: (pose) => acting((sim) => sim.placeBottle(pose)),
     skip: () => acting((sim) => sim.skip()),
+    restartRound: () => acting((sim) => sim.restartRound()),
     tuning: () => ({ ...(currentSimulation()?.tuning ?? tuningControl().values()) }),
     setTuningValue: (key, value) => {
       const control = tuningControl();
