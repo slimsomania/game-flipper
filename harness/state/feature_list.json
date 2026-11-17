@@ -224,7 +224,7 @@
         "F008"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Calibrated the defaults in src/core/tuning.ts and src/core/bottleShape.ts: a squat 1.0 x 1.13 m bottle, a heavy shell, sticky landings, strong spin damping, and a new spin curve (throwSpinExponent and throwSpinGrowth, spinFraction in src/core/throw.ts) in front of the angular impulse. The flip windows at 10% to 90% water are 13 to 16 points wide, the 90% center is 1.83 times the 10% one, and every level has a double window 5 to 10 points wide above its single. tests/unit/calibration.test.ts locks all six criteria on top of flipWindow.ts; verified with npm run verify, scripts/flip-windows.ts and snaps of a single and a double flip. The bottle's look changed (it is now a wide jar), and the spin curve is a new lever: see D23 in docs/ARCHITECTURE.md and the progress entry.",
       "review_feedback": ""
     },

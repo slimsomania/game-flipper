@@ -543,3 +543,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/outcome.test.ts`, `throw.test.ts` and `push.test.ts` are still over the 300-line guideline (see sessions 19 and 20); I put all new tests in new files.
   - Compound shell commands, a shell variable in a command, `grep` and `tail` on a file outside the repo, `tasklist` and `ps` were denied automatically; I used single commands and the Read tool.
 - Next: the reviewer should re-run `npx tsx scripts/flip-windows.ts` and `npm test -- tests/unit/calibration.test.ts`, look at the snaps of a single and a double flip, and decide whether the squat bottle is acceptable for now. The next feature (F010, the tuning panel) should list the two new spin-curve fields and the two damping fields.
+
+> [harness] session 23 · builder F009 · todo → needs_review · ok · verify passed · 1 commit(s) · 363 tool calls · 46m 32s · ~$10.33 API-equivalent
