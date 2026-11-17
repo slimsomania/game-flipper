@@ -315,3 +315,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/result.test.ts` is 380 lines, over the 300-line guideline; I put the new tests in new files rather than adding to it. A later cleanup could split it. `src/core/simulation.ts` is about 305 lines.
   - Compound shell commands and heredocs were denied automatically again (`python3 -` heredoc); I used the Edit tool.
 - Next: F008 (flip windows) doesn't touch the UI. F013 (rounds) can add "Throw N / 10" and the streak next to `scoreView.ts` in the top-left corner, and should read `snapshot.throws`/`phase`; any new UI text is then testable with `visibleTexts(page)`.
+
+> [harness] session 14 · builder F007 · todo → needs_review · ok · verify passed · 1 commit(s) · 73 tool calls · 10m 17s · ~$1.27 API-equivalent
