@@ -265,9 +265,9 @@
       "depends_on": [
         "F003"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built pushPower(samples, tuning?) in the new src/core/push.ts, plus six push* fields in tuning.ts (window 150 ms, speed span 50 ms, equal distance and speed weights, full power at 300 px and 2000 px/s); distances are in logical game pixels. It reads the pointer's path through its samples (so 60 Hz and 1000 Hz agree within 0.4 points), measures net upward distance over the window and the fastest upward speed over any 50 ms inside it, and treats a long gap between samples as the pointer staying still. Verified by tests/unit/push.test.ts (28 tests, all four criteria plus pauses, bad samples and tuning), docs D21, and npm run verify; nothing is wired to the scene yet, so there is no e2e or snap (F012 does that).",
+      "notes": "Built pushPower(samples, tuning?) in the new src/core/push.ts, plus six push* fields in tuning.ts (window 150 ms, speed span 50 ms, equal distance and speed weights, full power at 300 px and 2000 px/s); distances are in logical game pixels. It reads the pointer's path through its samples (so 60 Hz and 1000 Hz agree within 0.4 points), measures net upward distance over the window and the fastest upward speed over any 50 ms inside it, and treats a long gap between samples as the pointer staying still. Verified by tests/unit/push.test.ts (28 tests, all four criteria plus pauses, bad samples and tuning), docs D21, and npm run verify; nothing is wired to the scene yet, so there is no e2e or snap (F012 does that). Reviewed: npm run verify green (287 unit, 43 e2e); push.test.ts covers all four criteria; own throwaway probes (60 vs 240 Hz at off-grid sample phases and release times, worst gap 0.39 points; duplicate timestamps; up-down-up in the window; press plus one jitter event gives under 4) all held; only additive test changes; core stays pure.",
       "review_feedback": ""
     },
     {
