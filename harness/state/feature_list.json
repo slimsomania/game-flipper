@@ -245,9 +245,9 @@
         "F006",
         "F008"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumptions: Backquote is the toggle key. The panel is a plain DOM overlay (not Phaser) so it can use native inputs. Because edits persist in localStorage, the panel marks values that differ from the defaults. It may reveal answers such as the flip window; that is fine for a developer tool.",
+      "notes": "Built the panel in src/debug (tuningPanel.ts, tuningControl.ts, tuningStore.ts, tuningReadout.ts): a DOM overlay on the right edge, Backquote toggles it, one field per tuning key (changed ones marked), Copy, Reset, a water lock (new core rule Simulation.lockWater), the last throw and a flip-window button; hooks tuning(), setTuningValue() and lockWater() use the same TuningControl, and edits persist in localStorage (only the differences from the defaults). Verified by npm run verify (386 unit, 77 e2e), 23 new e2e tests in tuningPanel*.spec.ts (a second Vite server on port 5197 with NODE_ENV=production checks the panel is absent without ?debug and present with it), and snaps at 1280x720 showing the panel, the bottle and the power bar together. Reset restores the tuning only: the water lock is a separate switch.",
       "review_feedback": ""
     },
     {

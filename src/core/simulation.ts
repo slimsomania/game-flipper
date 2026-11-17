@@ -15,16 +15,22 @@ export type { BodySnapshot, BottleSnapshot, LastThrow, Phase, SimSnapshot } from
 const VELOCITY_ITERATIONS = 8;
 const POSITION_ITERATIONS = 3;
 
+const clampWater = (level: number): number => Math.min(1, Math.max(0, level));
+
 export interface SimulationOptions {
   /** Same seed + same inputs = same result. */
   seed?: number;
   /** Overrides for the defaults in `DEFAULT_TUNING`. */
   tuning?: Partial<Tuning>;
+  /** Give every bottle this water level (0 to 1) instead of a random one; see `lockWater`. */
+  lockedWater?: number | null;
 }
 
 export class Simulation {
   readonly seed: number;
   private currentTuning: Tuning;
+  /** The water level every bottle gets while it is set, or null for the seeded random levels. */
+  private waterLock: number | null = null;
   private readonly world: World;
   private readonly rng: Rng;
   private readonly table: Body;
@@ -47,21 +53,47 @@ export class Simulation {
   constructor(options: SimulationOptions = {}) {
     this.seed = options.seed ?? 1;
     this.currentTuning = resolveTuning(options.tuning);
+    if (options.lockedWater != null && Number.isFinite(options.lockedWater)) {
+      this.waterLock = clampWater(options.lockedWater);
+    }
     this.powerMeter = new PowerMeter(() => this.currentTuning);
     this.rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
     this.table = createTable(this.world);
-    this.bottle = new Bottle(
-      this.world,
-      this.currentTuning,
-      drawWaterLevel(this.rng, this.currentTuning),
-    );
+    this.bottle = new Bottle(this.world, this.currentTuning, this.nextWaterLevel());
   }
 
   /** The tuning in effect: the defaults, the constructor's overrides and any `setTuning` calls. */
   get tuning(): Tuning {
     return this.currentTuning;
+  }
+
+  /** The locked water level (see `lockWater`), or null while the levels are random. */
+  get lockedWater(): number | null {
+    return this.waterLock;
+  }
+
+  /**
+   * Give every bottle this water level (clamped to 0..1) from now on, or `null` to go back to the
+   * seeded random levels. For tuning tools: the held bottle takes the level at once (while it is
+   * `aiming`), and a number that isn't finite is ignored. The random draw is still made for every
+   * bottle, so unlocking carries on with the seed's own sequence, as if nothing had been locked.
+   */
+  lockWater(level: number | null): void {
+    if (level === null) {
+      this.waterLock = null;
+      return;
+    }
+    if (!Number.isFinite(level)) return;
+    this.waterLock = clampWater(level);
+    this.setWater(this.waterLock);
+  }
+
+  /** The water level of the next bottle: the lock if there is one, else the seed's next draw. */
+  private nextWaterLevel(): number {
+    const drawn = drawWaterLevel(this.rng, this.currentTuning);
+    return this.waterLock ?? drawn;
   }
 
   get phase(): Phase {
@@ -133,11 +165,7 @@ export class Simulation {
    */
   private nextBottle(): void {
     this.bottle.destroy();
-    this.bottle = new Bottle(
-      this.world,
-      this.currentTuning,
-      drawWaterLevel(this.rng, this.currentTuning),
-    );
+    this.bottle = new Bottle(this.world, this.currentTuning, this.nextWaterLevel());
     this.judge = null;
     this.result = null;
     this.currentPhase = 'aiming';

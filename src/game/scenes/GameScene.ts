@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import { SIM_DT } from '../../core/constants';
 import { createFixedStepper } from '../../core/fixedStep';
 import { Simulation } from '../../core/simulation';
-import { markReady, registerSimulation, testControls } from '../../debug/testHooks';
+import { registerSimulation } from '../../debug/currentSimulation';
+import { markReady, testControls } from '../../debug/testHooks';
+import { tuningControl } from '../../debug/tuningControl';
 import { bindGameInput } from '../gameInput';
 import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
@@ -34,7 +36,8 @@ export class GameScene extends Phaser.Scene {
 
   create(data: GameSceneData): void {
     const seed = data.seed ?? intParam('seed') ?? Math.floor(Math.random() * 1_000_000);
-    this.sim = new Simulation({ seed });
+    // The developer tuning (edits and water lock from the panel) carries over to a restarted game.
+    this.sim = new Simulation({ seed, ...tuningControl().simulationOptions() });
     this.stepper.reset();
     registerSimulation(this.sim);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => registerSimulation(null));

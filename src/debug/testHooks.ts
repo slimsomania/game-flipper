@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
+import type { Tuning } from '../core/tuning';
+import { currentSimulation } from './currentSimulation';
+import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
 import { visibleTexts } from './visibleTexts';
 
@@ -63,6 +66,24 @@ export interface FlipperTestApi {
    * Does nothing unless the phase is "result". Null when no game is running.
    */
   skip(): SimSnapshot | null;
+  /**
+   * The tuning in effect: the running simulation's, or (with no game running) the defaults with
+   * the edits made so far. A copy: changing it changes nothing.
+   */
+  tuning(): Tuning;
+  /**
+   * Edit one tuning value exactly as the tuning panel does: it applies from the next bottle and
+   * throw, and is kept in localStorage where the panel is on (dev builds and ?debug). Returns the
+   * new tuning, or null (changing nothing) for a key that isn't in the tuning or a value that isn't
+   * a finite number.
+   */
+  setTuningValue(key: keyof Tuning, value: number): Tuning | null;
+  /**
+   * Lock every bottle's water level to `level` (0 to 1, clamped), or pass null for random levels
+   * again, like the panel's "Lock water" box. The held bottle takes the level at once. Returns the
+   * water lock now in effect.
+   */
+  lockWater(level: number | null): number | null;
   /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -78,13 +99,6 @@ declare global {
 /** Shared with the game scene: while paused, the scene stops stepping the simulation itself. */
 export const testControls = { paused: false };
 
-let currentSim: Simulation | null = null;
-
-/** Called by the game scene when it creates (or drops) its simulation. */
-export function registerSimulation(sim: Simulation | null): void {
-  currentSim = sim;
-}
-
 /** Called by the first interactive scene once it is ready for input. */
 export function markReady(): void {
   if (window.__FLIPPER__) window.__FLIPPER__.ready = true;
@@ -95,10 +109,18 @@ export function installTestHooks(game: Phaser.Game): void {
     import.meta.env.DEV || new URLSearchParams(window.location.search).has('testhooks');
   if (!enabled) return;
 
+  /** Run `act` on the running simulation and return the new snapshot, or null with none running. */
+  const acting = (act: (sim: Simulation) => void): SimSnapshot | null => {
+    const sim = currentSimulation();
+    if (!sim) return null;
+    act(sim);
+    return sim.snapshot();
+  };
+
   window.__FLIPPER__ = {
     ready: false,
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
-    state: () => currentSim?.snapshot() ?? null,
+    state: () => currentSimulation()?.snapshot() ?? null,
     texts: () => visibleTexts(game.scene.getScenes(true)),
     flash: () => visibleFlash(game.scene.getScenes(true)),
     pause: () => {
@@ -107,35 +129,23 @@ export function installTestHooks(game: Phaser.Game): void {
     resume: () => {
       testControls.paused = false;
     },
-    step: (frames = 1) => {
-      if (!currentSim) return null;
-      for (let i = 0; i < frames; i++) currentSim.step();
-      return currentSim.snapshot();
+    step: (frames = 1) =>
+      acting((sim) => {
+        for (let i = 0; i < frames; i++) sim.step();
+      }),
+    setWater: (level) => acting((sim) => sim.setWater(level)),
+    throwBottle: (power) => acting((sim) => sim.throwBottle(power)),
+    setPower: (power) => acting((sim) => sim.powerMeter.set(power)),
+    placeBottle: (pose) => acting((sim) => sim.placeBottle(pose)),
+    skip: () => acting((sim) => sim.skip()),
+    tuning: () => ({ ...(currentSimulation()?.tuning ?? tuningControl().values()) }),
+    setTuningValue: (key, value) => {
+      const control = tuningControl();
+      return control.set(key, value) ? { ...control.values() } : null;
     },
-    setWater: (level) => {
-      if (!currentSim) return null;
-      currentSim.setWater(level);
-      return currentSim.snapshot();
-    },
-    throwBottle: (power) => {
-      if (!currentSim) return null;
-      currentSim.throwBottle(power);
-      return currentSim.snapshot();
-    },
-    setPower: (power) => {
-      if (!currentSim) return null;
-      currentSim.powerMeter.set(power);
-      return currentSim.snapshot();
-    },
-    placeBottle: (pose) => {
-      if (!currentSim) return null;
-      currentSim.placeBottle(pose);
-      return currentSim.snapshot();
-    },
-    skip: () => {
-      if (!currentSim) return null;
-      currentSim.skip();
-      return currentSim.snapshot();
+    lockWater: (level) => {
+      tuningControl().setWaterLock(level);
+      return tuningControl().waterLock();
     },
     startScene: (key, data) => {
       for (const scene of game.scene.getScenes(true)) game.scene.stop(scene.scene.key);
