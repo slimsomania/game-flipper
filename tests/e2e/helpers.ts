@@ -55,6 +55,17 @@ export async function settleInput(page: Page): Promise<void> {
 }
 
 /**
+ * The text the player sees (`window.__FLIPPER__.texts()`), read after the game has had a frame to
+ * draw the latest state: the scene redraws once per frame, so right after `step()`, `skip()` or
+ * `placeBottle()` the texts are still the previous ones. To wait for a text to appear, poll
+ * this with `expect.poll`.
+ */
+export async function visibleTexts(page: Page): Promise<string[]> {
+  await settleInput(page);
+  return page.evaluate(() => window.__FLIPPER__!.texts());
+}
+
+/**
  * Start recording the `repeat` flag of every keydown the page receives, so a test can prove that
  * it really sent auto-repeat events. Returns a function that reads the flags so far.
  */

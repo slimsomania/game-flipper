@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
+import { visibleTexts } from './visibleTexts';
 
 /**
  * window.__FLIPPER__ lets e2e tests and `npm run snap` observe and drive the game
@@ -18,6 +19,12 @@ export interface FlipperTestApi {
   activeScenes(): string[];
   /** Snapshot of the running simulation, or null when no game scene is running. */
   state(): SimSnapshot | null;
+  /**
+   * The text strings the player can see in the active scenes (shown, non-empty text objects, in
+   * display order), so a test can check UI text without reading pixels. The scene redraws once per
+   * frame: after stepping or acting from a test, wait a frame (or poll) before reading it.
+   */
+  texts(): string[];
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -83,6 +90,7 @@ export function installTestHooks(game: Phaser.Game): void {
     ready: false,
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     state: () => currentSim?.snapshot() ?? null,
+    texts: () => visibleTexts(game.scene.getScenes(true)),
     pause: () => {
       testControls.paused = true;
     },

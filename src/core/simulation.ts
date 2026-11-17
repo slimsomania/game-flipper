@@ -63,6 +63,11 @@ export interface SimSnapshot {
    * through the `result` phase. The next bottle starts with null again.
    */
   outcome: Outcome | null;
+  /**
+   * Steps since the outcome was decided: 0 in the step that decides it, then counting up for as
+   * long as the `result` phase lasts. Null in every other phase. The result flash fades by it.
+   */
+  resultSteps: number | null;
   /** Successful throws so far. A fail adds nothing. */
   score: number;
   /**
@@ -269,6 +274,7 @@ export class Simulation {
       bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
+      resultSteps: this.currentPhase === 'result' ? this.resultSteps : null,
       score: this.points,
       throws: this.throwCount,
     };

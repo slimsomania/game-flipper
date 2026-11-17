@@ -7,6 +7,8 @@ import { bindGameInput } from '../gameInput';
 import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
+import { createResultView, type ResultView } from '../view/resultView';
+import { createScoreView, type ScoreView } from '../view/scoreView';
 import { createTableView } from '../view/tableView';
 
 interface GameSceneData {
@@ -23,6 +25,8 @@ export class GameScene extends Phaser.Scene {
   private readonly stepper = createFixedStepper(SIM_DT);
   private bottleView!: BottleView;
   private powerBarView!: PowerBarView;
+  private resultView!: ResultView;
+  private scoreView!: ScoreView;
 
   constructor() {
     super('Game');
@@ -38,6 +42,8 @@ export class GameScene extends Phaser.Scene {
     createTableView(this);
     this.bottleView = createBottleView(this);
     this.powerBarView = createPowerBarView(this);
+    this.resultView = createResultView(this);
+    this.scoreView = createScoreView(this);
 
     this.input.keyboard?.on('keydown-R', () => this.scene.restart({ seed: seed + 1 }));
     bindGameInput(this, this.sim);
@@ -55,5 +61,7 @@ export class GameScene extends Phaser.Scene {
     const snapshot = this.sim.snapshot();
     this.bottleView.update(snapshot.bottle);
     this.powerBarView.update(snapshot.power);
+    this.resultView.update(snapshot.outcome, snapshot.resultSteps);
+    this.scoreView.update(snapshot.score);
   }
 }

@@ -19,4 +19,13 @@ export const COLORS = {
   powerTrack: 0xd3dce8,
   powerFill: 0xe8963c,
   powerOutline: 0x6b7a90,
+  /**
+   * Result colors: a flash over the whole screen (hex numbers) and the message text on top of it
+   * (CSS colors, dark enough to read over the flash and over the light background after it).
+   * The message words tell the two apart as well, so the color is never the only cue.
+   */
+  successFlash: 0x3fbf6a,
+  failFlash: 0xe5473f,
+  successText: '#12683a',
+  failText: '#a3211b',
 } as const;
