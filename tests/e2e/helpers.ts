@@ -66,6 +66,16 @@ export async function visibleTexts(page: Page): Promise<string[]> {
 }
 
 /**
+ * The full-screen result flash the player sees (`window.__FLIPPER__.flash()`: a color and an
+ * opacity, or null), read after the game has had a frame to draw the latest state, like
+ * `visibleTexts`.
+ */
+export async function visibleFlash(page: Page): Promise<{ color: number; alpha: number } | null> {
+  await settleInput(page);
+  return page.evaluate(() => window.__FLIPPER__!.flash());
+}
+
+/**
  * Start recording the `repeat` flag of every keydown the page receives, so a test can prove that
  * it really sent auto-repeat events. Returns a function that reads the flags so far.
  */

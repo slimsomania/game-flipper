@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
-import { UPRIGHT } from '../shared';
+import { FLIPPED } from '../shared';
 import { RESULT_STEPS, run, runToOutcome } from './helpers';
 
 describe('the power bar in the simulation', () => {
@@ -98,7 +98,7 @@ describe('throwOrSkip (Space)', () => {
 
   it('brings the next bottle during a result', () => {
     const sim = new Simulation({ seed: 4 });
-    sim.placeBottle(UPRIGHT);
+    sim.placeBottle(FLIPPED);
     runToOutcome(sim);
     expect(sim.phase).toBe('result');
     expect(sim.throwOrSkip()).toBe(true);

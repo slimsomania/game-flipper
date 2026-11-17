@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { HAND_Y } from '../../src/core/bottle';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
-import { SIDE, UPRIGHT, waterSequence } from '../shared';
+import { SIDE, FLIPPED, waterSequence } from '../shared';
 import { RESULT_STEPS, expectHeld, judged, run, runToOutcome } from './helpers';
 
 describe('the result phase', () => {
   it('starts in the step that decides the outcome, with the score already updated', () => {
     const sim = new Simulation({ seed: 5 });
-    sim.placeBottle(UPRIGHT);
+    sim.placeBottle(FLIPPED);
     expect(sim.phase).toBe('flying');
     expect(sim.snapshot()).toMatchObject({ outcome: null, score: 0, throws: 1 });
     runToOutcome(sim);
@@ -17,7 +17,7 @@ describe('the result phase', () => {
   });
 
   it('keeps the judged bottle and its outcome on screen for the whole wait', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     const outcome = sim.snapshot().outcome;
     for (let i = 1; i < RESULT_STEPS; i++) {
       const snapshot = run(sim, 1);
@@ -35,7 +35,7 @@ describe('score and throws', () => {
     const scores: number[] = [];
     const throws: number[] = [];
     // success, fail, success, success, fail
-    for (const pose of [UPRIGHT, SIDE, UPRIGHT, UPRIGHT, SIDE]) {
+    for (const pose of [FLIPPED, SIDE, FLIPPED, FLIPPED, SIDE]) {
       expect(sim.placeBottle(pose)).toBe(true);
       runToOutcome(sim);
       scores.push(sim.snapshot().score);
@@ -69,7 +69,7 @@ describe('score and throws', () => {
   });
 
   it('does not count a refused throw', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     expect(sim.throwBottle(50)).toBe(false); // during the result
     expect(sim.placeBottle(SIDE)).toBe(false);
     expect(sim.snapshot()).toMatchObject({ phase: 'result', score: 1, throws: 1 });
@@ -79,7 +79,7 @@ describe('score and throws', () => {
 
 describe('the next bottle', () => {
   it('appears after 90 steps, and not before: upright, still, in the hand', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     const decided = sim.snapshot();
     expect(decided.phase).toBe('result');
     run(sim, RESULT_STEPS - 1);
@@ -94,7 +94,7 @@ describe('the next bottle', () => {
   });
 
   it('has the next water level from the seed', () => {
-    const sim = judged(UPRIGHT, { seed: 5 });
+    const sim = judged(FLIPPED, { seed: 5 });
     const [first, second] = waterSequence(5, 2);
     expect(sim.snapshot().bottle.water).toBe(first); // the judged bottle is the first draw
     run(sim, RESULT_STEPS);
@@ -106,7 +106,7 @@ describe('the next bottle', () => {
     const seen: number[] = [];
     for (let i = 0; i < 6; i++) {
       seen.push(sim.snapshot().bottle.water);
-      sim.placeBottle(UPRIGHT);
+      sim.placeBottle(FLIPPED);
       runToOutcome(sim);
       run(sim, RESULT_STEPS);
     }
@@ -123,7 +123,7 @@ describe('the next bottle', () => {
   });
 
   it('can be thrown like the first one, and its own result follows the same rules', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     run(sim, RESULT_STEPS);
     const water = sim.snapshot().bottle.water;
     expect(sim.throwBottle(50)).toBe(true);
@@ -148,7 +148,7 @@ describe('the next bottle', () => {
 
   it('is a working bottle: its own water sets its mass, so a fuller one launches slower', () => {
     const launchSpeed = (water: number): number => {
-      const sim = judged(UPRIGHT);
+      const sim = judged(FLIPPED);
       run(sim, RESULT_STEPS);
       sim.setWater(water);
       sim.throwBottle(50);
@@ -158,7 +158,7 @@ describe('the next bottle', () => {
   });
 
   it('uses the tuning in effect when it appears', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     sim.setTuning({ waterMin: 0.5, waterMax: 0.5 }); // changed during the result
     run(sim, RESULT_STEPS);
     expect(sim.snapshot().bottle.water).toBe(0.5);

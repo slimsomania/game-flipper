@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SWEEP_POWERS, findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
+import { SWEEP_POWERS, findWindows, sweepPowers } from '../../src/core/flipWindow';
 import { stepsFor } from '../../src/core/constants';
 import { Simulation } from '../../src/core/simulation';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
@@ -36,14 +36,30 @@ describe('sweepPowers', () => {
     );
   });
 
-  it('does not flip the bottle at power 0: it only drops', () => {
-    for (const water of [0.1, 0.5, 0.9]) {
-      const [drop] = sweepPowers(water, {}, [0]);
+  it('does not flip the bottle at power 0: it only drops, and that is a fail at every water level', () => {
+    // 10% to 90% in 5% steps, the water levels of the game.
+    for (let percent = 10; percent <= 90; percent += 5) {
+      const [drop] = sweepPowers(percent / 100, {}, [0]);
       expect(drop.power).toBe(0);
       expect(drop.turns).toBe(0);
       expect(Math.abs(drop.rotation)).toBeLessThan(0.1);
-      // So it is never in a single flip window.
-      expect(widestWindow(findWindows([drop]), 1)).toBeNull();
+      // It lands upright, but a landing needs a full turn: a fail with its own reason.
+      expect(drop).toMatchObject({ result: 'fail', reason: 'noFlip', points: 0 });
+      // So it is in no window at all.
+      expect(findWindows([drop])).toEqual([]);
+    }
+  });
+
+  it('never succeeds without a full turn, and scores its turns when it does', () => {
+    for (const water of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+      for (const r of sweepPowers(water)) {
+        if (r.result === 'success') {
+          expect(r.turns).toBeGreaterThanOrEqual(1);
+          expect(r.points).toBe(r.turns);
+        } else {
+          expect(r.points).toBe(0);
+        }
+      }
     }
   });
 

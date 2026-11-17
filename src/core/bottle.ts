@@ -30,6 +30,12 @@ export interface BottlePose {
   vx?: number;
   vy?: number;
   omega?: number;
+  /**
+   * Turns (whole or fractional, 0 when left out) the landing judge counts as already made, so a
+   * test can place an upright bottle and still have it count as flipped. It is a bookkeeping
+   * credit for the judge, not part of the pose: `Bottle.place` ignores it and nothing rotates.
+   */
+  turns?: number;
 }
 
 const toVec = (points: readonly Point[]): { x: number; y: number }[] =>

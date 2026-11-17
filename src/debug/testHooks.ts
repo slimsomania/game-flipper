@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
+import { visibleFlash, type FlashView } from './visibleFlash';
 import { visibleTexts } from './visibleTexts';
 
 /**
@@ -25,6 +26,12 @@ export interface FlipperTestApi {
    * frame: after stepping or acting from a test, wait a frame (or poll) before reading it.
    */
   texts(): string[];
+  /**
+   * The full-screen result flash the player can see, as its color (a hex number) and opacity, or
+   * null when there is none (no result yet, or the flash has faded out). Like `texts()` it shows
+   * what the scene last drew, so wait a frame after stepping.
+   */
+  flash(): FlashView | null;
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -45,8 +52,10 @@ export interface FlipperTestApi {
   setPower(power: number): SimSnapshot | null;
   /**
    * Release the held bottle from an exact pose (meters, radians, m/s, rad/s; the velocities may be
-   * left out) as if it had been thrown, so a test can create a landing directly. Returns the new
-   * snapshot. Does nothing unless the phase is "aiming". Null when no game is running.
+   * left out) as if it had been thrown, so a test can create a landing directly. `turns` credits
+   * rotation as already made (an upright bottle needs one full turn to succeed; the points are its
+   * turns), and moves nothing. Returns the new snapshot. Does nothing unless the phase is
+   * "aiming". Null when no game is running.
    */
   placeBottle(pose: BottlePose): SimSnapshot | null;
   /**
@@ -91,6 +100,7 @@ export function installTestHooks(game: Phaser.Game): void {
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     state: () => currentSim?.snapshot() ?? null,
     texts: () => visibleTexts(game.scene.getScenes(true)),
+    flash: () => visibleFlash(game.scene.getScenes(true)),
     pause: () => {
       testControls.paused = true;
     },

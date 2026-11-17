@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Simulation } from '../../src/core/simulation';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
-import { SIDE, UPRIGHT, waterSequence } from '../shared';
+import { SIDE, FLIPPED, waterSequence } from '../shared';
 import { RESULT_STEPS, expectHeld, judged, run, runToOutcome } from './helpers';
 
 describe('the result delay', () => {
   it('comes from the tuning: 1.5 s by default, and a different value changes the wait', () => {
     expect(DEFAULT_TUNING.resultDelaySeconds).toBe(1.5);
-    const sim = judged(UPRIGHT, { tuning: { resultDelaySeconds: 0.5 } });
+    const sim = judged(FLIPPED, { tuning: { resultDelaySeconds: 0.5 } });
     run(sim, 29);
     expect(sim.phase).toBe('result');
     run(sim, 1);
@@ -16,7 +16,7 @@ describe('the result delay', () => {
 
   it('counts steps from the outcome, not from the throw', () => {
     // Two throws that are decided at different times wait the same number of steps afterwards.
-    const waits = [UPRIGHT, SIDE].map((pose) => {
+    const waits = [FLIPPED, SIDE].map((pose) => {
       const sim = judged(pose);
       let steps = 0;
       while (sim.phase === 'result') {
@@ -31,7 +31,7 @@ describe('the result delay', () => {
 
 describe('skip()', () => {
   it('brings the next bottle at once during the result', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     run(sim, 10);
     expect(sim.phase).toBe('result');
     expect(sim.skip()).toBe(true);
@@ -73,7 +73,7 @@ describe('skip()', () => {
 
     // Not even when the bottle is just about to be judged: still flying means nothing to skip.
     const placed = new Simulation({ seed: 5 });
-    placed.placeBottle(UPRIGHT);
+    placed.placeBottle(FLIPPED);
     run(placed, 20);
     const mid = placed.snapshot();
     expect(placed.skip()).toBe(false);
@@ -82,7 +82,7 @@ describe('skip()', () => {
   });
 
   it('is used up by one call: the second does nothing, and the next result waits the full delay', () => {
-    const sim = judged(UPRIGHT);
+    const sim = judged(FLIPPED);
     expect(sim.skip()).toBe(true);
     const aiming = sim.snapshot();
     expect(sim.skip()).toBe(false);
@@ -90,7 +90,7 @@ describe('skip()', () => {
 
     // The wait that was cut short doesn't shorten the next one.
     run(sim, 5);
-    sim.placeBottle(UPRIGHT);
+    sim.placeBottle(FLIPPED);
     runToOutcome(sim);
     run(sim, RESULT_STEPS - 1);
     expect(sim.phase).toBe('result');

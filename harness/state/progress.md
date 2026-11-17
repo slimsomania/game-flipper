@@ -427,3 +427,49 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Compound shell commands (`cmd1; cmd2`, `&&` with redirection) and reading files outside the repo were denied automatically again; I ran each command separately and used `sed -i` only to delete the moved line ranges.
 
 > [harness] session 19 · maintainer · ok · verify passed · 1 commit(s) · 83 tool calls · 6m 7s · ~$1.27 API-equivalent
+
+## Session 20 · builder · F008 Measure flip windows, require a full turn, and score by turns
+- Did: (attempt 1 after the human's two decisions of 2026-11-16; the flip-window tool from session 16 is kept as it was)
+  - Rule 1, a landing needs a full turn. `src/core/outcome.ts`: new reason `noFlip`. When the judge would call a bottle upright (same hold, same step) it now checks `turns`; 0 turns gives `{ result: 'fail', reason: 'noFlip', points: 0 }`. Turns round the rotation to whole turns as before, so a bottle that turned 0.9 of a turn and tips back upright has turns 1 and counts. Turns count in either direction (`pointsForTurns` = `|turns|`), a small call the design left open.
+  - Rule 2, score by turns. `Outcome` gets `points` (the turns of a success, 0 for every fail), exposed in the snapshot as `outcome.points`; `Simulation` adds `outcome.points` to `score` instead of 1.
+  - `placeBottle` turns credit: `BottlePose.turns` (optional, any finite number, 0 by default; NaN or Infinity make `placeBottle` return false). The judge adds it to its rotation (`new LandingJudge(tuning, angle, creditedTurns)`), so the outcome's `rotation` includes it. It moves nothing: a test checks that a credited and an uncredited bottle have equal snapshots over 200 steps. No rule rotates or snaps the bottle.
+  - Messages (`src/game/view/resultStyle.ts`): green "Nailed it! +1", "Double! +2", "Triple! +3", "Flip ×N! +N" (N ≥ 4); red "No flip!" for `noFlip`, red "Down!" for every other fail. `resultView.ts` is unchanged apart from a comment.
+  - `window.__FLIPPER__.flash()` (new, `src/debug/visibleFlash.ts`): the color and opacity of the full-screen flash the player sees, or null. The acceptance criterion asks for the red flash in an e2e test and, until now, only text was observable. It scans for a shown, canvas-sized `Rectangle` (nothing else is that big), so the scene needed no change.
+  - `scripts/flip-windows.ts` now prints the double-flip window (low, high, center, width, or `none`) next to the single-flip one; the table is below.
+  - Split `src/core/simulation.ts` (it went from 296 to 313 lines with this feature): the snapshot types and `snapshotBody` moved to the new `src/core/snapshot.ts`, and `simulation.ts` re-exports the types, so no import changed. It is now 233 lines.
+  - `docs/ARCHITECTURE.md`: module rows (outcome, simulation, snapshot, visibleFlash, flipWindow, view, hooks, script, test helpers), D12, D13, D14, D16, the snapshot sketch, and new D22 (the two rules).
+- Tests changed because the design changed (not weakened): every test that placed an upright bottle and expected a success now places it with a turns credit. In `tests/shared.ts`, `UPRIGHT` still means no credit (it is now a "no flip" fail) and new `FLIPPED` / `flipped(n)` add 1 / n turns; `judged()` defaults to `FLIPPED`. 17 unit tests failed on the first run, all because they expected `upright` or `success` with 0 turns: `outcome.test.ts` (synthetic judge tests use a `flipped()` judge with 1 credited turn; the simulation tests place `FLIPPED`, and the two that asserted `turns: 0` with a success now expect turns 1 and a rotation of about 2π; the 10° tip-back test checks rotation just under 2π), `result.test.ts`, `resultWait.test.ts`, `resultStyle.test.ts` (wording and the new `points`/`reason` arguments), plus `resultSteps.test.ts` and `powerInput.test.ts`, which still passed but would have lost their success cases, so they use `FLIPPED` too. E2E: `outcome.spec.ts` (credit 1, turns 1, points 1), `result.spec.ts` (a real throw's score is its `outcome.points`), `resultText.spec.ts` (message 'Nailed it! +1'; the real-throw test follows the outcome's points and reason). `sweepPowers.test.ts`'s power-0 test now asserts the fail with reason `noFlip` at every level from 10% to 90% in 5% steps (it used to assert only turns 0), and `flipWindowsScript.test.ts` parses the two-block rows. No test was deleted or skipped.
+- Verified:
+  - `npm run verify` passes: format, typecheck, 308 unit tests in 24 files (287 before), build, 50 e2e tests (43 before). (The 17 unit failures above were the first run after the core change and are fixed, not hidden.)
+  - Acceptance 1 (findWindows): the 12 existing tests in `tests/unit/findWindows.test.ts` still pass and still mock `Simulation` to throw, so any physics would fail them.
+  - Acceptance 2: `sweepPowers.test.ts` "is deterministic" (unchanged) and "does not flip the bottle at power 0 ... a fail at every water level" (17 levels). Also "never succeeds without a full turn, and scores its turns when it does" over a full 0-100 sweep at 10/30/50/70/90%.
+  - Acceptance 3: new `tests/unit/flipRule.test.ts` (18 tests): no credit gives `noFlip`, turns 0, points 0, score unchanged; credits 1, 2 and 3 give success with 1, 2 and 3 points and the same score; a 0.9 credit and a synthetic 0.9-turn flight that tips on to upright count as 1; under half a turn is no flip; the same decided-at-step 60 for both; a side landing with credit still fails; the credit moves nothing; NaN credit is refused.
+  - Acceptance 4: new `tests/e2e/flipRule.spec.ts` (7 tests): turns 0 gives 'No flip!' (and not 'Down!') with `flash()` equal to `COLORS.failFlash` and the score unchanged (also after an earlier success); a side landing shows 'Down!' with the red flash; credits 1 and 2 show 'Nailed it! +1' and 'Double! +2' with the green flash and scores 1 then 3; credits 3, 4 and 6 show 'Triple! +3', 'Flip ×4! +4' and 'Flip ×6! +6'; a real throw (power 80) and a power-0 throw follow the same rules.
+  - Acceptance 5: `npx tsx scripts/flip-windows.ts` prints nine rows in about 1.3 s (3.4 s wall clock with the Node start); `flipWindowsScript.test.ts` checks the header, the nine labels, that each row has a single and a double block of `none` or four consistent numbers, and a time under 60 s.
+  - Snaps at 1280×720 (`--url "/?seed=7"`, water 0.5, paused and stepped to the deciding step, then looked at with Read): power 0 at step 95 shows the red flash, dark red "No flip!", "Score: 0", the bottle standing; power 51 at step 262 shows green "Nailed it! +1" and "Score: 1"; power 79 at step 243 shows green "Double! +2" and "Score: 2". Text is centered above the table and nothing overlaps or is cut off. `call:flash` returned color 15025983 (0xe5473f) with opacity 0.4, `call:texts` returned `["POWER","50%","No flip!","Score: 0"]`; no console errors.
+- Status: F008 → needs_review
+- Issues / follow-ups:
+  - Baseline for F009 (default tuning, power 0 to 100 in steps of 1; a window is the widest run of powers that succeed with that many turns, width = high - low). The single-flip column is identical to session 16's, as it should be: the new rule only removes the 0-turn successes (power 0 up to about 5 to 15), which were never in a single-flip window.
+
+    ```
+           single flip (1 turn)         double flip (2 turns)
+     water   low  high  center  width     low  high  center  width
+       10%  none                         none
+       20%    44    44      44      0    none
+       30%  none                         none
+       40%    48    48      48      0    none
+       50%    51    51      51      0      79    79      79      0
+       60%    58    59    58.5      1    none
+       70%    57    57      57      0      85    85      85      0
+       80%    65    66    65.5      1      94    94      94      0
+       90%    65    66    65.5      1    none
+    (power 0 to 100 in steps of 1; 1.3 s)
+    ```
+
+    So the defaults have no real windows yet: single flips are one or two lucky powers (the bottle happens to land upright), and doubles exist at only three of nine levels, each a single power (the 80% row's 94 is close to the top of the range). F009 starts from here; see session 16's warning that a 12 to 28 point single-flip window needs a much flatter rotation-versus-power curve than the current one.
+  - Power 0 to about 5 to 15 no longer scores, which was F009's other worry from session 16. The cheapest way to win is now a lucky single power, not a drop.
+  - `flash()` reads the scene's drawn state like `texts()`: wait a frame after stepping (`visibleFlash(page)` in `tests/e2e/helpers.ts` does). It matches any shown, canvas-sized `Rectangle`; if a later feature draws a full-screen rectangle that isn't the result flash (a pause overlay, say), give the flash its own marker then.
+  - The F013 round summary needs "landings" (successful throws out of 10) apart from the points; `score` is points now, so F013 has to count successes itself (a success has `outcome.points >= 1`). Section 5 of the design says the difficulty targets count landings.
+  - `tests/unit/outcome.test.ts` (584 lines), `tests/unit/throw.test.ts` and `tests/unit/push.test.ts` are still over the 300-line guideline (see session 19); I put all new tests in new files.
+  - Compound shell commands (`a; b`, `a && b | c`), a glob in a `sed -i`, and a `python3 -` heredoc were denied automatically; I ran single commands and used the Edit and Write tools.
+- Next: F009 (calibrate the throw) starts from the table above and `sweepPowers` / `findWindows` / `widestWindow`; check early how flat the rotation-versus-power curve can be made before choosing levers, and lock window targets (not tuning values) with tests built on `flipWindow.ts`.

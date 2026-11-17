@@ -19,11 +19,32 @@ export interface ResultStyle {
   text: string;
 }
 
-/** The message and colors for a throw's outcome: green "Nailed it!" or red "Down!". */
-export function resultStyle(outcome: Pick<Outcome, 'result'>): ResultStyle {
-  return outcome.result === 'success'
-    ? { message: 'Nailed it!', flash: COLORS.successFlash, text: COLORS.successText }
-    : { message: 'Down!', flash: COLORS.failFlash, text: COLORS.failText };
+/** The success message for an upright landing of `points` points (its turns): names flip and points. */
+export function successMessage(points: number): string {
+  if (points === 1) return 'Nailed it! +1';
+  if (points === 2) return 'Double! +2';
+  if (points === 3) return 'Triple! +3';
+  return `Flip ×${points}! +${points}`;
+}
+
+/**
+ * The message and colors for a throw's outcome. Success is green and names the flip and the
+ * points ("Nailed it! +1", "Double! +2", ...). Every fail is red: "No flip!" for a bottle that
+ * stood up without a full turn, "Down!" for any other.
+ */
+export function resultStyle(outcome: Pick<Outcome, 'result' | 'reason' | 'points'>): ResultStyle {
+  if (outcome.result === 'success') {
+    return {
+      message: successMessage(outcome.points),
+      flash: COLORS.successFlash,
+      text: COLORS.successText,
+    };
+  }
+  return {
+    message: outcome.reason === 'noFlip' ? 'No flip!' : 'Down!',
+    flash: COLORS.failFlash,
+    text: COLORS.failText,
+  };
 }
 
 /**

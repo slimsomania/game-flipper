@@ -11,7 +11,7 @@ import {
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_CENTER_X, TABLE_RIGHT_X, TABLE_LEFT_X, TABLE_TOP_Y } from '../../src/core/table';
 import { DEFAULT_TUNING, resolveTuning, type Tuning } from '../../src/core/tuning';
-import { UPRIGHT } from '../shared';
+import { FLIPPED, UPRIGHT } from '../shared';
 import { run, runToOutcome } from './helpers';
 
 const TWO_PI = Math.PI * 2;
@@ -92,11 +92,16 @@ describe('LandingJudge (synthetic samples)', () => {
     return outcome;
   }
 
-  const judge = (tuning: Partial<Tuning> = {}, releaseAngle = 0) =>
-    new LandingJudge(resolveTuning(tuning), releaseAngle);
+  const judge = (tuning: Partial<Tuning> = {}, releaseAngle = 0, creditedTurns = 0) =>
+    new LandingJudge(resolveTuning(tuning), releaseAngle, creditedTurns);
+  /**
+   * A judge that counts one turn as made, so resting upright is a success: a landing needs a full
+   * turn (`tests/unit/flipRule.test.ts` covers that rule itself).
+   */
+  const flipped = (tuning: Partial<Tuning> = {}) => judge(tuning, 0, 1);
 
   it('needs the full hold time standing upright, on the table and nearly still', () => {
-    const j = judge();
+    const j = flipped();
     expect(feed(j, 59, resting(0))).toBeNull();
     expect(j.observe(resting(0))).toMatchObject({ result: 'success', reason: 'upright' });
   });
@@ -107,7 +112,7 @@ describe('LandingJudge (synthetic samples)', () => {
     const spinning = { ...upright, omega: 0.5 };
     const airborne = { ...upright, onTable: false };
     for (const interruption of [moving, spinning, airborne, resting(deg(20))]) {
-      const j = judge();
+      const j = flipped();
       feed(j, 59, upright);
       expect(j.observe(interruption)).toBeNull();
       expect(feed(j, 59, upright)).toBeNull(); // the count restarted, 59 is not enough
@@ -116,19 +121,21 @@ describe('LandingJudge (synthetic samples)', () => {
   });
 
   it('accepts a tilt up to the tolerance and rejects more, at any number of whole turns', () => {
-    expect(feed(judge(), 60, resting(deg(14.9)))?.reason).toBe('upright');
-    expect(feed(judge(), 60, resting(deg(-14.9)))?.reason).toBe('upright');
-    expect(feed(judge(), 60, resting(TWO_PI + deg(14.9)))?.reason).toBe('upright');
-    expect(feed(judge(), 60, resting(-3 * TWO_PI))?.reason).toBe('upright');
+    expect(feed(flipped(), 60, resting(deg(14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 60, resting(deg(-14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 60, resting(TWO_PI + deg(14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 60, resting(-3 * TWO_PI))?.reason).toBe('upright');
     // Just past the tolerance and lying still it is a fail, not a success, however long it waits.
     expect(feed(judge(), 60, resting(deg(15.1)))).toMatchObject({ result: 'fail', reason: 'side' });
     expect(feed(judge(), 60, resting(deg(-15.1)))).toMatchObject({ reason: 'side' });
     expect(feed(judge({ uprightToleranceDeg: 5 }), 60, resting(deg(10)))?.reason).toBe('side');
-    expect(feed(judge({ uprightToleranceDeg: 20 }), 60, resting(deg(18)))?.reason).toBe('upright');
+    expect(feed(flipped({ uprightToleranceDeg: 20 }), 60, resting(deg(18)))?.reason).toBe(
+      'upright',
+    );
   });
 
   it('uses the hold time from the tuning', () => {
-    const j = judge({ uprightHoldSeconds: 0.25 });
+    const j = flipped({ uprightHoldSeconds: 0.25 });
     expect(feed(j, 14, resting(0))).toBeNull();
     expect(j.observe(resting(0))?.reason).toBe('upright'); // 15 steps = 0.25 s
   });
@@ -217,12 +224,12 @@ describe('LandingJudge (synthetic samples)', () => {
   });
 
   it('lets a success that completes on the timeout step win', () => {
-    const j = judge({ timeoutSeconds: 1, uprightHoldSeconds: 1 });
+    const j = flipped({ timeoutSeconds: 1, uprightHoldSeconds: 1 });
     expect(feed(j, 60, resting(0))?.reason).toBe('upright');
   });
 
   it('never changes an outcome once it is set', () => {
-    const j = judge();
+    const j = flipped();
     const first = feed(j, 60, resting(0));
     expect(first?.reason).toBe('upright');
     const snapshot = { ...first! };
@@ -333,7 +340,7 @@ describe('Simulation.placeBottle', () => {
 
 describe('judging a landing in the simulation', () => {
   it('judges an upright bottle placed just above the table a success once it stood still for 1 s', () => {
-    const sim = placed(UPRIGHT);
+    const sim = placed(FLIPPED); // credited one turn: without one it would be a "no flip"
     // Not while it is falling or settling, and not before a full second of standing still.
     expect(run(sim, 30).outcome).toBeNull();
     expect(run(sim, 29).outcome).toBeNull(); // 59 steps in
@@ -341,15 +348,15 @@ describe('judging a landing in the simulation', () => {
     expect(steps).toBeGreaterThan(60);
     expect(steps).toBeLessThan(150); // the e2e test relies on 150 frames being enough
     const { outcome, bottle } = sim.snapshot();
-    expect(outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 0 });
-    expect(Math.abs(outcome!.rotation)).toBeLessThan(0.01);
+    expect(outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 1, points: 1 });
+    expect(Math.abs(outcome!.rotation - TWO_PI)).toBeLessThan(0.01); // the credit, nothing more
     expect(Math.hypot(bottle.vx, bottle.vy)).toBeLessThan(DEFAULT_TUNING.stillSpeed);
     expect(bottle.y).toBeLessThan(TABLE_TOP_Y);
     expect(bottle.y).toBeGreaterThan(TABLE_TOP_Y - 0.1);
   });
 
   it('holds the success back for the whole second even when the bottle starts at rest on the table', () => {
-    const sim = placed({ ...UPRIGHT, y: TABLE_TOP_Y - 0.012 });
+    const sim = placed({ ...FLIPPED, y: TABLE_TOP_Y - 0.012 });
     expect(run(sim, 58).outcome).toBeNull();
     expect(runToOutcome(sim)).toBeLessThan(30);
     expect(sim.snapshot().outcome?.reason).toBe('upright');
@@ -432,11 +439,12 @@ describe('judging a landing in the simulation', () => {
 
   it('counts a bottle placed upright with angle 2π as upright', () => {
     for (const angle of [TWO_PI, -TWO_PI, 3 * TWO_PI]) {
-      const sim = placed({ ...UPRIGHT, angle });
+      // The judge counts turns made since release, so the angle itself adds none; the credit does.
+      const sim = placed({ ...FLIPPED, angle });
       runToOutcome(sim);
       const { outcome } = sim.snapshot();
-      expect(outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 0 });
-      expect(Math.abs(outcome!.rotation)).toBeLessThan(0.01);
+      expect(outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 1 });
+      expect(Math.abs(outcome!.rotation - TWO_PI)).toBeLessThan(0.01);
     }
     // A quarter turn on top of whole turns is still a side.
     const sim = placed({
@@ -472,8 +480,14 @@ describe('judging a landing in the simulation', () => {
   it('lets a 50%-water bottle placed still on a corner of its base, tilted 10°, tip back and succeed', () => {
     const tilt = deg(10);
     const sim = placed(
-      // Resting on its right corner: the base's low corner sits on the tabletop.
-      { x: TABLE_CENTER_X, y: TABLE_TOP_Y - HALF_WIDTH * Math.sin(tilt) - 0.01, angle: tilt },
+      // Resting on its right corner: the base's low corner sits on the tabletop. One turn is
+      // credited (a landing needs one); the tipping back is then physics only.
+      {
+        x: TABLE_CENTER_X,
+        y: TABLE_TOP_Y - HALF_WIDTH * Math.sin(tilt) - 0.01,
+        angle: tilt,
+        turns: 1,
+      },
       { water: 0.5 },
     );
     let fastest = 0;
@@ -489,8 +503,10 @@ describe('judging a landing in the simulation', () => {
     expect(fastest).toBeGreaterThan(0.2); // it really did rock back by itself
     expect(tippedBack).toBe(true);
     expect(Math.abs(bottle.angle)).toBeLessThan(deg(3));
-    expect(outcome!.rotation).toBeLessThan(0); // it turned counterclockwise, back toward upright
-    expect(outcome!.turns).toBe(0);
+    // It turned counterclockwise, back toward upright, so a little less than the credited turn.
+    expect(outcome!.rotation).toBeLessThan(TWO_PI);
+    expect(outcome!.rotation).toBeGreaterThan(TWO_PI - tilt - 0.05);
+    expect(outcome!.turns).toBe(1);
   });
 
   it('judges a 10° tilt as a success only because the physics tipped it back (left tilted it falls)', () => {
@@ -521,7 +537,7 @@ describe('judging a landing in the simulation', () => {
   it('never changes an outcome once it is set', () => {
     // A long result delay keeps this bottle on the table (the result phase) for the whole test.
     const stay = { resultDelaySeconds: 100 };
-    const sim = placed(UPRIGHT, { tuning: stay });
+    const sim = placed(FLIPPED, { tuning: stay });
     runToOutcome(sim);
     const first = sim.snapshot().outcome;
     expect(first?.reason).toBe('upright');

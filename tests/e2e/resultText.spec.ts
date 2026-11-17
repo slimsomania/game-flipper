@@ -1,12 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SIDE, UPRIGHT } from '../shared';
+import { FLIPPED, SIDE, type PlacedPose } from '../shared';
 import { openGame, stepFrames, stepUntilOutcome, visibleTexts } from './helpers';
 
-const SUCCESS_MESSAGE = 'Nailed it!';
+/** A single flip (`FLIPPED` is credited one turn): one point. */
+const SUCCESS_MESSAGE = 'Nailed it! +1';
 const FAIL_MESSAGE = 'Down!';
 
 /** Release the bottle at `pose` and step to the step that decides its outcome (clock paused). */
-async function land(page: Page, pose: typeof UPRIGHT) {
+async function land(page: Page, pose: PlacedPose) {
   await page.evaluate(() => window.__FLIPPER__!.pause());
   await page.evaluate((p) => window.__FLIPPER__!.placeBottle(p), pose);
   return stepUntilOutcome(page);
@@ -25,9 +26,9 @@ test('texts() lists the score and the power bar before anything is thrown, and n
   expect(errors).toEqual([]);
 });
 
-test('a success shows "Nailed it!" and the new score', async ({ page }) => {
+test('a single flip shows "Nailed it! +1" and the new score', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
-  const decided = await land(page, UPRIGHT);
+  const decided = await land(page, FLIPPED);
   expect(decided.outcome).toMatchObject({ result: 'success' });
 
   const texts = await visibleTexts(page);
@@ -50,7 +51,7 @@ test('a fail shows "Down!" and leaves the score as it was', async ({ page }) => 
 
   // A fail after a success: the score stays 1.
   await page.evaluate(() => window.__FLIPPER__!.skip());
-  await land(page, UPRIGHT);
+  await land(page, FLIPPED);
   expect(await visibleTexts(page)).toContain('Score: 1');
   await page.evaluate(() => window.__FLIPPER__!.skip());
   const decided = await land(page, SIDE);
@@ -68,16 +69,23 @@ test('a real throw shows the message and the score that match its outcome', asyn
   await page.evaluate(() => window.__FLIPPER__!.throwBottle(50));
   const decided = await stepUntilOutcome(page);
 
-  const won = decided.outcome!.result === 'success';
+  // The message names the flip and the points; the score is what the throw earned.
+  const { result, reason, points } = decided.outcome!;
   const texts = await visibleTexts(page);
-  expect(texts).toContain(won ? SUCCESS_MESSAGE : FAIL_MESSAGE);
-  expect(texts).not.toContain(won ? FAIL_MESSAGE : SUCCESS_MESSAGE);
-  expect(texts).toContain(`Score: ${won ? 1 : 0}`);
+  if (result === 'success') {
+    expect(texts.some((text) => text.endsWith(`+${points}`))).toBe(true);
+    expect(texts).not.toContain(FAIL_MESSAGE);
+    expect(texts).not.toContain('No flip!');
+  } else {
+    expect(texts).toContain(reason === 'noFlip' ? 'No flip!' : FAIL_MESSAGE);
+    expect(points).toBe(0);
+  }
+  expect(texts).toContain(`Score: ${points}`);
   expect(errors).toEqual([]);
 });
 
 for (const [name, pose, message] of [
-  ['success', UPRIGHT, SUCCESS_MESSAGE],
+  ['success', FLIPPED, SUCCESS_MESSAGE],
   ['fail', SIDE, FAIL_MESSAGE],
 ] as const) {
   test(`the ${name} message stays for the whole wait and goes with the next bottle`, async ({
@@ -128,7 +136,7 @@ test('Space during a result removes the message, and the next result shows its o
     .poll(async () => (await visibleTexts(page)).includes(FAIL_MESSAGE), { timeout: 5000 })
     .toBe(false);
 
-  const decided = await land(page, UPRIGHT);
+  const decided = await land(page, FLIPPED);
   expect(decided.outcome).toMatchObject({ result: 'success' });
   const texts = await visibleTexts(page);
   expect(texts).toContain(SUCCESS_MESSAGE);
@@ -141,7 +149,7 @@ test('in real time the message appears with the result and goes when the next bo
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
-  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), UPRIGHT);
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
   // About 1 s to stand still, then the message; 1.5 s later the next bottle.
   await expect
     .poll(async () => (await visibleTexts(page)).includes(SUCCESS_MESSAGE), { timeout: 10_000 })

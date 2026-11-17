@@ -13,7 +13,8 @@ test('a bottle placed upright just above the table is judged a success once it s
   expect((await gameState(page)).outcome).toBeNull();
 
   const placed = await page.evaluate(
-    ([x, y]) => window.__FLIPPER__!.placeBottle({ x, y, angle: 0 }),
+    // One turn is credited: an upright landing needs a full turn to succeed (see flipRule.spec.ts).
+    ([x, y]) => window.__FLIPPER__!.placeBottle({ x, y, angle: 0, turns: 1 }),
     [TABLE_CENTER_X, TABLE_TOP_Y - 0.05],
   );
   expect(placed?.phase).toBe('flying');
@@ -27,7 +28,12 @@ test('a bottle placed upright just above the table is judged a success once it s
   expect(done.tick - placed!.tick).toBeGreaterThan(60);
   expect(done.tick - placed!.tick).toBeLessThanOrEqual(150);
   expect(done.phase).toBe('result');
-  expect(done.outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 0 });
+  expect(done.outcome).toMatchObject({
+    result: 'success',
+    reason: 'upright',
+    turns: 1,
+    points: 1,
+  });
   expect(done.score).toBe(1);
   expect(errors).toEqual([]);
 });

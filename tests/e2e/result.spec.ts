@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { HAND_X, HAND_Y } from '../../src/core/bottle';
-import { SIDE, UPRIGHT, waterSequence } from '../shared';
+import { SIDE, FLIPPED, waterSequence } from '../shared';
 import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
 
 test('after a throw resolves and 90 more frames pass, the next bottle waits in the hand', async ({
@@ -14,8 +14,8 @@ test('after a throw resolves and 90 more frames pass, the next bottle waits in t
   await page.evaluate(() => window.__FLIPPER__!.throwBottle(50));
   const decided = await stepUntilOutcome(page);
   expect(decided.phase).toBe('result');
-  const wins = decided.outcome!.result === 'success' ? 1 : 0;
-  expect(decided).toMatchObject({ score: wins, throws: 1 });
+  const earned = decided.outcome!.points; // the turns of an upright landing, else 0
+  expect(decided).toMatchObject({ score: earned, throws: 1 });
   expect(decided.bottle.water).toBe(firstWater); // still the bottle that was thrown
 
   // 89 frames later it is still the result; the 90th brings the next bottle.
@@ -30,7 +30,7 @@ test('after a throw resolves and 90 more frames pass, the next bottle waits in t
   expect(next.bottle.water).toBe(nextWater);
   expect([next.bottle.x, next.bottle.y, next.bottle.angle]).toEqual([HAND_X, HAND_Y, 0]);
   expect([next.bottle.vx, next.bottle.vy, next.bottle.omega]).toEqual([0, 0, 0]);
-  expect(next).toMatchObject({ score: wins, throws: 1 });
+  expect(next).toMatchObject({ score: earned, throws: 1 });
   expect(errors).toEqual([]);
 });
 
@@ -42,7 +42,7 @@ test('a success adds a point, a fail does not, and the bottles follow the seed',
 
   const results: string[] = [];
   const scores: number[] = [];
-  for (const pose of [UPRIGHT, SIDE, UPRIGHT]) {
+  for (const pose of [FLIPPED, SIDE, FLIPPED]) {
     await page.evaluate((p) => window.__FLIPPER__!.placeBottle(p), pose);
     const decided = await stepUntilOutcome(page);
     results.push(decided.outcome!.result);
@@ -92,7 +92,7 @@ test('skip() brings the next bottle at once during a result, and changes nothing
 test('the real-time clock brings the next bottle by itself', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
   const [, nextWater] = waterSequence(7, 2);
-  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), UPRIGHT);
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
   // About 1 s to stand still plus the 1.5 s wait, in real time.
   await page.waitForFunction(() => window.__FLIPPER__!.state()?.phase === 'result', null, {
     timeout: 10_000,

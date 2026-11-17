@@ -3,7 +3,7 @@ import { expect } from 'vitest';
 import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import type { Tuning } from '../../src/core/tuning';
-import { UPRIGHT } from '../shared';
+import { FLIPPED } from '../shared';
 
 /** The result wait: 1.5 s at 60 steps per second. */
 export const RESULT_STEPS = 90;
@@ -24,9 +24,12 @@ export function runToOutcome(sim: Simulation, limit = 600): number {
   return steps;
 }
 
-/** A simulation whose bottle has just been judged: placed as `pose`, stepped to its outcome. */
+/**
+ * A simulation whose bottle has just been judged: placed as `pose` (by default a single flip, a
+ * success), stepped to its outcome.
+ */
 export function judged(
-  pose: Parameters<Simulation['placeBottle']>[0] = UPRIGHT,
+  pose: Parameters<Simulation['placeBottle']>[0] = FLIPPED,
   options: { seed?: number; tuning?: Partial<Tuning> } = {},
 ): Simulation {
   const sim = new Simulation({ seed: options.seed ?? 5, tuning: options.tuning });

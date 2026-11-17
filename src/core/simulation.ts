@@ -4,78 +4,16 @@ import { GRAVITY, SIM_DT, stepsFor } from './constants';
 import { LandingJudge, type LandingSample, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
 import { createRng, type Rng } from './rng';
+import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
 import { createTable } from './table';
 import { clampPower, throwImpulse, type ThrowSource } from './throw';
 import { resolveTuning, type Tuning } from './tuning';
 
+// The snapshot types live in snapshot.ts; they are re-exported so callers import them from here.
+export type { BodySnapshot, BottleSnapshot, LastThrow, Phase, SimSnapshot } from './snapshot';
+
 const VELOCITY_ITERATIONS = 8;
 const POSITION_ITERATIONS = 3;
-
-/** JSON-safe view of a rigid body. */
-export interface BodySnapshot {
-  /** Position of the body's origin, in meters. For the bottle this is the center of its base. */
-  x: number;
-  y: number;
-  /** Radians, clockwise positive. 0 means upright. */
-  angle: number;
-  vx: number;
-  vy: number;
-  /** Angular velocity in rad/s. */
-  omega: number;
-  /** False once the physics engine considers the body at rest. */
-  awake: boolean;
-}
-
-export interface BottleSnapshot extends BodySnapshot {
-  /** Water level: the filled fraction of the bottle body, 0 to 1. */
-  water: number;
-}
-
-/**
- * Where the current throw is: `aiming` while a bottle waits in the hand, `flying` once it has been
- * thrown (the landing is judged during this phase), and `result` from the step its `outcome` is
- * decided until the next bottle appears (after the result delay, or at once on `skip()`), which
- * returns the phase to `aiming`. Later features add the end-of-round phase.
- */
-export type Phase = 'aiming' | 'flying' | 'result';
-
-/** The throw that launched the current bottle. */
-export interface LastThrow {
-  /** The power actually used, after clamping to 0..100. */
-  power: number;
-  /** The bottle's water level at the moment of the throw. */
-  water: number;
-  source: ThrowSource;
-}
-
-/** Everything the renderer and the tests need to know about the simulation. */
-export interface SimSnapshot {
-  tick: number;
-  seed: number;
-  phase: Phase;
-  /** The power bar, 0 to 100: what Space throws with. It keeps its value from bottle to bottle. */
-  power: number;
-  bottle: BottleSnapshot;
-  /** Null until the first throw. A bottle placed with `placeBottle` doesn't set it. */
-  lastThrow: LastThrow | null;
-  /**
-   * How the current throw ended: null until it is decided, then fixed for that throw and kept
-   * through the `result` phase. The next bottle starts with null again.
-   */
-  outcome: Outcome | null;
-  /**
-   * Steps since the outcome was decided: 0 in the step that decides it, then counting up for as
-   * long as the `result` phase lasts. Null in every other phase. The result flash fades by it.
-   */
-  resultSteps: number | null;
-  /** Successful throws so far. A fail adds nothing. */
-  score: number;
-  /**
-   * Throws made so far, counted when the bottle is released: by `throwBottle` or `placeBottle`,
-   * so a throw still in the air is already counted (and not yet in `score`).
-   */
-  throws: number;
-}
 
 export interface SimulationOptions {
   /** Same seed + same inputs = same result. */
@@ -169,9 +107,12 @@ export class Simulation {
     return this.skip();
   }
 
-  /** Begin judging a throw from `angle` and count it. Call it just before releasing the bottle. */
-  private startFlight(angle: number): void {
-    this.judge = new LandingJudge(this.currentTuning, angle);
+  /**
+   * Begin judging a throw from `angle` (with `turns` already credited) and count it. Call it just
+   * before releasing the bottle.
+   */
+  private startFlight(angle: number, turns = 0): void {
+    this.judge = new LandingJudge(this.currentTuning, angle, turns);
     this.throwCount++;
     this.currentPhase = 'flying';
   }
@@ -207,11 +148,21 @@ export class Simulation {
    * angle and (optionally) velocities, with its current water level. For tests and tuning tools,
    * so a landing can be set up directly. Like a throw it only works while `aiming`, and returns
    * false otherwise (or if a number in the pose isn't finite). It leaves `lastThrow` as it was.
+   * `pose.turns` is counted as rotation already made, so an upright bottle can still succeed.
    */
   placeBottle(pose: BottlePose): boolean {
-    const numbers = [pose.x, pose.y, pose.angle, pose.vx ?? 0, pose.vy ?? 0, pose.omega ?? 0];
+    const turns = pose.turns ?? 0;
+    const numbers = [
+      pose.x,
+      pose.y,
+      pose.angle,
+      pose.vx ?? 0,
+      pose.vy ?? 0,
+      pose.omega ?? 0,
+      turns,
+    ];
     if (this.currentPhase !== 'aiming' || !numbers.every(Number.isFinite)) return false;
-    this.startFlight(pose.angle);
+    this.startFlight(pose.angle, turns);
     this.bottle.place(pose);
     return true;
   }
@@ -236,7 +187,7 @@ export class Simulation {
   }
 
   private showResult(outcome: Outcome): void {
-    if (outcome.result === 'success') this.points++;
+    this.points += outcome.points;
     this.resultSteps = 0;
     this.currentPhase = 'result';
   }
@@ -279,18 +230,4 @@ export class Simulation {
       throws: this.throwCount,
     };
   }
-}
-
-function snapshotBody(body: Body): BodySnapshot {
-  const p = body.getPosition();
-  const v = body.getLinearVelocity();
-  return {
-    x: p.x,
-    y: p.y,
-    angle: body.getAngle(),
-    vx: v.x,
-    vy: v.y,
-    omega: body.getAngularVelocity(),
-    awake: body.isAwake(),
-  };
 }

@@ -10,7 +10,12 @@ import type { Tuning } from './tuning';
  */
 
 export type OutcomeResult = 'success' | 'fail';
-export type OutcomeReason = 'upright' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
+/**
+ * Why a throw ended as it did. `upright` is the only success. `noFlip` is a bottle that came to
+ * rest upright without a full turn (for example a plain drop at power 0): a fail.
+ */
+export type OutcomeReason =
+  'upright' | 'noFlip' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
 
 /** How a throw ended. Set once per throw and never changed afterwards. */
 export interface Outcome {
@@ -20,6 +25,17 @@ export interface Outcome {
   rotation: number;
   /** `rotation` in full turns, rounded to a whole number. */
   turns: number;
+  /** What the throw scores: its number of turns for a success, 0 for any fail. */
+  points: number;
+}
+
+/**
+ * The points an upright landing scores: one per full turn, whichever way the bottle turned. A
+ * bottle that turned 0.9 of a turn and tipped back upright has `turns` 1, so it scores 1. Zero
+ * turns scores nothing (and isn't a success at all: see the `noFlip` reason).
+ */
+export function pointsForTurns(turns: number): number {
+  return Math.abs(turns);
 }
 
 /** What the judge needs to know about the bottle after each step. */
@@ -98,7 +114,12 @@ export class LandingJudge {
   private otherStill = 0;
   private decided: Outcome | null = null;
 
-  constructor(tuning: Tuning, releaseAngle: number) {
+  /**
+   * `creditedTurns` is rotation the bottle is counted as having made already, in turns (for a
+   * bottle placed upright by a test, which has no flight to turn it). It only adds to the count:
+   * the judge never moves or turns the bottle.
+   */
+  constructor(tuning: Tuning, releaseAngle: number, creditedTurns = 0) {
     this.uprightRad = tuning.uprightToleranceDeg * DEG;
     this.capRad = tuning.capAngleDeg * DEG;
     this.stillSpeed = tuning.stillSpeed;
@@ -108,6 +129,7 @@ export class LandingJudge {
     this.failRestSteps = stepsFor(tuning.failRestSeconds);
     this.timeoutSteps = stepsFor(tuning.timeoutSeconds);
     this.lastAngle = releaseAngle;
+    this.turned = creditedTurns * TWO_PI;
   }
 
   /** The outcome once decided, else null. */
@@ -131,13 +153,18 @@ export class LandingJudge {
     this.turned += wrapAngle(sample.angle - this.lastAngle);
     this.lastAngle = sample.angle;
 
-    const reason = this.judge(sample);
-    if (reason) {
+    const found = this.judge(sample);
+    if (found) {
+      const turns = Math.round(this.turned / TWO_PI) + 0; // + 0 turns -0 into 0
+      // Resting upright counts only after a full turn; without one it is a fail of its own kind.
+      const reason = found === 'upright' && turns === 0 ? 'noFlip' : found;
+      const success = reason === 'upright';
       this.decided = {
-        result: reason === 'upright' ? 'success' : 'fail',
+        result: success ? 'success' : 'fail',
         reason,
         rotation: this.turned,
-        turns: Math.round(this.turned / TWO_PI) + 0, // + 0 turns -0 into 0
+        turns,
+        points: success ? pointsForTurns(turns) : 0,
       };
     }
     return this.decided;
