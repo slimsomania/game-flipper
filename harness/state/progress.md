@@ -688,3 +688,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - A tall `summary.spec` run takes about 5 to 10 s per test because each plays 10 throws through Playwright; the whole e2e suite is about 5.7 minutes.
   - Process: a compound `cd ... && grep` into `node_modules` was auto-denied, so I used the Grep tool there; the temporary screenshot spec was a file in `tests/e2e/` that I deleted before committing.
 - Next: F015 (best score): add the best score line and the "New best!" note to `summaryView.ts` (take them from `summaryTexts`, adding fields to `SummaryState`), make `SUMMARY_LAYOUT.card` taller, and update `summaryHelpers.ts` if the Play again position moves (tests click at `SUMMARY_LAYOUT.playAgain`, so they follow the layout by themselves).
+
+> [harness] session 31 · builder F014 · todo → needs_review · ok · verify passed · 1 commit(s) · 102 tool calls · 25m 45s · ~$2.16 API-equivalent
