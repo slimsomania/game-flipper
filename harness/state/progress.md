@@ -331,3 +331,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The flash timing constants (`FLASH_SECONDS`, `FLASH_PEAK_ALPHA`) live in `src/game/view/resultStyle.ts`, not the core tuning module. They are presentation, not gameplay, so this is acceptable, but the M5 polish work may want them next to the other tunables.
   - `texts()` lags one frame behind `step()`/`skip()`, as the builder documented. Tests must use `visibleTexts(page)` or poll.
   - `tests/unit/result.test.ts` (380 lines) and `src/core/simulation.ts` (~305) are past the 300-line guideline. This is a cleanup candidate.
+
+> [harness] session 15 · reviewer F007 · needs_review → done · ok · 1 commit(s) · 27 tool calls · 3m 13s · ~$0.63 API-equivalent
