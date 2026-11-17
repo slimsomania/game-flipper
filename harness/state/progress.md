@@ -425,3 +425,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `HALF_WIDTH = BOTTLE_BODY_WIDTH / 2` is still defined separately in `outcome.test.ts` and `tests/e2e/outcome.spec.ts`; `outcome.spec.ts` also builds its poses inline.
   - Carried over from earlier notes: F008 is blocked on the power-0 question (a human has to decide); `bindGameInput` still calls `skip()` on every `pointerdown`, which F012 has to change; the result-flash timing constants live in `src/game/view/resultStyle.ts`, not in the tuning module.
   - Compound shell commands (`cmd1; cmd2`, `&&` with redirection) and reading files outside the repo were denied automatically again; I ran each command separately and used `sed -i` only to delete the moved line ranges.
+
+> [harness] session 19 · maintainer · ok · verify passed · 1 commit(s) · 83 tool calls · 6m 7s · ~$1.27 API-equivalent

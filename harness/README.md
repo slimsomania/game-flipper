@@ -90,6 +90,7 @@ npm run agents:status         # progress at any time
 | `--feature <id>` | Build (or review) this feature next |
 | `--no-review` | Builders mark features `done` directly: faster, but nothing double-checks them |
 | `--no-milestone-stop` | Keep going when a milestone completes |
+| `--no-wait` | Stop at a usage limit instead of waiting for it to reset (for unattended runs that should end early) |
 | `--model <name>` | Use this model for every role: `sonnet`, `opus`, `fable`, or a full model name |
 | `--dry-run` | Show the next session and its full prompt without running it |
 | `--smoke` | Quick check of headless Claude Code and the permission rules |

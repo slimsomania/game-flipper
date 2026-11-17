@@ -48,6 +48,7 @@ Usage: npm run agents -- [options]
   --feature <id>         Build (or review) this feature next, e.g. F012
   --no-review            Builders mark features done without a reviewer session
   --no-milestone-stop    Keep going when a milestone completes
+  --no-wait              Stop at a usage limit instead of waiting for it to reset
   --model <name>         Model for every role: sonnet, opus, fable, or a full model name
   --dry-run              Show the next session and its full prompt without running it
   --smoke                Check that headless Claude Code works and the permission rules load
@@ -87,6 +88,7 @@ interface Cli {
   feature: string | null;
   noReview: boolean;
   noMilestoneStop: boolean;
+  noWait: boolean;
   model: string | null;
   dryRun: boolean;
   smoke: boolean;
@@ -106,6 +108,7 @@ function parseCli(argv: string[]): Cli {
         feature: { type: 'string' },
         'no-review': { type: 'boolean', default: false },
         'no-milestone-stop': { type: 'boolean', default: false },
+        'no-wait': { type: 'boolean', default: false },
         model: { type: 'string' },
         'dry-run': { type: 'boolean', default: false },
         smoke: { type: 'boolean', default: false },
@@ -132,6 +135,7 @@ function parseCli(argv: string[]): Cli {
     feature: values.feature ?? null,
     noReview: values['no-review'],
     noMilestoneStop: values['no-milestone-stop'],
+    noWait: values['no-wait'],
     model: values.model ?? null,
     dryRun: values['dry-run'],
     smoke: values.smoke,
@@ -658,7 +662,7 @@ async function loop(
       log.warn(
         `Your ${pause.window} usage was at ${pause.percent}% (pauseAtUsagePercent: ${cfg.pauseAtUsagePercent}), so the next session waits for the reset instead of being cut off midway.`,
       );
-      if (pause.until.getTime() - Date.now() > MAX_WAIT_MS) {
+      if (cli.noWait || pause.until.getTime() - Date.now() > MAX_WAIT_MS) {
         log.warn(
           `It resets ${formatWhen(pause.until)}. Stopping; run \`npm run agents\` again then.`,
         );
@@ -760,7 +764,7 @@ async function loop(
         res.resetAt.getTime() > Date.now() &&
         res.resetAt.getTime() - Date.now() < 8 * 86_400_000;
       const until = isLimit && sane ? new Date(res.resetAt!.getTime() + 2 * 60_000) : fallback;
-      if (until.getTime() - Date.now() > MAX_WAIT_MS) {
+      if ((isLimit && cli.noWait) || until.getTime() - Date.now() > MAX_WAIT_MS) {
         log.warn(
           `The usage limit resets ${formatWhen(until)}. Stopping; run \`npm run agents\` again then.`,
         );
