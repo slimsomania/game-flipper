@@ -55,7 +55,9 @@ Flipper is a browser game: throw a bottle so it flips in the air and lands uprig
 ## Git
 
 - Commit each completed unit of work with a conventional message: `feat(F012): …`, `fix(F012): …`, `test: …`, `refactor: …`, `docs: …`.
-- Never push, switch branches, or rewrite history (no `reset`, `rebase` or `--amend`). Discard changes with `git restore`, not `git checkout`.
+- In a session a human started (not the harness), sync after every commit: `git pull --ff-only`, then `git push`. If the pull can't fast-forward or the push is rejected, stop and tell the human; never force-push or merge to get around it.
+- Inside the harness, don't push: the harness syncs the branch itself after each session.
+- Never switch branches or rewrite history (no `reset`, `rebase` or `--amend`). Discard changes with `git restore`, not `git checkout`.
 
 ## Agent harness
 

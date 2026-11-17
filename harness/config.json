@@ -14,6 +14,7 @@
   "permissionMode": "acceptEdits",
   "review": true,
   "stopAtMilestones": true,
+  "pushAfterSession": true,
   "maintenanceEvery": 8,
   "maxSessions": 20,
   "maxAttemptsPerFeature": 3,

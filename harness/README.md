@@ -67,6 +67,7 @@ After every session the harness:
 6. Checks `feature_list.json` field by field. A session may only change what its role allows, and only for its own feature; anything else is reverted, and the next session is told what was corrected.
 7. After builder and maintainer sessions, runs the gate itself: `npm run format`, then `npm run verify`. If it fails, the feature goes back to `todo` with the output as feedback, and the next session is told the build is red.
 8. Counts attempts, and stops the run after `maxConsecutiveFailures` sessions in a row without progress.
+9. Commits its own session line, then syncs the branch with its upstream (`git pull --ff-only`, then `git push`) when `pushAfterSession` is on. It never forces or merges. If the sync fails (offline, or the branches have diverged), it prints a warning and the run continues; push by hand later.
 
 Claude Code's own permission rules (`harness/claude-settings.json`) are a first line of defense. Agents can edit files in the repo and run npm, node, git (read, add, commit, restore) and common shell tools. `git push`, `reset`, `rebase`, `checkout`, `curl`, and edits to protected files are denied. Anything not on the allow list is refused automatically, because sessions run with `--permission-prompts none` and nobody is there to approve a prompt.
 
@@ -116,6 +117,7 @@ To send a finished feature back, set its `status` to `todo` and write what's wro
 | `permissionMode` | `acceptEdits` | Claude Code permission mode for sessions |
 | `review` | `true` | Use reviewer sessions |
 | `stopAtMilestones` | `true` | Pause the run when a milestone completes |
+| `pushAfterSession` | `true` | After each session, fast-forward pull and push the branch (agents themselves can't push) |
 | `maintenanceEvery` | `8` | Run a maintainer session after this many newly completed features (0 = never) |
 | `maxSessions` | `20` | Sessions per run |
 | `maxAttemptsPerFeature` | `3` | Builder attempts before a feature is blocked |

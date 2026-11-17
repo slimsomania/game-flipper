@@ -15,6 +15,11 @@ export interface HarnessConfig {
   review: boolean;
   /** Pause the run when a milestone becomes complete. */
   stopAtMilestones: boolean;
+  /**
+   * After each session's final commit, sync the branch with its upstream: fast-forward pull, then
+   * push. A failed sync is a warning, never a stop. Sessions themselves may not push.
+   */
+  pushAfterSession: boolean;
   /** Run a maintainer session after this many newly completed features (0 = never). */
   maintenanceEvery: number;
   /** Sessions per run. */
@@ -51,6 +56,7 @@ export const DEFAULT_CONFIG: HarnessConfig = {
   permissionMode: 'acceptEdits',
   review: true,
   stopAtMilestones: true,
+  pushAfterSession: true,
   maintenanceEvery: 8,
   maxSessions: 20,
   maxAttemptsPerFeature: 3,
@@ -89,7 +95,7 @@ export function parseConfig(raw: unknown): HarnessConfig {
   for (const key of NUMBER_KEYS) {
     if (typeof cfg[key] !== 'number' || cfg[key] < 0) problems.push(`${key} must be a number >= 0`);
   }
-  for (const key of ['review', 'stopAtMilestones'] as const) {
+  for (const key of ['review', 'stopAtMilestones', 'pushAfterSession'] as const) {
     if (typeof cfg[key] !== 'boolean') problems.push(`${key} must be true or false`);
   }
   if (cfg.maxBudgetUsdPerSession !== null && typeof cfg.maxBudgetUsdPerSession !== 'number') {

@@ -457,6 +457,11 @@ async function afterSession(
   const notes = violations.length ? `\n> [harness] corrected: ${violations.join('; ')}` : '';
   appendFileSync(PATHS.progress, `\n> [harness] ${summary}${notes}\n`);
   git.commitAll(`chore(harness): ${summary}`);
+  if (cfg.pushAfterSession) {
+    const sync = git.syncWithUpstream();
+    if (sync.ok) log.step(`git: ${sync.message}`);
+    else log.warn(`git: ${sync.message} (the run continues; push by hand later)`);
+  }
 
   let progressed: boolean;
   switch (role) {

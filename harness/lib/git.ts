@@ -39,6 +39,30 @@ export function commitAll(message: string): boolean {
   return true;
 }
 
+/**
+ * Sync the current branch with its upstream: fast-forward to the remote's commits, then push.
+ * Never forces and never merges: if the branches have diverged it stops and says so. Returns a
+ * one-line description of what happened, with ok false when the branch is not in sync.
+ */
+export function syncWithUpstream(): { ok: boolean; message: string } {
+  if (!succeeds(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'])) {
+    return { ok: false, message: `branch ${branch()} has no upstream; nothing pushed` };
+  }
+  const run = (args: string[]): string | null => {
+    const result = spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
+    if (result.status === 0) return null;
+    return (result.stderr || result.stdout || `git ${args[0]} failed`).trim().split('\n').pop()!;
+  };
+  const pullError = run(['pull', '--ff-only', '--quiet']);
+  if (pullError) return { ok: false, message: `pull --ff-only failed: ${pullError}` };
+  const pushError = run(['push', '--quiet']);
+  if (pushError) return { ok: false, message: `push failed: ${pushError}` };
+  return {
+    ok: true,
+    message: `pushed ${branch()} to ${git(['rev-parse', '--abbrev-ref', '@{u}'])}`,
+  };
+}
+
 export function changedFiles(from: string, to = 'HEAD'): string[] {
   const out = git(['diff', '--name-only', from, to]);
   return out ? out.split('\n') : [];

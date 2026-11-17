@@ -60,6 +60,12 @@ describe('parseConfig', () => {
     expect(() => parseConfig({ pauseAtUsagePercent: 150 })).toThrow(/pauseAtUsagePercent/);
     expect(() => parseConfig({ maxSessions: -1 })).toThrow(/maxSessions/);
   });
+
+  it('pushes after each session unless turned off', () => {
+    expect(parseConfig({}).pushAfterSession).toBe(true);
+    expect(parseConfig({ pushAfterSession: false }).pushAfterSession).toBe(false);
+    expect(() => parseConfig({ pushAfterSession: 'yes' })).toThrow(/pushAfterSession/);
+  });
 });
 
 describe('classifyOutcome', () => {
