@@ -14,9 +14,10 @@ export interface SummaryView {
 
 /**
  * The round summary: a white card, centered on the plain light background, with "Round over", the
- * round's points as the biggest line, its landings out of its throws, the Play again button and a
- * line about the keys. The background is the same light color as in play, drawn over the Game
- * scene, which waits underneath; the card is what stands out.
+ * round's points as the biggest line, its landings out of its throws, the best score (with "New
+ * best!" under it when this round set it), the Play again button and a line about the keys. The
+ * background is the same light color as in play, drawn over the Game scene, which waits underneath;
+ * the card is what stands out.
  */
 export function createSummaryView(
   scene: Phaser.Scene,
@@ -51,7 +52,13 @@ export function createSummaryView(
   line(layout.titleY, texts.title, 40, COLORS.muted);
   const score = line(layout.scoreY, texts.scoreLine, 96, COLORS.text);
   const landed = line(layout.landedY, texts.landedLine, 44, COLORS.text);
-  for (const text of [score, landed]) {
+  const best = line(layout.bestY, texts.bestLine, 36, COLORS.text);
+  const lines = [score, landed, best];
+  // Only a round that set a best has the note: otherwise there is no text object to see.
+  if (texts.newBestLine !== null) {
+    lines.push(line(layout.newBestY, texts.newBestLine, 32, COLORS.successText));
+  }
+  for (const text of lines) {
     if (text.width > layout.maxTextWidth) text.setScale(layout.maxTextWidth / text.width);
   }
 

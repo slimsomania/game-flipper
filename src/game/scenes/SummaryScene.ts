@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
+import { saveStore } from '../storage';
 import { createSummaryView, type SummaryView } from '../view/summaryView';
 
 export interface SummaryData {
@@ -28,7 +29,10 @@ export class SummaryScene extends Phaser.Scene {
   create(data: SummaryData): void {
     this.sim = data.sim;
     this.closing = false;
-    this.view = createSummaryView(this, this.sim.snapshot(), () => this.playAgain());
+    // The round's score is kept as the best here, once, when the summary opens (not on Play again).
+    const snapshot = this.sim.snapshot();
+    const { best, isNewBest } = saveStore().recordRound(snapshot.score);
+    this.view = createSummaryView(this, { ...snapshot, best, isNewBest }, () => this.playAgain());
 
     const keyboard = this.input.keyboard;
     if (keyboard) {

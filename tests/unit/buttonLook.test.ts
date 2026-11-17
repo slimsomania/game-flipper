@@ -39,14 +39,19 @@ describe('SUMMARY_LAYOUT', () => {
       SUMMARY_LAYOUT.titleY,
       SUMMARY_LAYOUT.scoreY,
       SUMMARY_LAYOUT.landedY,
+      SUMMARY_LAYOUT.bestY,
+      SUMMARY_LAYOUT.newBestY,
       playAgain.y,
       SUMMARY_LAYOUT.keyHintY,
     ];
     expect([...ys].sort((a, b) => a - b)).toEqual(ys);
     expect(ys[0]).toBeGreaterThan(top);
     expect(ys[ys.length - 1]).toBeLessThan(bottom);
+    // The lines of the best score (36 px and 32 px text) don't touch each other or the line above.
+    expect(SUMMARY_LAYOUT.bestY - SUMMARY_LAYOUT.landedY).toBeGreaterThanOrEqual(50);
+    expect(SUMMARY_LAYOUT.newBestY - SUMMARY_LAYOUT.bestY).toBeGreaterThanOrEqual(36);
     // The button and its lip stay clear of the lines around it.
-    expect(playAgain.y - playAgain.height / 2).toBeGreaterThan(SUMMARY_LAYOUT.landedY + 22);
+    expect(playAgain.y - playAgain.height / 2).toBeGreaterThan(SUMMARY_LAYOUT.newBestY + 20);
     expect(playAgain.y + playAgain.height / 2 + BUTTON_LIP).toBeLessThan(
       SUMMARY_LAYOUT.keyHintY - 12,
     );

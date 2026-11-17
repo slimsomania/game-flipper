@@ -17,6 +17,26 @@ export function roundLength(tuning: Tuning): number {
   return Number.isFinite(length) ? Math.max(1, length) : 1;
 }
 
+/** What a finished round does to the best round score. */
+export interface BestUpdate {
+  /** The best round score after the round: the higher of the saved best and the round's score. */
+  best: number;
+  /** True only when the round scored strictly more than the saved best. */
+  isNewBest: boolean;
+}
+
+/**
+ * The best round score after a round that scored `score` (its points, which can exceed the number
+ * of throws because a double is worth 2) when the saved best was `previousBest`. A tie is not a new
+ * best, and with no saved best (0) any score above 0 is one. A best or score that is not a number
+ * (or below 0) counts as 0, so a damaged save can't spoil the comparison.
+ */
+export function updateBest(previousBest: number, score: number): BestUpdate {
+  const before = Number.isFinite(previousBest) ? Math.max(0, previousBest) : 0;
+  const points = Number.isFinite(score) ? Math.max(0, score) : 0;
+  return points > before ? { best: points, isNewBest: true } : { best: before, isNewBest: false };
+}
+
 export class Round {
   private thrown = 0;
   private points = 0;
