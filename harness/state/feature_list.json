@@ -202,7 +202,7 @@
         "F004"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Flip-window tool kept (src/core/flipWindow.ts, scripts/flip-windows.ts now prints single and double flip columns, about 1.3 s). Both design rules are in the judge (src/core/outcome.ts): an upright rest with 0 turns is the fail 'noFlip' ('No flip!', red flash), and outcome.points is the turns of an upright landing (0 for any fail) and is added to the score; resultStyle.ts words the messages ('Nailed it! +1', 'Double! +2', 'Triple! +3', 'Flip ×N! +N'). placeBottle takes pose.turns (credited rotation, moves nothing); tests use FLIPPED/flipped(n) from tests/shared.ts. Added window.__FLIPPER__.flash() so the e2e tests can see the flash color. Verified with npm run verify (308 unit, 50 e2e), new tests/unit/flipRule.test.ts and tests/e2e/flipRule.spec.ts, and snaps of 'No flip!', 'Nailed it! +1' and 'Double! +2'; the baseline table is in progress.md.",
       "review_feedback": "Human decisions (2026-11-16): (1) a landing needs at least one full turn ('No flip!' fail); (2) an upright landing scores its turns (2 points for a double, 3 for a triple), with messages that name the flip and the points. The flip-window tool is already built: keep it, add the double-flip column to scripts/flip-windows.ts, implement both rules and the placeBottle turns credit, update tests that relied on 0-turn successes or on 'Nailed it!' alone (the design changed; say so in the progress entry), and update docs/ARCHITECTURE.md where it describes outcomes or scoring."
     },

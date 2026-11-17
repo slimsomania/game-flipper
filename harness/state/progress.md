@@ -473,3 +473,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/outcome.test.ts` (584 lines), `tests/unit/throw.test.ts` and `tests/unit/push.test.ts` are still over the 300-line guideline (see session 19); I put all new tests in new files.
   - Compound shell commands (`a; b`, `a && b | c`), a glob in a `sed -i`, and a `python3 -` heredoc were denied automatically; I ran single commands and used the Edit and Write tools.
 - Next: F009 (calibrate the throw) starts from the table above and `sweepPowers` / `findWindows` / `widestWindow`; check early how flat the rotation-versus-power curve can be made before choosing levers, and lock window targets (not tuning values) with tests built on `flipWindow.ts`.
+
+> [harness] session 20 · builder F008 · todo → needs_review · ok · verify passed · 1 commit(s) · 154 tool calls · 15m 59s · ~$2.39 API-equivalent
