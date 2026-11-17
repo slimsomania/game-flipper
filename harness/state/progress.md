@@ -630,3 +630,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The release power is only the last 150 ms of the push (D21), so a drag that pauses mid-way and finishes with a short flick throws much weaker than the bar showed mid-drag (48 → 17 in my snap). This is by design, but players may find it surprising. Worth checking when tuning the feel (M5).
   - The e2e tests that depend on push speed dispatch synthetic events with their own timestamps (`tests/e2e/mouseHelpers.ts`) instead of using Playwright's real mouse, because headless timing is slow. The real mouse is still covered for grab, cursor and release outside the canvas. That is a sensible trade-off, but those tests don't prove real-time feel.
   - A background `npm run verify` was auto-denied in this session; I ran it in the foreground.
+
+> [harness] session 28 · reviewer F012 · needs_review → done · ok · 1 commit(s) · 19 tool calls · 6m 9s · ~$0.64 API-equivalent
