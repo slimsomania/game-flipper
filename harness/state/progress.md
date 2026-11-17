@@ -317,3 +317,17 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F008 (flip windows) doesn't touch the UI. F013 (rounds) can add "Throw N / 10" and the streak next to `scoreView.ts` in the top-left corner, and should read `snapshot.throws`/`phase`; any new UI text is then testable with `visibleTexts(page)`.
 
 > [harness] session 14 · builder F007 · todo → needs_review · ok · verify passed · 1 commit(s) · 73 tool calls · 10m 17s · ~$1.27 API-equivalent
+
+## Session 15 · reviewer · F007 Flash the result and show the score
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: green on the first run (format, typecheck, unit, build, 43 e2e including all 10 in `resultText.spec.ts`).
+  - Criteria 1–2: I read `resultText.spec.ts`. It covers success → 'Nailed it!' + 'Score: 1', fail → 'Down!' with the score unchanged (0, and 1 after a success), the message still there at 40 and 89 steps and gone at step 90, and gone after skip() and Space. It also has a real-time variant.
+  - Criteria 3–4: my own snaps at 1024×576. Success (seed 2, throwBottle 0, step 95, resultSteps 0): green flash, dark green "Nailed it!" readable, "Score: 1" top-left, bottle and table visible through the tint. 40 steps later the flash is gone and the message is still there. Fail (seed 7, setWater 0.5, throwBottle 30, step 109): red flash, dark red "Down!", "Score: 0", bottle on its side visible. At +40 the flash is gone and "Down!" stays. `call:texts` returned `["POWER","50%","Nailed it!","Score: 1"]` and `[…,"Down!","Score: 0"]`. No console errors.
+  - Edge cases: pressing R (restart) during a success result clears both the flash and the message, and the score goes back to 0. Space during a fail result also clears them at once. Both checked with screenshots and texts().
+  - Code: `resultSteps` is a read-only snapshot field in core and has unit tests. The flash and message logic (`resultStyle.ts`) is Phaser-free and unit-tested. `texts()` is a thin read of the scene's Text objects. The test diff only adds tests (no lines removed). No debug leftovers.
+- Problems: none
+- Notes for later:
+  - The flash timing constants (`FLASH_SECONDS`, `FLASH_PEAK_ALPHA`) live in `src/game/view/resultStyle.ts`, not the core tuning module. They are presentation, not gameplay, so this is acceptable, but the M5 polish work may want them next to the other tunables.
+  - `texts()` lags one frame behind `step()`/`skip()`, as the builder documented. Tests must use `visibleTexts(page)` or poll.
+  - `tests/unit/result.test.ts` (380 lines) and `src/core/simulation.ts` (~305) are past the 300-line guideline. This is a cleanup candidate.

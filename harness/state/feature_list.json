@@ -179,9 +179,9 @@
       "depends_on": [
         "F005"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built the result flash and message (src/game/view/resultView.ts, resultStyle.ts), the top-left 'Score: N' (scoreView.ts) and window.__FLIPPER__.texts() (src/debug/visibleTexts.ts). The flash fades by a new snapshot field resultSteps (steps since the outcome), so any frame is a pure function of the snapshot: 0.4 opacity at the outcome step, gone after 30 steps; the message stays until the next bottle. Verified with 13 new unit tests, 10 new e2e tests in tests/e2e/resultText.spec.ts (the 'goes away' tests fail if the message isn't hidden), and snaps at 0, 15 and 40 steps after a success and a fail.",
+      "notes": "Built the result flash and message (src/game/view/resultView.ts, resultStyle.ts), the top-left 'Score: N' (scoreView.ts) and window.__FLIPPER__.texts() (src/debug/visibleTexts.ts). The flash fades by a new snapshot field resultSteps (steps since the outcome), so any frame is a pure function of the snapshot: 0.4 opacity at the outcome step, gone after 30 steps; the message stays until the next bottle. Verified with 13 new unit tests, 10 new e2e tests in tests/e2e/resultText.spec.ts (the 'goes away' tests fail if the message isn't hidden), and snaps at 0, 15 and 40 steps after a success and a fail.\nReviewed: npm run verify green (43 e2e); resultText.spec.ts covers criteria 1-2; own 1024x576 snaps of a success and a fail at resultSteps 0 (green/red flash, readable message, score visible) and +40 (flash gone, message kept), texts() via call:texts, and R-restart and Space-skip mid-result both clear the message; test diff is additions only.",
       "review_feedback": ""
     },
     {
