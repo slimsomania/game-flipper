@@ -4,7 +4,10 @@ import type { Tuning } from './tuning';
 /*
  * The throw: one power value (0 to 100) becomes a linear impulse and an angular impulse on the
  * bottle. The body divides them by its own mass and inertia, so the same power gives a heavier
- * (fuller) bottle less launch speed and less spin without any special cases (decision P2).
+ * (fuller) bottle less launch speed and less spin without any special cases (decision P2). The
+ * linear impulse is in proportion to the power; the angular impulse follows the spin curve
+ * (`spinFraction`), which the calibration (F009) shapes so the rotation rises slowly through every
+ * bottle's flip window.
  */
 
 export const MIN_POWER = 0;
@@ -33,13 +36,37 @@ export function clampPower(power: number): number {
  */
 export function throwImpulse(
   power: number,
-  tuning: Pick<Tuning, 'throwAngleDeg' | 'throwLinearImpulse' | 'throwAngularImpulse'>,
+  tuning: Pick<
+    Tuning,
+    | 'throwAngleDeg'
+    | 'throwLinearImpulse'
+    | 'throwAngularImpulse'
+    | 'throwSpinExponent'
+    | 'throwSpinGrowth'
+  >,
 ): ThrowImpulse {
-  const fraction = clampPower(power) / MAX_POWER;
+  const used = clampPower(power);
   const angle = (tuning.throwAngleDeg * Math.PI) / 180;
-  const push = tuning.throwLinearImpulse * fraction;
+  const push = tuning.throwLinearImpulse * (used / MAX_POWER);
   return {
     linear: { x: push * Math.sin(angle), y: -push * Math.cos(angle) },
-    angular: tuning.throwAngularImpulse * fraction,
+    angular: tuning.throwAngularImpulse * spinFraction(used, tuning),
   };
+}
+
+/**
+ * The part of the full angular impulse that a throw at `power` (clamped to 0..100) applies:
+ * `(power/100)^exponent * exp(growth * (power - 100))`. It is 0 at power 0 and 1 at power 100, and
+ * it never goes down as the power goes up (for an exponent above 0 and a growth of 0 or more).
+ */
+export function spinFraction(
+  power: number,
+  tuning: Pick<Tuning, 'throwSpinExponent' | 'throwSpinGrowth'>,
+): number {
+  const used = clampPower(power);
+  if (used === 0) return 0;
+  return (
+    Math.pow(used / MAX_POWER, tuning.throwSpinExponent) *
+    Math.exp(tuning.throwSpinGrowth * (used - MAX_POWER))
+  );
 }

@@ -32,13 +32,15 @@ interface Level {
 
 let levels: Level[] = [];
 
+// The sweeps are the whole cost of this file (500 throws). The generous hook timeout only keeps a
+// slow or busy machine from failing with a timeout; the 15 s budget is checked by its own test.
 beforeAll(() => {
   levels = LEVELS.map((water) => {
     const points = sweepPowers(water);
     const windows = findWindows(points);
     return { water, points, single: widestWindow(windows, 1), double: widestWindow(windows, 2) };
   });
-});
+}, 120_000);
 
 /** The single-flip window of a level; fails the test with the level named if there is none. */
 function singleOf(level: Level): FlipWindow {
@@ -133,7 +135,7 @@ describe('the flight at the 50% bottle’s window centers', () => {
       right = Math.max(right, box.maxX);
     }
     const snapshot = sim.snapshot();
-    return { power, highest, left, right, ...snapshot };
+    return { thrownAt: power, highest, left, right, ...snapshot };
   }
 
   for (const [name, pick] of [

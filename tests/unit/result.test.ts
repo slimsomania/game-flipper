@@ -201,11 +201,11 @@ describe('replaying a seed', () => {
     expect(first.water).toEqual(waterSequence(13, 5));
     expect(first.throws).toEqual([1, 2, 3, 4, 5]);
     expect(first.outcomes.every((outcome) => outcome !== null)).toBe(true);
-    // The score is the running count of successes.
-    let successes = 0;
+    // The score is the running total of the throws' points (one per turn of a success, since F008).
+    let points = 0;
     first.outcomes.forEach((outcome, i) => {
-      if (outcome?.result === 'success') successes++;
-      expect(first.scores[i]).toBe(successes);
+      points += outcome?.points ?? 0;
+      expect(first.scores[i]).toBe(points);
     });
   });
 

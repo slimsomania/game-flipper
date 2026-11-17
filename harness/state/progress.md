@@ -490,3 +490,56 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 
 > [harness] session 22 · builder F009 · todo → todo · usage_limit · verify FAILED · 1 commit(s) · 241 tool calls · 23m 15s · ~$4.31 API-equivalent
 > [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
+
+## Session 23 · builder · F009 Calibrate the throw so every bottle has a single-flip window
+- Did: (starting point: session 22's WIP commit, which had no notes; I kept its damping fields and its `calibration.test.ts`, and deleted its four throwaway `scripts/explore*.ts` and the `TEMP-EXPLORE` shape hack in `bottleShape.ts`)
+  - Findings first, because they drive the design. A bottle lands upright over only about 0.1 turns of landing angle with the old tall thin shape, and about 0.27 with a wide low one. Window width in power is that basin divided by how fast the rotation rises per power point, so with the rotation rising as the square of the power the 10% bottle's window stayed at about 1 point and the others at 4 to 5 (measured with the wide shape and the old linear throw). Strong spin damping makes the rotation settle early (it becomes the launch spin divided by the damping, so it rises only in line with the power) and a wide, heavy-shelled, sticky bottle widens the basin: with those alone a hill-climb over every lever (shape, density, friction, bounce, damping, impulses, angle) got the 50% and 90% windows to 13 to 16 but never the 10% bottle past 9 or 10 points while the 90% bottle still had a double flip by power 100. The reason: 12 points at power 30 to 40 needs the rotation to rise by no more than about 2% per power point, and a double flip then needs the rotation to double within 40 more points.
+  - So the throw got a spin curve, one of the levers the feature names ("throw speed and spin curves"). `src/core/throw.ts`: `spinFraction(power, tuning) = (p/100)^throwSpinExponent * exp(throwSpinGrowth * (p - 100))`, 0 at power 0 and 1 at power 100; the angular impulse is `throwAngularImpulse * spinFraction`. The linear impulse stays in proportion to the power. Defaults: exponent 0.03 and growth 0.013, which is nearly `exp(0.013 p)`: the rotation rises about 1.3% per power point wherever the window is, so every window is about as wide in points and a double flip sits about 40 points above a single.
+  - Tuning (`src/core/tuning.ts`): new `throwSpinExponent`, `throwSpinGrowth`; session 22's `bottleAngularDamping` and `bottleLinearDamping` are applied in `bottle.ts` (construction and `applyTuning`). New defaults: `shellDensity` 0.9 (a heavy shell keeps the 10% to 90% power ratio under 2), `bottleFriction` 0.7, `bottleRestitution` 0.04, `bottleAngularDamping` 2.55, `bottleLinearDamping` 0.34, `throwAngleDeg` 6, `throwLinearImpulse` 9.2, `throwAngularImpulse` 6.25.
+  - Shape (`src/core/bottleShape.ts`): body 1.0 x 0.71 m, shoulder 0.24, neck 0.23 wide x 0.06, cap 0.26 wide x 0.12 (it was 0.66 wide and 1.74 tall; now 1.0 x 1.13). Everything that draws or judges the bottle reads these constants, so nothing else changed.
+  - No rule moves or turns the bottle after release: the throw is still one impulse pair, and damping is a property of the body that only slows it.
+  - Tests: new `tests/unit/spinCurve.test.ts` (6) and `tests/unit/damping.test.ts` (4); `tests/unit/calibration.test.ts` (11, from session 22, kept: it locks every criterion on top of `flipWindow.ts`); new `tests/e2e/calibration.spec.ts` (4: the browser game agrees, with the powers taken from a headless sweep instead of written in the test).
+  - Docs: `docs/ARCHITECTURE.md` (tuning and throw rows, flipWindow row, D10, new D23 with the reasoning above).
+- Existing tests that had to change because of the new defaults (none deleted, skipped or weakened; each assertion's meaning is kept):
+  - `outcome.test.ts`: "fell onto its cap and toppled" tilted the bottle π+0.15 "past the balance point"; the squat bottle balances on its cap up to about 0.2 rad, so it is now π+0.45 (measured: 0.15 stays on the cap, 0.25 and more topple). "measures rotation as the turning since release" and "counts a counterclockwise spin as negative turning" place a spinning bottle and expect more than a full turn of rotation; the default bottle now damps its spin (the second missed by 7e-7 radians), so they pass `bottleAngularDamping: 0`.
+  - `flipRule.test.ts` "is only bookkeeping": it stepped a fixed 200 steps and read the outcome; with the damping the placed bottle needs longer to settle, so it steps at least 200 and until the outcome is decided (the comparison of every step and the rotation difference are unchanged).
+  - `result.test.ts` "replaying a seed": it asserted "the score is the running count of successes"; since F008 it is the running total of points, which only matched because its five powers gave singles. Now one of them is a double. It asserts the running sum of `outcome.points`.
+  - `throw.test.ts`: "scales both impulses with the power" is split: the linear impulse still scales with the power; the angular impulse is checked against `spinFraction` and, with exponent 1 and growth 0, against a straight line.
+  - `sweepPowers.test.ts`: two tests run 4 and 5 sweeps and have the default 5 s timeout; they now have 30 s (the assertions are untouched). `calibration.test.ts`'s `beforeAll` has a 120 s hook timeout for the same reason.
+  - `calibration.test.ts` (session 22) had a type error (`power` given twice in an object); renamed to `thrownAt`.
+- Verified:
+  - `npm run verify` passes: format, typecheck, 331 unit tests in 27 files (308 before), build, 54 e2e tests (50 before).
+  - Criterion 1: `calibration.test.ts` "every tested water level has a window 12 to 28 points wide" (10/30/50/70/90%, powers 0 to 100). Windows are 13, 15, 15, 16, 16.
+  - Criterion 2: "the window centers rise with the water level", "a nearly full bottle needs 1.5 to 2.0 times the power of a nearly empty one" (54 / 29.5 = 1.83), "the windows of the 10% and the 90% bottle do not overlap" (23 to 36 and 46 to 62).
+  - Criterion 3: "every tested water level has one, at least 4 points wide and narrower than the single" and "every double-flip window lies entirely above its single-flip window" (widths 8, 10, 9, 9, 5).
+  - Criterion 4: "too little power under-rotates and too much over-rotates" (10 below the low end and 10 above the high end of every window).
+  - Criterion 5: "a throw at the single-flip / double-flip window center stays on screen and lands on the table" (the bottle's top above y = 0 the whole flight; a success, inside the table's ends, base on the tabletop).
+  - Criterion 6: "the calibration tests take under 15 seconds together" (0.9 s on an idle machine, 6 to 10 s while the machine was loaded), and "nothing moves or turns the bottle after release: the launch velocities alone give the same flight" at all five levels; the table is below.
+  - The window edges come from chaotic landings, so I checked they are not on a knife edge: windows are identical for all five levels when the spin impulse changes by 1e-9 relative, or the shell density by 1e-10.
+  - Snaps (1280x720, `--url "/?seed=7"`, paused): the held bottle at 10% and 90% water looks like a wide jug with a neck and a cap and the water level reads clearly; a throw at power 44 and 50% water lands upright and the score goes to 1; a throw at power 88 stays on screen, turns twice and lands with "Double! +2" and "Score: 2". No console errors.
+  - Flip-windows table for the new defaults (`npx tsx scripts/flip-windows.ts`, power 0 to 100 in steps of 1, 1.1 s):
+
+    ```
+           single flip (1 turn)         double flip (2 turns)
+     water   low  high  center  width     low  high  center  width
+       10%    23    36    29.5     13      68    76      72      8
+       20%    28    42      35     14      74    83    78.5      9
+       30%    31    46    38.5     15      78    88      83     10
+       40%    34    49    41.5     15      82    91    86.5      9
+       50%    36    51    43.5     15      84    93    88.5      9
+       60%    38    54      46     16      87    96    91.5      9
+       70%    40    56      48     16      89    98    93.5      9
+       80%    43    59      51     16      92   100      96      8
+       90%    46    62      54     16      95   100    97.5      5
+    ```
+- Status: F009 → needs_review
+- Issues / follow-ups:
+  - The bottle looks different (a wide jar, 100 px wide and 113 px tall; it was a tall bottle). That is the proportions lever the feature names, and it is what makes a wide window possible (see above), but the human may want the art pass to bring back a taller look. Any change of proportions needs a new look at the table: there is a comment at the top of the dimensions in `bottleShape.ts`.
+  - The spin curve is a new lever with an unusual shape: even power 1 gives about 24% of the full spin (power 0 gives none), and the rotation then rises by about 1.3% per point. Low powers are therefore a quick spin with almost no lift. F010 (the tuning panel) should expose `throwSpinExponent` and `throwSpinGrowth` next to the impulses.
+  - The 10% bottle's window is 13 wide, one more than the minimum, and the 90% bottle's double window is cut by the top of the bar (95 to 100). They are deterministic, but retuning should keep an eye on both.
+  - Flights are short: a single flip rises under 1 m and lands in about a second. The throw height is still the linear impulse (9.2); raising it changes every window, so retune with the table.
+  - The difficulty targets of section 3 (a new player lands 3 of 10, a practiced one 6 to 8) are not measured; that is F020.
+  - Process: I started up to 20 background tuning searches and stopped them with TaskStop, but their node processes kept running, which slowed the machine about tenfold for roughly an hour (a sweep that takes 1.1 s took 13 s) and made some tests with the default 5 s timeout fail until it passed. The tools to list or end processes were denied in this session, so I could not remove them; they should finish by themselves, and if the machine is slow, look for stray `node` processes running `explore-search`.
+  - `tests/unit/outcome.test.ts`, `throw.test.ts` and `push.test.ts` are still over the 300-line guideline (see sessions 19 and 20); I put all new tests in new files.
+  - Compound shell commands, a shell variable in a command, `grep` and `tail` on a file outside the repo, `tasklist` and `ps` were denied automatically; I used single commands and the Read tool.
+- Next: the reviewer should re-run `npx tsx scripts/flip-windows.ts` and `npm test -- tests/unit/calibration.test.ts`, look at the snaps of a single and a double flip, and decide whether the squat bottle is acceptable for now. The next feature (F010, the tuning panel) should list the two new spin-curve fields and the two damping fields.

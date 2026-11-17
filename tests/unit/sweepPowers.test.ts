@@ -34,7 +34,7 @@ describe('sweepPowers', () => {
     expect(sweepPowers(0.15, { throwLinearImpulse: 11 })).toEqual(
       sweepPowers(0.15, { throwLinearImpulse: 11 }),
     );
-  });
+  }, 30_000); // four sweeps of 101 throws: well over the 5 s default on a busy machine
 
   it('does not flip the bottle at power 0: it only drops, and that is a fail at every water level', () => {
     // 10% to 90% in 5% steps, the water levels of the game.
@@ -61,7 +61,7 @@ describe('sweepPowers', () => {
         }
       }
     }
-  });
+  }, 30_000); // five sweeps of 101 throws
 
   it('gives the same result as playing the throw in the game', () => {
     for (const [water, power] of [

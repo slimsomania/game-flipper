@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HAND_Y } from '../../src/core/bottle';
 import { bottleMassProperties } from '../../src/core/bottleShape';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
-import { MAX_POWER, clampPower, throwImpulse } from '../../src/core/throw';
+import { MAX_POWER, clampPower, spinFraction, throwImpulse } from '../../src/core/throw';
 import { DEFAULT_TUNING, type Tuning } from '../../src/core/tuning';
 import { run } from './helpers';
 
@@ -41,17 +41,35 @@ describe('throwImpulse', () => {
     expect(angular).toBeGreaterThan(0);
   });
 
-  it('keeps the same direction at every power and scales both impulses with it', () => {
+  it('keeps the same direction at every power and scales the linear impulse with it', () => {
     const half = throwImpulse(50, DEFAULT_TUNING);
     const full = throwImpulse(100, DEFAULT_TUNING);
     expect(full.linear.x).toBeCloseTo(2 * half.linear.x, 9);
     expect(full.linear.y).toBeCloseTo(2 * half.linear.y, 9);
-    expect(full.angular).toBeCloseTo(2 * half.angular, 9);
     expect(Math.hypot(full.linear.x, full.linear.y)).toBeCloseTo(
       DEFAULT_TUNING.throwLinearImpulse,
       9,
     );
+  });
+
+  it('gives the whole angular impulse at power 100 and a share of it below', () => {
+    const full = throwImpulse(100, DEFAULT_TUNING);
     expect(full.angular).toBeCloseTo(DEFAULT_TUNING.throwAngularImpulse, 9);
+    for (const power of [10, 30, 50, 70, 90]) {
+      const { angular } = throwImpulse(power, DEFAULT_TUNING);
+      expect(angular, `power ${power}`).toBeGreaterThan(0);
+      expect(angular, `power ${power}`).toBeLessThan(full.angular);
+      expect(angular, `power ${power}`).toBeCloseTo(
+        DEFAULT_TUNING.throwAngularImpulse * spinFraction(power, DEFAULT_TUNING),
+        12,
+      );
+    }
+  });
+
+  it('turns the angular impulse into a straight line with exponent 1 and no growth', () => {
+    const line = { ...DEFAULT_TUNING, throwSpinExponent: 1, throwSpinGrowth: 0 };
+    expect(throwImpulse(50, line).angular).toBeCloseTo(0.5 * line.throwAngularImpulse, 12);
+    expect(throwImpulse(100, line).angular).toBeCloseTo(line.throwAngularImpulse, 12);
   });
 
   it('is zero at power 0 and takes its numbers from the tuning', () => {
@@ -67,6 +85,8 @@ describe('throwImpulse', () => {
   });
 
   it('clamps power to 0..100', () => {
+    expect(spinFraction(-5, DEFAULT_TUNING)).toBe(0);
+    expect(spinFraction(1e9, DEFAULT_TUNING)).toBeCloseTo(1, 12);
     expect(clampPower(-5)).toBe(0);
     expect(clampPower(0)).toBe(0);
     expect(clampPower(42.5)).toBe(42.5);

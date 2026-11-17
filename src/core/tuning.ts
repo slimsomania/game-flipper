@@ -41,6 +41,17 @@ export interface Tuning {
    * its inertia, so a fuller bottle spins slower.
    */
   throwAngularImpulse: number;
+  /**
+   * The shape of the spin curve: a throw at power p applies this fraction of the angular impulse,
+   * `(p/100)^throwSpinExponent * exp(throwSpinGrowth * (p - 100))`. At power 100 it is 1 and at
+   * power 0 it is 0 (the exponent must be above 0). Exponent 1 with growth 0 is a straight line.
+   * A smaller exponent gives a lot of spin early; a positive growth makes the spin climb faster
+   * and faster toward 100. Together they let the rotation rise slowly through a bottle's single
+   * flip window and still reach a double flip by power 100.
+   */
+  throwSpinExponent: number;
+  /** The exponential part of the spin curve, per point of power (see `throwSpinExponent`). */
+  throwSpinGrowth: number;
   /** A bottle standing within this many degrees of upright (after any whole turns) is upright. */
   uprightToleranceDeg: number;
   /** Seconds the bottle must stand upright, on the table and nearly still, to succeed. */
@@ -94,19 +105,24 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   waterMin: 0.1,
   waterMax: 0.9,
   waterStep: 0.05,
-  // Starting point; F009 calibrates the throw against it. An empty bottle weighs about 40% of a
-  // 50%-full one, so water is a clear but not overwhelming part of the mass.
-  shellDensity: 0.35,
+  // F009 calibration (see D23 in docs/ARCHITECTURE.md). A heavy shell keeps the water from
+  // dominating the mass, so the power a bottle needs rises by a factor of 1.5 to 2 from 10% to 90%.
+  shellDensity: 0.9,
   waterDensity: 1,
-  // Carried over from the placeholder bottle.
-  bottleFriction: 0.6,
-  bottleRestitution: 0.15,
-  bottleAngularDamping: 0,
-  bottleLinearDamping: 0,
-  // Starting values for F003; F009 calibrates them so every bottle has a single-flip window.
-  throwAngleDeg: 12,
-  throwLinearImpulse: 9,
-  throwAngularImpulse: 1,
+  // High friction and almost no bounce make a landing stick instead of skipping, and strong spin
+  // damping makes the rotation settle early in the flight, so the angle at landing changes slowly
+  // with the power: that is what gives a single flip a window of power instead of one lucky value.
+  bottleFriction: 0.7,
+  bottleRestitution: 0.04,
+  bottleAngularDamping: 2.55,
+  bottleLinearDamping: 0.34,
+  throwAngleDeg: 6,
+  throwLinearImpulse: 9.2,
+  throwAngularImpulse: 6.25,
+  // A spin that is almost the same at every power but climbs steadily toward 100, so a double flip
+  // is still within reach of a full bottle.
+  throwSpinExponent: 0.03,
+  throwSpinGrowth: 0.013,
   // Design section 2: upright within 15° for 1 s; a throw with no outcome after 5 s fails.
   uprightToleranceDeg: 15,
   uprightHoldSeconds: 1,

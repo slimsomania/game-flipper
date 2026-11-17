@@ -15,25 +15,27 @@ export interface Point {
   y: number;
 }
 
+/*
+ * The proportions are a calibration lever (F009): a wide, low bottle tips back onto its base from a
+ * much larger landing angle than a tall thin one (about 0.27 of a turn instead of 0.1), and that is
+ * what lets a single flip have a window of 12 or more powers. Change them only together with a
+ * look at the flip-windows table (`npx tsx scripts/flip-windows.ts`) and `calibration.test.ts`.
+ */
+
 /** Straight-sided body, from the flat base up to where the shoulder starts. */
-// TEMP-EXPLORE: shape overrides from the environment (removed before commit).
-const SHAPE = JSON.parse(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).process?.env?.FLIPPER_SHAPE ?? '{}',
-) as Record<string, number>;
-export let BOTTLE_BODY_WIDTH = SHAPE.bodyW ?? 0.66;
-export let BOTTLE_BODY_HEIGHT = SHAPE.bodyH ?? 1.1;
+export const BOTTLE_BODY_WIDTH = 1.0;
+export const BOTTLE_BODY_HEIGHT = 0.71;
 /** The shoulder narrows from the body width to the neck width. */
-export let BOTTLE_SHOULDER_HEIGHT = SHAPE.shoulderH ?? 0.32;
-export let BOTTLE_NECK_WIDTH = SHAPE.neckW ?? 0.28;
-export let BOTTLE_NECK_HEIGHT = SHAPE.neckH ?? 0.18;
+export const BOTTLE_SHOULDER_HEIGHT = 0.24;
+export const BOTTLE_NECK_WIDTH = 0.23;
+export const BOTTLE_NECK_HEIGHT = 0.06;
 /** The cap is a little wider than the neck. */
-export let BOTTLE_CAP_WIDTH = SHAPE.capW ?? 0.34;
-export let BOTTLE_CAP_HEIGHT = SHAPE.capH ?? 0.14;
+export const BOTTLE_CAP_WIDTH = 0.26;
+export const BOTTLE_CAP_HEIGHT = 0.12;
 /** Thickness of the plastic wall: the water sits inside it. */
 export const BOTTLE_WALL = 0.03;
 
-export let BOTTLE_HEIGHT =
+export const BOTTLE_HEIGHT =
   BOTTLE_BODY_HEIGHT + BOTTLE_SHOULDER_HEIGHT + BOTTLE_NECK_HEIGHT + BOTTLE_CAP_HEIGHT;
 
 export type BottlePartName = 'body' | 'shoulder' | 'neck' | 'cap';
@@ -58,44 +60,25 @@ function slab(name: BottlePartName, width: number, bottom: number, top: number):
   };
 }
 
+const SHOULDER_BOTTOM = BOTTLE_BODY_HEIGHT;
+const NECK_BOTTOM = SHOULDER_BOTTOM + BOTTLE_SHOULDER_HEIGHT;
+const CAP_BOTTOM = NECK_BOTTOM + BOTTLE_NECK_HEIGHT;
+
 /** The four convex pieces, from the base up: body, shoulder, neck, cap. */
-export const BOTTLE_PARTS: BottlePart[] = [];
-
-function rebuildParts(): void {
-  BOTTLE_HEIGHT =
-    BOTTLE_BODY_HEIGHT + BOTTLE_SHOULDER_HEIGHT + BOTTLE_NECK_HEIGHT + BOTTLE_CAP_HEIGHT;
-  const SHOULDER_BOTTOM = BOTTLE_BODY_HEIGHT;
-  const NECK_BOTTOM = SHOULDER_BOTTOM + BOTTLE_SHOULDER_HEIGHT;
-  const CAP_BOTTOM = NECK_BOTTOM + BOTTLE_NECK_HEIGHT;
-  BOTTLE_PARTS.length = 0;
-  BOTTLE_PARTS.push(
-    slab('body', BOTTLE_BODY_WIDTH, 0, BOTTLE_BODY_HEIGHT),
-    {
-      name: 'shoulder',
-      vertices: [
-        { x: -BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
-        { x: BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
-        { x: BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
-        { x: -BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
-      ],
-    },
-    slab('neck', BOTTLE_NECK_WIDTH, NECK_BOTTOM, CAP_BOTTOM),
-    slab('cap', BOTTLE_CAP_WIDTH, CAP_BOTTOM, BOTTLE_HEIGHT),
-  );
-}
-rebuildParts();
-
-/** TEMP-EXPLORE: change the shape at runtime (removed before commit). */
-export function __setShape(s: Record<string, number>): void {
-  BOTTLE_BODY_WIDTH = s.bodyW ?? BOTTLE_BODY_WIDTH;
-  BOTTLE_BODY_HEIGHT = s.bodyH ?? BOTTLE_BODY_HEIGHT;
-  BOTTLE_SHOULDER_HEIGHT = s.shoulderH ?? BOTTLE_SHOULDER_HEIGHT;
-  BOTTLE_NECK_WIDTH = s.neckW ?? BOTTLE_NECK_WIDTH;
-  BOTTLE_NECK_HEIGHT = s.neckH ?? BOTTLE_NECK_HEIGHT;
-  BOTTLE_CAP_WIDTH = s.capW ?? BOTTLE_CAP_WIDTH;
-  BOTTLE_CAP_HEIGHT = s.capH ?? BOTTLE_CAP_HEIGHT;
-  rebuildParts();
-}
+export const BOTTLE_PARTS: readonly BottlePart[] = [
+  slab('body', BOTTLE_BODY_WIDTH, 0, BOTTLE_BODY_HEIGHT),
+  {
+    name: 'shoulder',
+    vertices: [
+      { x: -BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
+      { x: BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
+      { x: BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
+      { x: -BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
+    ],
+  },
+  slab('neck', BOTTLE_NECK_WIDTH, NECK_BOTTOM, CAP_BOTTOM),
+  slab('cap', BOTTLE_CAP_WIDTH, CAP_BOTTOM, BOTTLE_HEIGHT),
+];
 
 /** A water fill thinner than this (in meters) doesn't exist: the body is treated as empty. */
 const MIN_WATER_HEIGHT = 0.005;

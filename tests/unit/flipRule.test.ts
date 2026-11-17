@@ -202,7 +202,10 @@ describe('Simulation.placeBottle with a turns credit', () => {
     const pose = { x: 6, y: 2, angle: 0.3, vx: 2, vy: -4, omega: 5 };
     a.placeBottle(pose);
     b.placeBottle({ ...pose, turns: 3 });
-    for (let i = 0; i < 200; i++) {
+    // At least 200 steps, and until the outcome is decided (the 5 s timeout decides every throw by
+    // step 300; the default bottle's strong spin damping can keep it moving past step 200). Then
+    // stop, because the next bottle takes the place of the judged one after the result delay.
+    for (let i = 0; i < 400 && (i < 200 || a.snapshot().outcome === null); i++) {
       a.step();
       b.step();
       expect(b.snapshot().bottle).toEqual(a.snapshot().bottle);

@@ -383,11 +383,13 @@ describe('judging a landing in the simulation', () => {
   });
 
   it('judges a bottle that fell onto its cap and toppled by the time it rests: side, not cap', () => {
-    // Slightly past the balance point, so it tips over from the cap onto its side.
+    // Past the balance point, so it tips over from the cap onto its side. The default bottle is
+    // wide and squat (F009), so it balances on its cap up to about 0.2 rad of tilt: 0.45 is
+    // clearly past it.
     const sim = placed({
       x: TABLE_CENTER_X,
       y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02,
-      angle: Math.PI + 0.15,
+      angle: Math.PI + 0.45,
     });
     runToOutcome(sim);
     expect(sim.snapshot().outcome).toMatchObject({ result: 'fail', reason: 'side' });
@@ -457,8 +459,13 @@ describe('judging a landing in the simulation', () => {
   });
 
   it('measures rotation as the turning since release, in whole turns and radians', () => {
-    // Released at 1 rad and spinning clockwise at 2 turns per second from 6 m above the table.
-    const sim = placed({ x: TABLE_CENTER_X, y: TABLE_TOP_Y - 6, angle: 1, omega: 4 * Math.PI });
+    // Released at 1 rad and spinning clockwise at 2 turns per second from 6 m above the table. The
+    // spin is not damped here: this test is about counting turns, and the default bottle slows its
+    // spin down (F009), which would make the count depend on the damping.
+    const sim = placed(
+      { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 6, angle: 1, omega: 4 * Math.PI },
+      { tuning: { bottleAngularDamping: 0 } },
+    );
     runToOutcome(sim);
     const { outcome, bottle } = sim.snapshot();
     expect(outcome).not.toBeNull();
@@ -470,7 +477,10 @@ describe('judging a landing in the simulation', () => {
   });
 
   it('counts a counterclockwise spin as negative turning', () => {
-    const sim = placed({ x: TABLE_CENTER_X, y: TABLE_TOP_Y - 6, angle: 0, omega: -4 * Math.PI });
+    const sim = placed(
+      { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 6, angle: 0, omega: -4 * Math.PI },
+      { tuning: { bottleAngularDamping: 0 } }, // undamped, as in the test above
+    );
     runToOutcome(sim);
     const { outcome } = sim.snapshot();
     expect(outcome!.rotation).toBeLessThan(-TWO_PI);
