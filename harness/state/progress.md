@@ -406,3 +406,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `MAX_BRIDGE_SECONDS` and `SPEED_PROBES` in push.ts are fixed constants, not tuning. That's fine because they're sampling-model details rather than gameplay numbers, but if F012 sees odd values on slow frame rates, `MAX_BRIDGE_SECONDS` is the first place to look.
   - `tests/unit/push.test.ts` is 317 lines, a little over the ~300 guideline; it could be split later.
   - F012 must append a sample at the release time (and each frame for the live bar), as the builder notes say, or a pointer that stopped before the release still reads as moving.
+
+> [harness] session 18 · reviewer F011 · needs_review → done · ok · 1 commit(s) · 12 tool calls · 3m 17s · ~$0.56 API-equivalent
