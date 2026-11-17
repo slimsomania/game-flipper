@@ -19,6 +19,18 @@ export const COLORS = {
   powerTrack: 0xd3dce8,
   powerFill: 0xe8963c,
   powerOutline: 0x6b7a90,
+  /** A white card on a soft shadow (the round summary), for text that must be easy to read. */
+  card: 0xffffff,
+  cardShadow: 0xd5deea,
+  /**
+   * Buttons: a blue face on a darker lip (a flat "key" that sinks when pressed). White text on the
+   * face is at least 3.7:1 in every state, which is enough for large bold text.
+   */
+  button: 0x2b76c9,
+  buttonHover: 0x3787de,
+  buttonPressed: 0x2262a8,
+  buttonLip: 0x1b4f8a,
+  buttonText: '#ffffff',
   /**
    * Result colors: a flash over the whole screen (hex numbers) and the message text on top of it
    * (CSS colors, dark enough to read over the flash and over the light background after it).

@@ -13,6 +13,7 @@ import { createHudView, type HudView } from '../view/hudView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createTableView } from '../view/tableView';
+import type { SummaryData } from './SummaryScene';
 
 interface GameSceneData {
   seed?: number;
@@ -60,6 +61,19 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     if (!testControls.paused) this.stepper.advance(delta, () => this.sim.step());
     this.draw();
+    if (this.sim.phase === 'roundOver') this.openSummary();
+  }
+
+  /**
+   * The round is over: the Summary scene opens over this one, which is paused until the summary
+   * closes (a paused scene hears no keys or mouse). A key still held or a grab still on would
+   * otherwise carry over to the next round, so both are let go first.
+   */
+  private openSummary(): void {
+    this.sim.powerMeter.release();
+    this.sim.mouse.cancel();
+    this.scene.launch('Summary', { sim: this.sim } satisfies SummaryData);
+    this.scene.pause();
   }
 
   private draw(): void {

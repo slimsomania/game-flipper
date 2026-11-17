@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../core/constants';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
+import { SummaryScene } from './scenes/SummaryScene';
 import { COLORS } from './theme';
 
 export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
@@ -12,6 +13,6 @@ export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
     height: GAME_HEIGHT,
     backgroundColor: COLORS.background,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    scene: [BootScene, GameScene],
+    scene: [BootScene, GameScene, SummaryScene],
   };
 }

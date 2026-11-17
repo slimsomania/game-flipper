@@ -1,24 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { FLIPPED, SIDE, flipped, type PlacedPose } from '../shared';
-import { gameState, openGame, settleInput, stepUntilOutcome, visibleTexts } from './helpers';
+import { FLIPPED, SIDE, flipped } from '../shared';
+import { gameState, openGame, settleInput, visibleTexts } from './helpers';
+import { land, next } from './roundHelpers';
 
 /** The three HUD lines, as the player sees them. */
 const HUD = ['Throw ', 'Score: ', 'Streak: '];
 async function hud(page: Page): Promise<string[]> {
   const texts = await visibleTexts(page);
   return HUD.map((start) => texts.find((text) => text.startsWith(start)) ?? `(no "${start}" line)`);
-}
-
-/** Throw the held bottle by placing it at `pose` and step (clock paused) to its outcome. */
-async function land(page: Page, pose: PlacedPose) {
-  await page.evaluate(() => window.__FLIPPER__!.pause());
-  await page.evaluate((p) => window.__FLIPPER__!.placeBottle(p), pose);
-  return stepUntilOutcome(page);
-}
-
-/** Skip the result wait: the next bottle appears (or the round ends after the last throw). */
-async function next(page: Page) {
-  return page.evaluate(() => window.__FLIPPER__!.skip());
 }
 
 /** Press R and wait until the game has restarted the round (`expect.poll` on the throw number). */
@@ -131,7 +120,7 @@ test('pressing R works in the middle of a flight and during a result', async ({ 
   expect(errors).toEqual([]);
 });
 
-test('after the 10th throw the round is over: no new bottle, Space and clicks do nothing, R restarts', async ({
+test('after the 10th throw the round is over: no new bottle, throws and clicks do nothing, R restarts', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -150,11 +139,13 @@ test('after the 10th throw the round is over: no new bottle, Space and clicks do
   const over = await gameState(page);
   expect(over).toMatchObject({ phase: 'roundOver', throws: 10, throwNumber: 10, score: 9 });
   expect(over.landings).toBe(9);
-  expect(await hud(page)).toEqual(['Throw 10 / 10', 'Score: 9', 'Streak: 0']);
+  // The round summary has taken the HUD's place (see summary.spec.ts for it in full).
+  expect(await visibleTexts(page)).toContain('Score: 9');
+  expect(await visibleTexts(page)).toContain('Landed 9 / 10');
 
-  // Nothing can be thrown or skipped: not by hook, key or mouse.
+  // Nothing can be thrown or skipped: not by hook or mouse. (Space now chooses Play again on the
+  // summary: summary.spec.ts.)
   await page.evaluate(() => window.__FLIPPER__!.throwBottle(60));
-  await page.keyboard.press('Space');
   await page.mouse.click(640, 300);
   await page.mouse.click(280, 400);
   await page.evaluate(() => window.__FLIPPER__!.step(120));
@@ -174,7 +165,8 @@ test('the 10th result can be skipped straight to the end of the round', async ({
     await next(page);
   }
   expect(await gameState(page)).toMatchObject({ phase: 'roundOver', score: 10, landings: 10 });
-  expect(await hud(page)).toEqual(['Throw 10 / 10', 'Score: 10', 'Streak: 10']);
+  // The summary shows the round's end (the HUD is under it, in the paused Game scene).
+  expect(await visibleTexts(page)).toEqual(expect.arrayContaining(['Score: 10', 'Landed 10 / 10']));
   expect(errors).toEqual([]);
 });
 

@@ -19,7 +19,10 @@ import { visibleTexts } from './visibleTexts';
 export interface FlipperTestApi {
   /** True once the first interactive scene is up and accepts input. */
   ready: boolean;
-  /** Keys of the scenes that are running, e.g. ["Game"]. */
+  /**
+   * Keys of the scenes that are running, e.g. ["Game"]. A paused scene is not in the list: while
+   * the round summary is open, the list is ["Summary"] (the Game scene waits, paused, underneath).
+   */
   activeScenes(): string[];
   /** Snapshot of the running simulation, or null when no game scene is running. */
   state(): SimSnapshot | null;
@@ -90,7 +93,7 @@ export interface FlipperTestApi {
    * water lock now in effect.
    */
   lockWater(level: number | null): number | null;
-  /** Stop all running scenes and start `key` (e.g. "Game") with optional scene data. */
+  /** Stop all running and paused scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
   info(): { renderer: 'webgl' | 'canvas' | 'other'; phaser: string; dev: boolean };
@@ -155,7 +158,10 @@ export function installTestHooks(game: Phaser.Game): void {
       return tuningControl().waterLock();
     },
     startScene: (key, data) => {
-      for (const scene of game.scene.getScenes(true)) game.scene.stop(scene.scene.key);
+      // Paused scenes too: the Game scene is paused while the round summary is open.
+      for (const scene of game.scene.getScenes(false)) {
+        if (scene.scene.isActive() || scene.scene.isPaused()) game.scene.stop(scene.scene.key);
+      }
       game.scene.start(key, data);
     },
     info: () => ({

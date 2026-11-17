@@ -1,0 +1,62 @@
+import Phaser from 'phaser';
+import type { Simulation } from '../../core/simulation';
+import { createSummaryView, type SummaryView } from '../view/summaryView';
+
+export interface SummaryData {
+  /** The simulation of the round that just ended; the Game scene waits, paused, underneath. */
+  sim: Simulation;
+}
+
+/**
+ * The round summary, opened by the Game scene when the round is over. It is drawn over the Game
+ * scene, which is paused (so it neither steps the simulation nor hears keys or the mouse) until
+ * Play again: the click, Enter, Space and R all call `Simulation.restartRound()` on the same
+ * simulation, then the summary closes and the Game scene carries on with throw 1.
+ *
+ * A key's auto-repeat is ignored, so a key still held down from the last throw (Space skips the
+ * last result) can't choose Play again by itself.
+ */
+export class SummaryScene extends Phaser.Scene {
+  private sim!: Simulation;
+  private view!: SummaryView;
+  private closing = false;
+
+  constructor() {
+    super('Summary');
+  }
+
+  create(data: SummaryData): void {
+    this.sim = data.sim;
+    this.closing = false;
+    this.view = createSummaryView(this, this.sim.snapshot(), () => this.playAgain());
+
+    const keyboard = this.input.keyboard;
+    if (keyboard) {
+      keyboard.addCapture('SPACE,ENTER'); // keep the browser from scrolling or clicking a button
+      for (const name of ['ENTER', 'SPACE', 'R']) {
+        keyboard.on(`keydown-${name}`, (event: KeyboardEvent) => {
+          if (!event.repeat) this.view.playAgain.activate();
+        });
+      }
+    }
+  }
+
+  update(): void {
+    // Something else started a round again (a test hook): there is nothing left to summarize.
+    if (this.sim.phase !== 'roundOver') this.close();
+  }
+
+  private playAgain(): void {
+    if (this.closing) return;
+    if (this.sim.phase === 'roundOver') this.sim.restartRound();
+    this.close();
+  }
+
+  /** Close this scene and let the Game scene carry on. */
+  private close(): void {
+    if (this.closing) return;
+    this.closing = true;
+    this.scene.resume('Game');
+    this.scene.stop();
+  }
+}
