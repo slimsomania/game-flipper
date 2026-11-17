@@ -348,9 +348,9 @@
       "depends_on": [
         "F014"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Assumption: 'New best!' only appears when the score is strictly higher than the saved best. Built the pure updateBest in src/core/round.ts and SaveStore in src/game/storage.ts (one entry, flipper.save.v1, defaults for missing, corrupt or blocked storage, in-memory fallback for the visit); SummaryScene records the round once when it opens, and the summary card (taller) shows 'Best: N' and a green 'New best!'. Verified with unit tests (best.test.ts, saveStore.test.ts, summaryText.test.ts), 9 e2e tests in bestScore.spec.ts (3, reload, 2, 12 story; ties; stored key; damaged, other-version and blocked storage) and snaps at 1280x720 and 1024x576; npm run verify passes.",
+      "notes": "Assumption: 'New best!' only appears when the score is strictly higher than the saved best. Built the pure updateBest in src/core/round.ts and SaveStore in src/game/storage.ts (one entry, flipper.save.v1, defaults for missing, corrupt or blocked storage, in-memory fallback for the visit); SummaryScene records the round once when it opens, and the summary card (taller) shows 'Best: N' and a green 'New best!'. Verified with unit tests (best.test.ts, saveStore.test.ts, summaryText.test.ts), 9 e2e tests in bestScore.spec.ts (3, reload, 2, 12 story; ties; stored key; damaged, other-version and blocked storage) and snaps at 1280x720 and 1024x576; npm run verify passes.\nReviewed: npm run verify exit 0 (122 e2e); criteria mapped to best.test.ts, saveStore.test.ts (missing, invalid JSON, throwing Storage) and bestScore.spec.ts (3/reload/2/12 story, versioned key, tie, damaged, other-version, blocked storage); real-keyboard two-round snaps at 1024x576 show Best: 0 without New best!, card readable, no console errors.",
       "review_feedback": ""
     },
     {
