@@ -371,3 +371,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `src/core/flipWindow.ts` takes `Partial<Tuning>`, like `SimulationOptions`, not a full tuning. F009 can pass `DEFAULT_TUNING` or overrides. A sweep of one water level takes about 0.13 s, so F009's five levels fit its 15 s budget by a wide margin.
   - Heredocs were not used; I wrote files with the Edit and Write tools.
 - Next: a human should resolve the power-0 question (amend the F008 criterion to "turns 0", or ask for a rule that a throw with no flip can't succeed) and then set F008 to `needs_review` or `todo` with `attempts` 0. F009 starts from the table above and should use `sweepPowers` / `findWindows` / `widestWindow`; check first whether a 12 to 28 point window is reachable at all (see the warning above).
+
+> [harness] session 16 · builder F008 · todo → blocked · ok · verify passed · 1 commit(s) · 43 tool calls · 6m 9s · ~$0.93 API-equivalent
