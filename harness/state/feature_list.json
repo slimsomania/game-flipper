@@ -369,9 +369,9 @@
       "depends_on": [
         "F006"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "Built in session 35 and finished in session 36. src/core/events.ts queues throw, impact (approach speed from planck's begin-contact) and outcome events that Simulation.drainEvents() hands to GameScene each frame; src/game/audio/ has the pure SoundPlanner (soundPlan.ts: sound per event, knock volume, min speed and the 100 ms limit counted in ticks), the Web Audio voices (synth.ts) and Sfx (sfx.ts: the AudioContext is made or resumed only on the first keydown/pointerdown/pointerup, Phaser's own sound is off), plus window.__FLIPPER__.sounds() and the knockMinSpeed, knockFullSpeed and knockGapSeconds tuning. Verified with npm run verify (624 unit, 137 e2e): simEvents, soundPlan, sfx and synth unit tests, e2e sound.spec.ts (AudioContext after first input, Space throw whoosh/knock/chime and thud, rate limit, minimum speed, each asserting no audio console messages) and soundRender.spec.ts (each voice rendered offline and measured).",
       "review_feedback": ""
     },
     {
