@@ -328,9 +328,9 @@
       "depends_on": [
         "F013"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built the Summary scene (src/game/scenes/SummaryScene.ts, views in src/game/view/summary*.ts and a reusable buttonView.ts): GameScene opens it over itself on roundOver and pauses, and Play again (click, Enter, Space or R) calls sim.restartRound() on the same simulation and resumes Game. Key auto-repeat is ignored and a click only counts when pressed and released on the button. Verified by e2e summary.spec.ts and summaryInput.spec.ts (mutation-checked: repeat guard and press guard), unit tests, and snaps at 1280x720 and 1024x576. Note for the reviewer: Space on the summary now starts a new round, so round.spec.ts no longer presses Space at roundOver and checks the Summary texts instead of the HUD.",
+      "notes": "Built the Summary scene (src/game/scenes/SummaryScene.ts, views in src/game/view/summary*.ts and a reusable buttonView.ts): GameScene opens it over itself on roundOver and pauses, and Play again (click, Enter, Space or R) calls sim.restartRound() on the same simulation and resumes Game. Key auto-repeat is ignored and a click only counts when pressed and released on the button. Verified by e2e summary.spec.ts and summaryInput.spec.ts (mutation-checked: repeat guard and press guard), unit tests, and snaps at 1280x720 and 1024x576. Note for the reviewer: Space on the summary now starts a new round, so round.spec.ts no longer presses Space at roundOver and checks the Summary texts instead of the HUD. Reviewed: npm run verify green (113 e2e incl. summary.spec.ts and summaryInput.spec.ts covering every criterion); snaps at 1024x576 of the summary, hover and the return to Game (throw 1, score 0); real-time keyboard round plus rapid R/Enter/Space on the summary gave one restart and no console errors.",
       "review_feedback": ""
     },
     {
