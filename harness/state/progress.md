@@ -333,3 +333,41 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/result.test.ts` (380 lines) and `src/core/simulation.ts` (~305) are past the 300-line guideline. This is a cleanup candidate.
 
 > [harness] session 15 · reviewer F007 · needs_review → done · ok · 1 commit(s) · 27 tool calls · 3m 13s · ~$0.63 API-equivalent
+
+## Session 16 · builder · F008 Measure flip windows with power sweeps
+- Did:
+  - Core, new `src/core/flipWindow.ts`: `sweepPowers(water, tuning = {}, powers = 0..100)` makes a fresh `Simulation` (seed 1) per power, sets the water with `setWater`, throws, and steps only while the phase is `flying`, so each run stops at the step that decides its outcome. It returns `{ power, steps, result, reason, rotation, turns }` per power (the `Outcome` plus the power and the steps taken). A throw with no outcome after the timeout plus 2 steps is an error, not a hang. `findWindows(results)` is pure: it sorts by power and groups neighboring results that are successes with the same `turns` into `{ turns, low, high, center, width }` (`width` is `high - low`, so one power gives 0), lowest first; a fail or a change of turns ends a window. `widestWindow(windows, turns = 1)` picks the single-flip window (the first of equal widths, or null).
+  - Script, new `scripts/flip-windows.ts`: prints a header and one row per water level, 10% to 90% in steps of 10, with the widest single-flip window's low, high, center and width, or `none`, and the run time.
+  - Docs: `docs/ARCHITECTURE.md` directory map (module and script) and D20 (what a window is, why `high - low`).
+  - Tests, all new: `tests/unit/findWindows.test.ts` (12 tests, with `Simulation` mocked to throw so any physics would fail them), `tests/unit/sweepPowers.test.ts` (9), `tests/unit/flipWindowsScript.test.ts` (runs the script, 1).
+- Verified:
+  - `npm run verify` was green before I started (the harness ran it after session 14). At the end it passes: format, typecheck, 258 unit tests (21 files), build, 43 e2e tests.
+  - Acceptance 1: `findWindows` tests cover several windows with different turns, two windows with the same turns split by a fail, a change of turns between neighbors, a window touching 0, a window touching 100, a window over the whole range, a window of one power, an empty list, all-fail lists, unsorted and frozen input, and `widestWindow`. The file mocks `Simulation` so building one throws: it would fail if `findWindows` ran any physics.
+  - Acceptance 2, first half: "is deterministic: two sweeps give equal results" (the default sweep and one with a tuning override). Also: each sweep result equals what the game gives when played by hand, and `steps` equals the number of steps the game needs to reach `result`, so runs stop when the outcome is decided.
+  - Acceptance 3: `npx tsx scripts/flip-windows.ts` prints 9 rows in about 1.2 s (2.8 s wall clock with the Node start); `tests/unit/flipWindowsScript.test.ts` runs it and checks the header, the nine labels 10% to 90%, that each row is a window or `none` with center and width consistent, and a time under 60 s.
+  - Acceptance 4: the baseline table is below.
+  - No snap: nothing on screen changed (no `src/game` or hook change).
+- **Not met: "the throw at power 0 fails".** At power 0 the bottle is only released from the hand, falls 1 m and lands upright, so it is a success with 0 turns (the sweep at 10%, 50% and 90% all give `success`, `upright`, turns 0, rotation about 0). F005's snap showed the same. No tuning can change this: with zero speed and zero spin the bottle lands on its base. Making it fail needs a game rule (for example success requires at least one turn), which is a design decision outside this feature and not mine to make. I did not write a test that asserts the opposite of the criterion. `sweepPowers.test.ts` has "does not flip the bottle at power 0: it only drops" (turns 0, rotation under 0.1 rad, never in a single-flip window), which holds under either way of resolving this. I set F008 to `blocked` with the options in its notes rather than `needs_review`.
+- Status: F008 → blocked (code, tests and docs are committed and green; one acceptance line needs a human decision)
+- Issues / follow-ups:
+  - Baseline for F009, default tuning, power 0 to 100 in steps of 1 (single-flip window = the widest run of powers that succeed with turns 1):
+
+    ```
+     water   low  high  center  width
+       10%  none
+       20%    44    44      44      0
+       30%  none
+       40%    48    48      48      0
+       50%    51    51      51      0
+       60%    58    59    58.5      1
+       70%    57    57      57      0
+       80%    65    66    65.5      1
+       90%    65    66    65.5      1
+    ```
+
+    So the defaults have no real single-flip window yet: the wins at turns 1 are one or two lucky powers each (the bottle happens to land upright), which is what F009 has to fix. A coarse sweep (every 5th power, so these are rough): at 50% water powers 15 to 35 land on the side with 0 turns, 40 to 50 on the side with 1 turn, 55 is the one upright, then 2 turns from about 70 and 3 from about 90; at 90% water 65 and 70 are upright; at 10% water powers 25 to 45 end on the side with 1 turn and 60 and up fall off the table with 3 turns. The center does rise with the water, about 44 at 20% and 65 at 90% (the 10% and 30% rows are `none`), a ratio of about 1.5.
+  - A warning for F009, from my own back-of-envelope reasoning and one measurement, not a finding: at 50% water the rounded turns go 0 → 1 near power 37, 1 → 2 near 67 and 2 → 3 near 87, so one turn spans roughly 20 to 30 power points and a landing within 15° of upright (±1/24 of a turn, about ±0.04) covers about 2 to 3 points, which matches the widths of 0 to 1 above. If rotation grows with power squared (spin and flight time both grow with power), the width is about 0.04 × the ideal power, so 12 to 28 points would need landings far outside ±15° to still succeed by tipping back, or a much flatter spin curve. Measure that early with `sweepPowers` before choosing levers.
+  - Power 0 (and up to about 5 to 15, depending on the water) wins outright as a no-flip drop. Until the human decides (see above) the player can win by throwing at power 0 to 5, and F009's window tests are not affected because they look at turns 1.
+  - `src/core/flipWindow.ts` takes `Partial<Tuning>`, like `SimulationOptions`, not a full tuning. F009 can pass `DEFAULT_TUNING` or overrides. A sweep of one water level takes about 0.13 s, so F009's five levels fit its 15 s budget by a wide margin.
+  - Heredocs were not used; I wrote files with the Edit and Write tools.
+- Next: a human should resolve the power-0 question (amend the F008 criterion to "turns 0", or ask for a rule that a throw with no flip can't succeed) and then set F008 to `needs_review` or `todo` with `attempts` 0. F009 starts from the table above and should use `sweepPowers` / `findWindows` / `widestWindow`; check first whether a 12 to 28 point window is reachable at all (see the warning above).

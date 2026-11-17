@@ -199,9 +199,9 @@
       "depends_on": [
         "F004"
       ],
-      "status": "todo",
+      "status": "blocked",
       "attempts": 0,
-      "notes": "",
+      "notes": "Built and committed: src/core/flipWindow.ts (sweepPowers, findWindows, widestWindow), scripts/flip-windows.ts (about 1 s for all nine rows), unit tests, docs D20; verify is green and the baseline table is in progress.md. One criterion cannot be met and needs a human decision: 'the throw at power 0 fails' is false. A power-0 throw is a 1 m drop that lands upright, so it is a success with turns 0 at every water level (the same thing F005's snap showed), and no tuning can change that because there is no spin or speed at power 0. Either amend the criterion to 'the throw at power 0 is not a flip (turns 0)', which the current test already checks, or decide whether a no-flip drop should count as a success (a design rule, for example requiring at least one turn); the latter also affects F009, since low powers up to about 5 to 15 win outright. After deciding, set the status to needs_review (criterion amended) or todo with attempts 0 (rule wanted).",
       "review_feedback": ""
     },
     {
