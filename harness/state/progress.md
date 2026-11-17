@@ -619,3 +619,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Not done, out of scope: touch input; right and middle buttons never grab (they still end a result wait on press, as before).
   - Process: compound shell commands writing to `/tmp` and a background `npm run verify` were denied automatically; I ran the verify in the foreground and split files with `sed` inside the repo. A `node -e` script full of backticks broke on shell quoting, so I used the Edit tool.
 - Next: F013 (rounds) can rely on `sim.mouse.dragging` / `snapshot().dragging` for "the player is mid-throw" and on `throws` being counted at release. If F014's screens or a pause overlay cover the canvas, call `sim.mouse.cancel()` when they open.
+
+> [harness] session 27 · builder F012 · todo → needs_review · ok · verify passed · 1 commit(s) · 192 tool calls · 42m 30s · ~$5.06 API-equivalent

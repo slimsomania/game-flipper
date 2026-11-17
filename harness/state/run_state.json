@@ -1,5 +1,5 @@
 {
-  "sessions": 26,
+  "sessions": 27,
   "doneAtLastMaintenance": 8,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -12,10 +12,11 @@
     "F008": "a30a9dfd69b4fb8e862c1975a4f15589297b23a5",
     "F011": "940bc3b44da3fd97721f285b06d399053228f1f8",
     "F009": "73f8cac64ee49f11c7d04866b3e1d472cb42eecc",
-    "F010": "f1c10d066b539fb7d412c08e926eeb2598fdd2d6"
+    "F010": "f1c10d066b539fb7d412c08e926eeb2598fdd2d6",
+    "F012": "c524874d3da840d9e4b8cb9ac4c6af206c75a827"
   },
   "lastGate": {
-    "session": 25,
+    "session": 27,
     "ok": true,
     "tail": ""
   },

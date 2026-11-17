@@ -288,7 +288,7 @@
         "F011"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built `sim.mouse` (`MouseControl` in src/core/mouseControl.ts over `Grab` and `isOnBottle` in src/core/grab.ts), `dragging` in the snapshot, pointer forwarding in src/game/gameInput.ts, a cursor view, tuning `pushMinPower` and `grabPadding`, and snap actions mousedown/mousemove/mouseup. Assumptions held: a release under `pushMinPower` (1) drops the grab and gives the bar back, a mouse throw leaves the push's power on the bar, the bottle stays in the hand; a pointer that rests 150 ms before the release throws nothing (the bar fades to show it), and a release outside the canvas counts the pointer where it was last seen. Verified with `npm run verify` (445 unit, 92 e2e: new mouse.spec.ts, mouseNothing.spec.ts, grab.test.ts, mouseThrow.test.ts) and a mid-drag snap whose bar read 27% at a live power of 26.8.",
       "review_feedback": ""
     },
