@@ -395,3 +395,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/push.test.ts` is 317 lines, a little over the 300-line guideline (like `result.test.ts`); a cleanup could move the sampling-rate and default-tuning groups to their own file.
   - Compound shell commands, process substitution and a `node -` heredoc were denied automatically; I used the Edit and Write tools, and a single throwaway script (deleted) to print the sampling differences.
 - Next: F012 (grab the bottle and push with the mouse) can call `pushPower(samples, sim tuning)` straight away; start by deciding where the samples live (a small buffer in the scene or in core) and note that `bindGameInput` currently calls `skip()` on every `pointerdown`, which has to become "grab while aiming, skip during a result".
+
+> [harness] session 17 · builder F011 · todo → needs_review · ok · verify passed · 1 commit(s) · 49 tool calls · 10m 0s · ~$1.19 API-equivalent

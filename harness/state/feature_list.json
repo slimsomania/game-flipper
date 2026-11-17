@@ -263,7 +263,7 @@
         "F003"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built pushPower(samples, tuning?) in the new src/core/push.ts, plus six push* fields in tuning.ts (window 150 ms, speed span 50 ms, equal distance and speed weights, full power at 300 px and 2000 px/s); distances are in logical game pixels. It reads the pointer's path through its samples (so 60 Hz and 1000 Hz agree within 0.4 points), measures net upward distance over the window and the fastest upward speed over any 50 ms inside it, and treats a long gap between samples as the pointer staying still. Verified by tests/unit/push.test.ts (28 tests, all four criteria plus pauses, bad samples and tuning), docs D21, and npm run verify; nothing is wired to the scene yet, so there is no e2e or snap (F012 does that).",
       "review_feedback": ""
     },
