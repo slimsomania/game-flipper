@@ -28,6 +28,17 @@ Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} lo
   down:<Key> / up:<Key>             hold / release a key
   click:<x>;<y>                     click
   drag:<x1>;<y1>;<x2>;<y2>;<ms>     press, move, release: a swipe or flick taking <ms>
+  mousedown:<x>;<y>                 move the mouse there and press the left button
+  mousemove:<x>;<y>;<ms>            move in a straight line from where the mouse is, taking <ms>
+                                    (0 jumps). Mouse state carries over, so a drag can be paused
+                                    halfway for a shot: mousedown, mousemove, shot, mouseup.
+  mouseup                           release the left button where the mouse is
+                                    The game measures a push over the last 150 ms of real time, so
+                                    a release throws only if the mouse was still moving up just
+                                    before it: after a shot, do a short mousemove right before
+                                    mouseup. With "pause" first, the power bar holds the live
+                                    value of the last mouse move while you take the shot. The
+                                    held bottle is at about 280;350 to 280;460 on the canvas.
   scene:<Key>                       jump to a scene (window.__FLIPPER__.startScene)
   pause / resume                    freeze / unfreeze the real-time simulation clock
   step:<frames>                     advance the simulation by exactly <frames> fixed steps
@@ -42,7 +53,8 @@ Examples:
   npm run snap
   npm run snap -- --do "key:Space,wait:800,shot:game"
   npm run snap -- --url "/?seed=7" --do "pause,call:step;120,shot:after-2s"
-  npm run snap -- --width 1000 --height 800 --do "click:640;360,wait:500,shot:clicked"`;
+  npm run snap -- --width 1000 --height 800 --do "click:640;360,wait:500,shot:clicked"
+  npm run snap -- --url "/?seed=7" --do "pause,mousedown:280;410,mousemove:280;250;100,shot:mid-drag,mousemove:280;200;50,mouseup,step:30,shot:thrown"`;
 
 interface Report {
   url: string;
@@ -68,11 +80,32 @@ async function toPage(page: Page, x: number, y: number): Promise<{ x: number; y:
 const safeName = (name: string): string => name.replace(/[^\w.-]+/g, '-').slice(0, 60);
 const rel = (file: string): string => relative(process.cwd(), file).replace(/\\/g, '/');
 
+/** Where the mouse is, in game coordinates: Playwright can't be asked, and `mousemove` starts there. */
+interface MouseState {
+  x: number;
+  y: number;
+}
+
+/**
+ * Move the mouse in a straight line from game point `from` to `to`, taking about `ms` (a step every
+ * 16 ms or so, like a real mouse at 60 Hz). With 0 ms it jumps in one step.
+ */
+async function glide(page: Page, from: MouseState, to: MouseState, ms: number): Promise<void> {
+  const moves = ms > 0 ? Math.max(2, Math.round(ms / 16)) : 1;
+  for (let i = 1; i <= moves; i++) {
+    const t = i / moves;
+    const p = await toPage(page, from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t);
+    await page.mouse.move(p.x, p.y);
+    if (ms > 0) await page.waitForTimeout(ms / moves);
+  }
+}
+
 async function perform(
   page: Page,
   action: Action,
   shot: (name: string) => Promise<void>,
   report: Report,
+  mouse: MouseState,
 ): Promise<void> {
   switch (action.kind) {
     case 'wait':
@@ -94,18 +127,30 @@ async function perform(
     }
     case 'drag': {
       const a = await toPage(page, action.x1, action.y1);
-      const b = await toPage(page, action.x2, action.y2);
-      const moves = Math.max(2, Math.round(action.ms / 16));
+      const to = { x: action.x2, y: action.y2 };
       await page.mouse.move(a.x, a.y);
       await page.mouse.down();
-      for (let i = 1; i <= moves; i++) {
-        const t = i / moves;
-        await page.mouse.move(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
-        await page.waitForTimeout(action.ms / moves);
-      }
+      await glide(page, { x: action.x1, y: action.y1 }, to, action.ms);
       await page.mouse.up();
+      Object.assign(mouse, to);
       break;
     }
+    case 'mousedown': {
+      const p = await toPage(page, action.x, action.y);
+      await page.mouse.move(p.x, p.y);
+      await page.mouse.down();
+      Object.assign(mouse, { x: action.x, y: action.y });
+      break;
+    }
+    case 'mousemove': {
+      const to = { x: action.x, y: action.y };
+      await glide(page, mouse, to, action.ms);
+      Object.assign(mouse, to);
+      break;
+    }
+    case 'mouseup':
+      await page.mouse.up();
+      break;
     case 'scene':
       await page.evaluate((key) => window.__FLIPPER__!.startScene(key), action.key);
       await page.waitForFunction(
@@ -220,7 +265,8 @@ async function main(): Promise<number> {
         timeout: 15_000,
       });
       await page.waitForTimeout(300); // let the first frames render
-      for (const action of actions) await perform(page, action, shot, report);
+      const mouse: MouseState = { x: 0, y: 0 };
+      for (const action of actions) await perform(page, action, shot, report, mouse);
       await page.waitForTimeout(100);
     } catch (err) {
       failed = true;

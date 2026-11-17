@@ -1,6 +1,7 @@
 import { World, type Body } from 'planck';
 import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT, stepsFor } from './constants';
+import { MouseControl } from './mouseControl';
 import { LandingJudge, type LandingSample, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
 import { createRng, type Rng } from './rng';
@@ -39,6 +40,11 @@ export class Simulation {
    * may adjust it, so the player can set the next throw while a result is still showing.
    */
   readonly powerMeter: PowerMeter;
+  /**
+   * The mouse's hand on the held bottle: grab, push, release (D25). While the bottle is grabbed the
+   * power bar shows the live push; a release throws through `throwBottle` with source `mouse`.
+   */
+  readonly mouse: MouseControl;
   private bottle: Bottle;
   private judge: LandingJudge | null = null;
   private result: Outcome | null = null;
@@ -57,6 +63,16 @@ export class Simulation {
       this.waterLock = clampWater(options.lockedWater);
     }
     this.powerMeter = new PowerMeter(() => this.currentTuning);
+    this.mouse = new MouseControl({
+      phase: () => this.currentPhase,
+      tuning: () => this.currentTuning,
+      powerMeter: this.powerMeter,
+      bottle: () => {
+        const { x, y } = this.bottle.body.getPosition();
+        return { x, y, angle: this.bottle.body.getAngle() };
+      },
+      throwWithMouse: (power) => this.throwBottle(power, 'mouse'),
+    });
     this.rng = createRng(this.seed);
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
@@ -141,9 +157,10 @@ export class Simulation {
 
   /**
    * Begin judging a throw from `angle` (with `turns` already credited) and count it. Call it just
-   * before releasing the bottle.
+   * before releasing the bottle. Whatever the mouse was doing with the bottle ends here.
    */
   private startFlight(angle: number, turns = 0): void {
+    this.mouse.bottleLeft();
     this.judge = new LandingJudge(this.currentTuning, angle, turns);
     this.throwCount++;
     this.currentPhase = 'flying';
@@ -205,6 +222,7 @@ export class Simulation {
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
     this.powerMeter.step();
+    this.mouse.step(); // a pointer that stops is still: the live push (and the bar) fades
     if (this.currentPhase === 'flying' && this.judge) {
       this.result = this.judge.observe(this.landingSample());
       if (this.result) this.showResult(this.result);
@@ -250,6 +268,7 @@ export class Simulation {
       seed: this.seed,
       phase: this.currentPhase,
       power: this.powerMeter.value,
+      dragging: this.mouse.dragging,
       bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },

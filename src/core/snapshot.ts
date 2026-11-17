@@ -49,8 +49,13 @@ export interface SimSnapshot {
   tick: number;
   seed: number;
   phase: Phase;
-  /** The power bar, 0 to 100: what Space throws with. It keeps its value from bottle to bottle. */
+  /**
+   * The power bar, 0 to 100: what Space throws with. It keeps its value from bottle to bottle.
+   * While the mouse holds the bottle (`dragging`) it shows the live push instead.
+   */
   power: number;
+  /** True from a press on the held bottle until the button comes up (or the grab is dropped). */
+  dragging: boolean;
   bottle: BottleSnapshot;
   /** Null until the first throw. A bottle placed with `placeBottle` doesn't set it. */
   lastThrow: LastThrow | null;

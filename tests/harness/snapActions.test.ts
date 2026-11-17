@@ -46,6 +46,26 @@ describe('snap call: action', () => {
     expect(() => parseAction('call:step;1;;2')).toThrow(/empty argument/);
   });
 
+  it('parses the mouse actions: mousedown, mousemove with its time, and mouseup', () => {
+    expect(parseAction('mousedown:280;410')).toEqual({ kind: 'mousedown', x: 280, y: 410 });
+    expect(parseAction('mousemove:280;210;100')).toEqual({
+      kind: 'mousemove',
+      x: 280,
+      y: 210,
+      ms: 100,
+    });
+    expect(parseAction('mousemove:5;6;0')).toEqual({ kind: 'mousemove', x: 5, y: 6, ms: 0 });
+    expect(parseAction('mouseup')).toEqual({ kind: 'mouseup' });
+  });
+
+  it('rejects mouse actions with the wrong numbers', () => {
+    expect(() => parseAction('mousedown')).toThrow(/2 number/);
+    expect(() => parseAction('mousedown:280')).toThrow(/2 number/);
+    expect(() => parseAction('mousemove:280;210')).toThrow(/3 number/);
+    expect(() => parseAction('mousemove:280;210;x')).toThrow(/3 number/);
+    expect(() => parseAction('mousemove:280;210;-5')).toThrow(/negative/);
+  });
+
   it('still parses the other actions and rejects unknown ones', () => {
     expect(parseAction('step:120')).toEqual({ kind: 'step', frames: 120 });
     expect(parseAction('click:640;360')).toEqual({ kind: 'click', x: 640, y: 360 });

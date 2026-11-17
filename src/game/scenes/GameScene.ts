@@ -8,6 +8,7 @@ import { tuningControl } from '../../debug/tuningControl';
 import { bindGameInput } from '../gameInput';
 import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
+import { createCursorView, type CursorView } from '../view/cursorView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createScoreView, type ScoreView } from '../view/scoreView';
@@ -29,6 +30,7 @@ export class GameScene extends Phaser.Scene {
   private powerBarView!: PowerBarView;
   private resultView!: ResultView;
   private scoreView!: ScoreView;
+  private cursorView!: CursorView;
 
   constructor() {
     super('Game');
@@ -47,6 +49,7 @@ export class GameScene extends Phaser.Scene {
     this.powerBarView = createPowerBarView(this);
     this.resultView = createResultView(this);
     this.scoreView = createScoreView(this);
+    this.cursorView = createCursorView(this);
 
     this.input.keyboard?.on('keydown-R', () => this.scene.restart({ seed: seed + 1 }));
     bindGameInput(this, this.sim);
@@ -66,5 +69,7 @@ export class GameScene extends Phaser.Scene {
     this.powerBarView.update(snapshot.power);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);
     this.scoreView.update(snapshot.score);
+    const pointer = this.input.activePointer;
+    this.cursorView.update(snapshot.dragging, this.sim.mouse.canGrab(pointer.x, pointer.y));
   }
 }

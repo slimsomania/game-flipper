@@ -5,6 +5,9 @@ export type Action =
   | { kind: 'key' | 'down' | 'up'; key: string }
   | { kind: 'click'; x: number; y: number }
   | { kind: 'drag'; x1: number; y1: number; x2: number; y2: number; ms: number }
+  | { kind: 'mousedown'; x: number; y: number }
+  | { kind: 'mousemove'; x: number; y: number; ms: number }
+  | { kind: 'mouseup' }
   | { kind: 'scene'; key: string }
   | { kind: 'pause' | 'resume' }
   | { kind: 'step'; frames: number }
@@ -54,6 +57,17 @@ export function parseAction(token: string): Action {
       const [x1, y1, x2, y2, ms] = numbers(5);
       return { kind, x1, y1, x2, y2, ms };
     }
+    case 'mousedown': {
+      const [x, y] = numbers(2);
+      return { kind, x, y };
+    }
+    case 'mousemove': {
+      const [x, y, ms] = numbers(3);
+      if (ms < 0) throw new Error(`"${token}": the time can't be negative`);
+      return { kind, x, y, ms };
+    }
+    case 'mouseup':
+      return { kind };
     case 'scene':
       return { kind, key: text() };
     case 'pause':

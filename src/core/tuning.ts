@@ -98,6 +98,16 @@ export interface Tuning {
   pushFullDistance: number;
   /** ...and an upward speed, in logical game pixels per second, at which the speed part is. */
   pushFullSpeed: number;
+  /**
+   * A release with a push weaker than this power (0 to 100) is not a throw: the grab is simply
+   * dropped. It is what makes a click on the bottle, or a push with no upward movement, harmless.
+   */
+  pushMinPower: number;
+  /**
+   * How far outside the bottle's outline (a box around the whole bottle), in logical game pixels,
+   * a press still grabs it, so the bottle is easy to catch with the mouse.
+   */
+  grabPadding: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -154,6 +164,10 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   pushSpeedWeight: 1,
   pushFullDistance: 300,
   pushFullSpeed: 2000,
+  // F012: under 1 point of power is a click or a jitter, not a throw. A press up to 12 px outside
+  // the 100 px wide bottle still grabs it.
+  pushMinPower: 1,
+  grabPadding: 12,
 };
 
 /** The defaults with `overrides` applied on top. */
