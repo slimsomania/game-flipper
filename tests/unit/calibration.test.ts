@@ -142,7 +142,9 @@ describe('the flight at the 50% bottle’s window centers', () => {
   ] as const) {
     it(`a throw at the ${name} window center stays on screen and lands on the table`, () => {
       const flight = fly(pick(levels[2]!).center);
-      expect(flight.highest, 'the top of the bottle never goes above the screen').toBeGreaterThan(0);
+      expect(flight.highest, 'the top of the bottle never goes above the screen').toBeGreaterThan(
+        0,
+      );
       expect(flight.left).toBeGreaterThan(0);
       expect(flight.right).toBeLessThan(TABLE_RIGHT_X + 1);
       // It comes to rest on the table: its base is on the tabletop, inside the table's ends.

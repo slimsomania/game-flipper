@@ -27,9 +27,12 @@ for (let deg = -180; deg < 180; deg += 3) {
     steps++;
   }
   const o = sim.snapshot().outcome!;
-  const ch = o.result === 'success' ? 'U' : o.reason === 'side' ? 's' : o.reason === 'cap' ? 'c' : 'x';
+  const ch =
+    o.result === 'success' ? 'U' : o.reason === 'side' ? 's' : o.reason === 'cap' ? 'c' : 'x';
   if (ch === 'U') upright++;
   line += ch;
 }
-console.log(`omega ${omega} vy ${vy} vx ${vx} water ${water}: upright fraction ${(upright / 120).toFixed(2)}`);
+console.log(
+  `omega ${omega} vy ${vy} vx ${vx} water ${water}: upright fraction ${(upright / 120).toFixed(2)}`,
+);
 console.log(line);
