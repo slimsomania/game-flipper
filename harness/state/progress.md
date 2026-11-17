@@ -485,3 +485,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `visibleFlash` finds the flash by matching any canvas-sized Rectangle. A later full-screen overlay (pause, round summary) would need a dedicated marker.
   - From F013 on, `score` counts points, not landings. The round summary must count successes separately.
   - The baseline has no real windows (0 to 1 point wide), so F009 starts from scratch.
+
+> [harness] session 21 · reviewer F008 · needs_review → done · ok · 1 commit(s) · 18 tool calls · 3m 21s · ~$0.66 API-equivalent
