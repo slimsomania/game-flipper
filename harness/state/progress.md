@@ -586,3 +586,12 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: the reviewer should run `npm run verify`, press Backquote on `npm run dev`, edit a value, reload, then Copy, and look at the panel at a smaller window (the list scrolls under a fixed top part about 320 px tall). The next feature should leave the right 300 px of the canvas free for the panel or move it.
 
 > [harness] session 25 · builder F010 · todo → needs_review · ok · verify passed · 1 commit(s) · 112 tool calls · 17m 37s · ~$2.76 API-equivalent
+
+## Session 26 · reviewer · F010 Tuning panel for adjusting the feel without code changes
+- Verdict: pass
+- Evidence: `npm run verify` green (exit 0, 77/77 e2e, including the 23 tests in `tuningPanel*.spec.ts`). `git diff f1c10d06..HEAD -- tests` adds files only; no existing test was removed or weakened. Read the diff: the water lock is a core rule (`Simulation.lockWater`, unit-tested in `waterLock.test.ts`, keeps the seed's RNG draw); the panel, the store and the control live in `src/debug`; GameScene only passes `tuningControl().simulationOptions()` on. Criteria 1-4 are each covered by a named e2e test. For criterion 5, `tuningPanelBuild.spec.ts` runs against a server with the dev flag off: no panel at `/` or `/?testhooks`, a panel with `/?debug`. My snaps at 1024x576 (`/?seed=7`): with the panel open and the water locked at 0.3, a throw at 45 landed "Nailed it! +1". The panel sits on the right and is readable, and the bottle, the power bar, the score and the result text stay visible. Last throw read Water 30%, Power 45, success (upright), Turns 1. Typing in the throwLinearImpulse field (Backspace, "12", Space, ArrowUp, R) set it to 12.1 (ArrowUp is the native step); phase stayed aiming, power 50, tick and seed unchanged (no throw, no restart). Four quick Backquote presses left the panel hidden. `setTuningValue('throwSpeedMax', 14)` (not a key) returned null. No console errors.
+- Problems: none
+- Notes for later:
+  - The panel is a fixed 300 CSS px, so on smaller windows it covers more of the canvas (about 30% at 1024 wide; there it reaches the right end of the table). This is fine for a dev tool, but later HUD on the right will sit under it.
+  - The panel background is slightly translucent, so the table shows through as a faint strip behind one row. This is cosmetic.
+  - As the builder noted, any finite value is accepted and kept (for example `waterStep` 0). A per-key range or a `?debug=reset` switch would be a cheap safety net.
