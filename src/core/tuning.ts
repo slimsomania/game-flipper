@@ -69,6 +69,20 @@ export interface Tuning {
   powerHoldRateMax: number;
   /** ...over this many seconds of moving. */
   powerHoldRampSeconds: number;
+  /** A mouse push is measured over this many seconds before the release (design: 150 ms). */
+  pushWindowSeconds: number;
+  /**
+   * The push speed is the fastest upward movement over any stretch of this many seconds inside the
+   * window, so a push that is quick and then stops still counts as quick. Never longer than the window.
+   */
+  pushSpeedSpanSeconds: number;
+  /** How much the distance and the speed each count in the mix. Only their ratio matters. */
+  pushDistanceWeight: number;
+  pushSpeedWeight: number;
+  /** An upward distance, in logical game pixels, at which the distance part alone is full power... */
+  pushFullDistance: number;
+  /** ...and an upward speed, in logical game pixels per second, at which the speed part is. */
+  pushFullSpeed: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -110,6 +124,14 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   powerHoldRateStart: 12,
   powerHoldRateMax: 60,
   powerHoldRampSeconds: 1.5,
+  // F011: 300 px up in 150 ms (2000 px/s) is a hard flick of an ordinary mouse and gives full power;
+  // 40 px in 150 ms is a nudge and gives about 13. Distance and speed count the same.
+  pushWindowSeconds: 0.15,
+  pushSpeedSpanSeconds: 0.05,
+  pushDistanceWeight: 1,
+  pushSpeedWeight: 1,
+  pushFullDistance: 300,
+  pushFullSpeed: 2000,
 };
 
 /** The defaults with `overrides` applied on top. */
