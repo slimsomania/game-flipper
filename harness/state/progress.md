@@ -595,3 +595,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The panel is a fixed 300 CSS px, so on smaller windows it covers more of the canvas (about 30% at 1024 wide; there it reaches the right end of the table). This is fine for a dev tool, but later HUD on the right will sit under it.
   - The panel background is slightly translucent, so the table shows through as a faint strip behind one row. This is cosmetic.
   - As the builder noted, any finite value is accepted and kept (for example `waterStep` 0). A per-key range or a `?debug=reset` switch would be a cheap safety net.
+
+> [harness] session 26 · reviewer F010 · needs_review → done · ok · 1 commit(s) · 16 tool calls · 4m 57s · ~$0.58 API-equivalent
