@@ -24,6 +24,10 @@ export interface Tuning {
   bottleFriction: number;
   /** Bounciness of the bottle's shell (0 = none). */
   bottleRestitution: number;
+  /** How fast the bottle's spin dies away (per second, 0 = never), in the air and on the table. */
+  bottleAngularDamping: number;
+  /** How fast the bottle's travel dies away (per second, 0 = never): a little air drag. */
+  bottleLinearDamping: number;
   /** Throw direction: degrees forward of straight up, toward the table. Fixed for every throw. */
   throwAngleDeg: number;
   /**
@@ -97,6 +101,8 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // Carried over from the placeholder bottle.
   bottleFriction: 0.6,
   bottleRestitution: 0.15,
+  bottleAngularDamping: 0,
+  bottleLinearDamping: 0,
   // Starting values for F003; F009 calibrates them so every bottle has a single-flip window.
   throwAngleDeg: 12,
   throwLinearImpulse: 9,

@@ -71,6 +71,8 @@ export class Bottle {
       type: 'kinematic',
       position: { x: HAND_X, y: HAND_Y },
       bullet: true,
+      angularDamping: tuning.bottleAngularDamping,
+      linearDamping: tuning.bottleLinearDamping,
     });
     this.buildShell();
     this.setWater(water);
@@ -98,6 +100,8 @@ export class Bottle {
    */
   applyTuning(tuning: Tuning): void {
     this.tuning = tuning;
+    this.body.setAngularDamping(tuning.bottleAngularDamping);
+    this.body.setLinearDamping(tuning.bottleLinearDamping);
     for (const fixture of this.shellFixtures) this.body.destroyFixture(fixture);
     this.buildShell();
     this.setWater(this.level);
