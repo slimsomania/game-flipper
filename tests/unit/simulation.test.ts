@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_TOP_Y } from '../../src/core/table';
-
-function run(sim: Simulation, steps: number): void {
-  for (let i = 0; i < steps; i++) sim.step();
-}
+import { run } from './helpers';
 
 describe('Simulation', () => {
   it('is deterministic for a given seed', () => {

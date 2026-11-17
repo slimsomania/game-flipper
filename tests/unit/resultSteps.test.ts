@@ -1,22 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BOTTLE_BODY_WIDTH } from '../../src/core/bottleShape';
 import { Simulation } from '../../src/core/simulation';
-import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
-
-/** The result wait: 1.5 s at 60 steps per second. */
-const RESULT_STEPS = 90;
-
-const UPRIGHT = { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 0.05, angle: 0 };
-const SIDE = {
-  x: TABLE_CENTER_X,
-  y: TABLE_TOP_Y - BOTTLE_BODY_WIDTH / 2 - 0.05,
-  angle: Math.PI / 2,
-};
-
-/** Step until the outcome is decided (the phase is then `result`). */
-function runToOutcome(sim: Simulation, limit = 400): void {
-  for (let steps = 0; sim.snapshot().outcome === null && steps < limit; steps++) sim.step();
-}
+import { SIDE, UPRIGHT } from '../shared';
+import { RESULT_STEPS, runToOutcome } from './helpers';
 
 describe('snapshot.resultSteps (steps since the outcome, for the result flash)', () => {
   it('is null while aiming and while flying', () => {

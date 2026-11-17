@@ -4,14 +4,11 @@ import { bottleMassProperties } from '../../src/core/bottleShape';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import { MAX_POWER, clampPower, throwImpulse } from '../../src/core/throw';
 import { DEFAULT_TUNING, type Tuning } from '../../src/core/tuning';
+import { run } from './helpers';
 
 /** The default water range, 10% to 90% in 5% steps. */
 const LEVELS = Array.from({ length: 17 }, (_, i) => Math.round((0.1 + i * 0.05) * 100) / 100);
 const POWERS = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-
-function run(sim: Simulation, steps: number): void {
-  for (let i = 0; i < steps; i++) sim.step();
-}
 
 /** A simulation with the bottle at `water`, thrown with `power`, not yet stepped. */
 function thrown(water: number, power: number, tuning: Partial<Tuning> = {}): Simulation {

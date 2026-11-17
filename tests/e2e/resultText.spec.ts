@@ -1,15 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { BOTTLE_BODY_WIDTH } from '../../src/core/bottleShape';
-import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
+import { SIDE, UPRIGHT } from '../shared';
 import { openGame, stepFrames, stepUntilOutcome, visibleTexts } from './helpers';
-
-/** An upright bottle just above the table (a success) and one lying on its side (a fail). */
-const UPRIGHT = { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 0.05, angle: 0 };
-const SIDE = {
-  x: TABLE_CENTER_X,
-  y: TABLE_TOP_Y - BOTTLE_BODY_WIDTH / 2 - 0.05,
-  angle: Math.PI / 2,
-};
 
 const SUCCESS_MESSAGE = 'Nailed it!';
 const FAIL_MESSAGE = 'Down!';

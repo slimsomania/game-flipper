@@ -1,19 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Simulation, type SimSnapshot } from '../../src/core/simulation';
-import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
-
-const RESULT_STEPS = 90;
-
-function run(sim: Simulation, steps: number): SimSnapshot {
-  for (let i = 0; i < steps; i++) sim.step();
-  return sim.snapshot();
-}
-
-/** Step until the outcome is decided (the phase is then `result`). */
-function runToOutcome(sim: Simulation, limit = 400): void {
-  for (let i = 0; i < limit && sim.snapshot().outcome === null; i++) sim.step();
-}
+import { UPRIGHT } from '../shared';
+import { RESULT_STEPS, run, runToOutcome } from './helpers';
 
 describe('the power bar in the simulation', () => {
   it('starts at 50 and shows it in the snapshot', () => {
@@ -109,7 +98,7 @@ describe('throwOrSkip (Space)', () => {
 
   it('brings the next bottle during a result', () => {
     const sim = new Simulation({ seed: 4 });
-    sim.placeBottle({ x: TABLE_CENTER_X, y: TABLE_TOP_Y - 0.05, angle: 0 });
+    sim.placeBottle(UPRIGHT);
     runToOutcome(sim);
     expect(sim.phase).toBe('result');
     expect(sim.throwOrSkip()).toBe(true);

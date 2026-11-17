@@ -8,28 +8,15 @@ import {
   wrapAngle,
   type LandingSample,
 } from '../../src/core/outcome';
-import { Simulation, type SimSnapshot } from '../../src/core/simulation';
+import { Simulation } from '../../src/core/simulation';
 import { TABLE_CENTER_X, TABLE_RIGHT_X, TABLE_LEFT_X, TABLE_TOP_Y } from '../../src/core/table';
 import { DEFAULT_TUNING, resolveTuning, type Tuning } from '../../src/core/tuning';
+import { UPRIGHT } from '../shared';
+import { run, runToOutcome } from './helpers';
 
 const TWO_PI = Math.PI * 2;
 const deg = (degrees: number): number => (degrees * Math.PI) / 180;
 const HALF_WIDTH = BOTTLE_BODY_WIDTH / 2;
-
-/** Step a simulation until its outcome is set (at most `limit` steps); returns the steps taken. */
-function runToOutcome(sim: Simulation, limit = 600): number {
-  let steps = 0;
-  while (sim.snapshot().outcome === null && steps < limit) {
-    sim.step();
-    steps++;
-  }
-  return steps;
-}
-
-function run(sim: Simulation, steps: number): SimSnapshot {
-  for (let i = 0; i < steps; i++) sim.step();
-  return sim.snapshot();
-}
 
 /** A simulation with `pose` placed (and an optional water level and tuning), not yet stepped. */
 function placed(
@@ -41,9 +28,6 @@ function placed(
   expect(sim.placeBottle(pose)).toBe(true);
   return sim;
 }
-
-/** Just above the table, upright, at the middle. */
-const UPRIGHT = { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 0.05, angle: 0 };
 
 describe('wrapAngle and tiltFromUpright', () => {
   it('removes whole turns and keeps the direction', () => {

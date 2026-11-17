@@ -1,23 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { HAND_X, HAND_Y, drawWaterLevel } from '../../src/core/bottle';
-import { BOTTLE_BODY_WIDTH } from '../../src/core/bottleShape';
-import { createRng } from '../../src/core/rng';
-import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
-import { DEFAULT_TUNING } from '../../src/core/tuning';
+import { HAND_X, HAND_Y } from '../../src/core/bottle';
+import { SIDE, UPRIGHT, waterSequence } from '../shared';
 import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
-
-/** The water levels a seed hands out, in order: the held bottle's first, then one per bottle. */
-function waterSequence(seed: number, count: number): number[] {
-  const rng = createRng(seed);
-  return Array.from({ length: count }, () => drawWaterLevel(rng, DEFAULT_TUNING));
-}
-
-const UPRIGHT = { x: TABLE_CENTER_X, y: TABLE_TOP_Y - 0.05, angle: 0 };
-const SIDE = {
-  x: TABLE_CENTER_X,
-  y: TABLE_TOP_Y - BOTTLE_BODY_WIDTH / 2 - 0.05,
-  angle: Math.PI / 2,
-};
 
 test('after a throw resolves and 90 more frames pass, the next bottle waits in the hand', async ({
   page,

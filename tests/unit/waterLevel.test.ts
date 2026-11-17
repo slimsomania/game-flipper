@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { drawWaterLevel } from '../../src/core/bottle';
-import { createRng } from '../../src/core/rng';
 import { Simulation } from '../../src/core/simulation';
 import { DEFAULT_TUNING, resolveTuning } from '../../src/core/tuning';
-
-function sequence(seed: number, count: number, tuning = DEFAULT_TUNING): number[] {
-  const rng = createRng(seed);
-  return Array.from({ length: count }, () => drawWaterLevel(rng, tuning));
-}
+import { waterSequence } from '../shared';
 
 describe('water level tuning', () => {
   it('defaults to 10% to 90% in 5% steps', () => {
@@ -27,7 +21,7 @@ describe('drawWaterLevel', () => {
   it('stays within the tuning range and on a step, for many seeds', () => {
     const { waterMin, waterMax, waterStep } = DEFAULT_TUNING;
     for (let seed = 1; seed <= 30; seed++) {
-      for (const level of sequence(seed, 100)) {
+      for (const level of waterSequence(seed, 100)) {
         expect(level).toBeGreaterThanOrEqual(waterMin);
         expect(level).toBeLessThanOrEqual(waterMax);
         const steps = (level - waterMin) / waterStep;
@@ -37,41 +31,41 @@ describe('drawWaterLevel', () => {
   });
 
   it('returns clean numbers, not floating-point noise like 0.15000000000000002', () => {
-    for (const level of sequence(3, 500)) expect(level).toBe(Number(level.toFixed(2)));
+    for (const level of waterSequence(3, 500)) expect(level).toBe(Number(level.toFixed(2)));
   });
 
   it('reaches every step, including both ends of the range', () => {
-    const seen = new Set(sequence(11, 2000));
+    const seen = new Set(waterSequence(11, 2000));
     expect(seen.size).toBe(17); // 0.10, 0.15, ... 0.90
     expect(Math.min(...seen)).toBe(0.1);
     expect(Math.max(...seen)).toBe(0.9);
   });
 
   it('gives the same sequence for the same seed', () => {
-    expect(sequence(42, 50)).toEqual(sequence(42, 50));
+    expect(waterSequence(42, 50)).toEqual(waterSequence(42, 50));
   });
 
   it('gives different sequences for different seeds', () => {
-    expect(sequence(1, 50)).not.toEqual(sequence(2, 50));
-    expect(sequence(2, 50)).not.toEqual(sequence(3, 50));
-    expect(sequence(1, 50)).not.toEqual(sequence(3, 50));
+    expect(waterSequence(1, 50)).not.toEqual(waterSequence(2, 50));
+    expect(waterSequence(2, 50)).not.toEqual(waterSequence(3, 50));
+    expect(waterSequence(1, 50)).not.toEqual(waterSequence(3, 50));
   });
 
   it('follows a custom range and step', () => {
     const tuning = resolveTuning({ waterMin: 0.2, waterMax: 0.6, waterStep: 0.1 });
-    expect(new Set(sequence(5, 500, tuning))).toEqual(new Set([0.2, 0.3, 0.4, 0.5, 0.6]));
+    expect(new Set(waterSequence(5, 500, tuning))).toEqual(new Set([0.2, 0.3, 0.4, 0.5, 0.6]));
   });
 
   it('always returns the single value when min equals max', () => {
     const tuning = resolveTuning({ waterMin: 0.4, waterMax: 0.4 });
-    expect(new Set(sequence(5, 20, tuning))).toEqual(new Set([0.4]));
+    expect(new Set(waterSequence(5, 20, tuning))).toEqual(new Set([0.4]));
   });
 });
 
 describe('the simulation draws its bottles from the seeded RNG', () => {
   it('starts the first bottle with the first level of the seed’s sequence', () => {
     for (const seed of [1, 7, 99]) {
-      expect(new Simulation({ seed }).snapshot().bottle.water).toBe(sequence(seed, 1)[0]);
+      expect(new Simulation({ seed }).snapshot().bottle.water).toBe(waterSequence(seed, 1)[0]);
     }
   });
 
