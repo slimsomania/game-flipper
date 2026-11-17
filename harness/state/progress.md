@@ -665,3 +665,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - R no longer changes the seed; only a reload gives a new seed. That's fine for play, but worth knowing for anyone who used R to re-roll.
   - The judged bottle keeps simulating during `roundOver`; one that falls off the table keeps falling (builder's note). F014 may want to remove or hide it.
   - Process: a background-wait `Monitor`, `tasklist` and a shell loop with arithmetic were auto-denied; I ran verify in the background and waited for its notification.
+
+> [harness] session 30 · reviewer F013 · needs_review → done · ok · 1 commit(s) · 36 tool calls · 5m 58s · ~$1.06 API-equivalent
