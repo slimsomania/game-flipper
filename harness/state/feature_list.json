@@ -188,33 +188,36 @@
       "id": "F008",
       "milestone": "M1",
       "category": "tooling",
-      "title": "Measure flip windows with power sweeps",
-      "description": "Give agents and the human a measuring tool for calibration. Add src/core/flipWindow.ts: sweepPowers(water, tuning) runs one headless throw per power from 0 to 100, stopping each run as soon as its outcome is decided, and returns the outcome and turns for each power; findWindows() groups the results into contiguous success windows by turn count (a single flip is a success with turns 1). Add scripts/flip-windows.ts, run with `npx tsx scripts/flip-windows.ts`, which prints the single-flip window (low, high, center, width) for each water level with the default tuning.",
+      "title": "Measure flip windows, require a full turn, and score by turns",
+      "description": "Give agents and the human a measuring tool for calibration. Add src/core/flipWindow.ts: sweepPowers(water, tuning) runs one headless throw per power from 0 to 100, stopping each run as soon as its outcome is decided, and returns the outcome and turns for each power; findWindows() groups the results into contiguous success windows by turn count (a single flip is a success with turns 1, a double flip turns 2). Add scripts/flip-windows.ts, run with `npx tsx scripts/flip-windows.ts`, which prints the single-flip and double-flip windows (low, high, center, width) for each water level with the default tuning. Then apply two design rules the human decided on 2026-11-16 (docs/GAME_DESIGN.md, sections 2 and 5). (1) A landing needs at least one full turn: a bottle that comes to rest upright with turns 0 (rotation rounded to whole turns, as outcome.ts counts it) is a fail with its own reason (for example 'noFlip'), shown with the red fail flash and the message 'No flip!' instead of 'Down!'. A bottle that turns about 0.9 of a turn and tips back upright counts, because its turns round to 1. (2) An upright landing scores its number of turns: 1 point for a single flip, 2 for a double, 3 for a triple, and so on. The success message names the flip and the points: 'Nailed it! +1', 'Double! +2', 'Triple! +3', and 'Flip ×N! +N' above that. Expose the points of the last throw in the snapshot (for example outcome.points). placeBottle gains an optional turns credit (for example pose.turns), counted as rotation already made, so tests can still script successes with a placed bottle; existing tests that place an upright bottle and expect a success use it. No rule may rotate or snap the bottle.",
       "acceptance": [
         "Unit: findWindows() on hand-made result lists returns the right windows (several windows, windows touching 0 or 100, no window); it is pure and runs no physics.",
-        "Unit: sweepPowers() is deterministic (two runs give equal results), and the throw at power 0 fails.",
-        "`npx tsx scripts/flip-windows.ts` prints one row per water level from 10% to 90% with its single-flip window or 'none', and finishes in under a minute.",
+        "Unit: sweepPowers() is deterministic (two runs give equal results), and the throw at power 0 fails at every water level from 10% to 90%.",
+        "Unit: a bottle placed at rest upright with no turns credit is a fail with the no-flip reason and scores 0; placed upright with a credit of 1, 2 and 3 turns it succeeds and scores 1, 2 and 3 points.",
+        "E2E: an upright landing with turns 0 shows the red fail flash and 'No flip!' and leaves the score unchanged; a side landing still shows 'Down!'; upright landings with 1 and 2 turns show 'Nailed it! +1' and 'Double! +2' and raise the score by 1 and 2.",
+        "`npx tsx scripts/flip-windows.ts` prints one row per water level from 10% to 90% with its single-flip and double-flip windows (or 'none'), and finishes in under a minute.",
         "The builder's progress entry includes the printed table for the current defaults, as the baseline for F009."
       ],
       "depends_on": [
         "F004"
       ],
-      "status": "blocked",
-      "attempts": 1,
+      "status": "todo",
+      "attempts": 0,
       "notes": "Built and committed: src/core/flipWindow.ts (sweepPowers, findWindows, widestWindow), scripts/flip-windows.ts (about 1 s for all nine rows), unit tests, docs D20; verify is green and the baseline table is in progress.md. One criterion cannot be met and needs a human decision: 'the throw at power 0 fails' is false. A power-0 throw is a 1 m drop that lands upright, so it is a success with turns 0 at every water level (the same thing F005's snap showed), and no tuning can change that because there is no spin or speed at power 0. Either amend the criterion to 'the throw at power 0 is not a flip (turns 0)', which the current test already checks, or decide whether a no-flip drop should count as a success (a design rule, for example requiring at least one turn); the latter also affects F009, since low powers up to about 5 to 15 win outright. After deciding, set the status to needs_review (criterion amended) or todo with attempts 0 (rule wanted).",
-      "review_feedback": ""
+      "review_feedback": "Human decisions (2026-11-16): (1) a landing needs at least one full turn ('No flip!' fail); (2) an upright landing scores its turns (2 points for a double, 3 for a triple), with messages that name the flip and the points. The flip-window tool is already built: keep it, add the double-flip column to scripts/flip-windows.ts, implement both rules and the placeBottle turns credit, update tests that relied on 0-turn successes or on 'Nailed it!' alone (the design changed; say so in the progress entry), and update docs/ARCHITECTURE.md where it describes outcomes or scoring."
     },
     {
       "id": "F009",
       "milestone": "M1",
       "category": "physics",
       "title": "Calibrate the throw so every bottle has a single-flip window",
-      "description": "Tune the defaults in src/core/tuning.ts so the game matches the design's starting difficulty: every water level has a window of power that gives a clean single flip, the ideal power rises smoothly with the water (a nearly full bottle needs roughly 1.5 to 2 times the power of a nearly empty one), too little power under-rotates, and too much over-rotates. Levers include the throw speed and spin curves, the water-to-bottle mass ratio, friction, restitution, angular damping and the bottle's proportions; no rule may rotate or snap the bottle upright. Lock the targets in unit tests built on flipWindow.ts so later changes can't silently break them.",
+      "description": "Tune the defaults in src/core/tuning.ts so the game matches the design's starting difficulty: every water level has a window of power that gives a clean single flip, the ideal power rises smoothly with the water (a nearly full bottle needs roughly 1.5 to 2 times the power of a nearly empty one), too little power under-rotates, and too much over-rotates. Above the single-flip window, every water level also has a narrower double-flip window that a player can aim for, since a double scores 2 points; when a single-flip target and a double-flip target conflict, the single-flip target wins. Levers include the throw speed and spin curves, the water-to-bottle mass ratio, friction, restitution, angular damping and the bottle's proportions; no rule may rotate or snap the bottle upright. Lock the targets in unit tests built on flipWindow.ts so later changes can't silently break them.",
       "acceptance": [
         "A unit test sweeps the default tuning at water levels 10%, 30%, 50%, 70% and 90% (power 0-100 in 1-point steps) and finds at each level a single-flip window (contiguous powers that succeed with turns 1) 12 to 28 points wide.",
         "In the same test the window centers rise with the water level, the 90% center is 1.5 to 2.0 times the 10% center, and the 10% and 90% windows don't overlap.",
+        "In the same test every tested water level has a double-flip window (contiguous powers that succeed with turns 2) within power 0-100, at least 4 points wide, narrower than its single-flip window and entirely above it.",
         "Unit: 10 points below each window's low end (where that is 0 or more) the outcome rotation is less than one full turn, and 10 points above its high end (where that is 100 or less) it is more than one full turn.",
-        "Unit: a throw at the 50% bottle's window center stays on screen for the whole flight (the bottle's top never goes above y = 0) and lands on the table.",
+        "Unit: throws at the 50% bottle's single-flip and double-flip window centers stay on screen for the whole flight (the bottle's top never goes above y = 0) and land on the table.",
         "The calibration tests take under 15 s together, no code moves or rotates the bottle after release, and the progress entry includes the flip-windows table for the new defaults."
       ],
       "depends_on": [
@@ -294,11 +297,11 @@
       "milestone": "M3",
       "category": "progression",
       "title": "Play rounds of 10 throws with a streak counter",
-      "description": "Group throws into rounds in src/core: a round is 10 throws (throwsPerRound in tuning); each success scores 1 and a fail scores nothing without ending the round; the streak counts consecutive successes, resets to 0 on a fail, and doesn't affect points. After the 10th throw's result wait the phase becomes 'roundOver' and no new bottle appears. R restarts the round at any time (Simulation.restartRound(): throw 1, score 0, streak 0, a new bottle in the hand). The HUD shows 'Throw 3 / 10', 'Score: 2' and 'Streak: 1', and the snapshot gains throwNumber, throwsPerRound and streak.",
+      "description": "Group throws into rounds in src/core: a round is 10 throws (throwsPerRound in tuning); each upright landing scores its turns (1 for a single flip, 2 for a double, and so on, as F008 made it) and a fail scores nothing without ending the round; the round also counts its landings (successes); the streak counts consecutive landings, resets to 0 on a fail, and doesn't affect points. After the 10th throw's result wait the phase becomes 'roundOver' and no new bottle appears. R restarts the round at any time (Simulation.restartRound(): throw 1, score 0, landings 0, streak 0, a new bottle in the hand). The HUD shows 'Throw 3 / 10', 'Score: 2' and 'Streak: 1', and the snapshot gains throwNumber, throwsPerRound, landings and streak.",
       "acceptance": [
-        "Unit: across a scripted round of successes and fails (via placeBottle), the score equals the successes, a fail resets the streak to 0, and throwNumber counts 1 to 10.",
+        "Unit: across a scripted round of successes and fails (via placeBottle), the score equals the sum of the successes' turns (a double adds 2), landings equals the number of successes, a fail resets the streak to 0, and throwNumber counts 1 to 10.",
         "Unit: after the 10th result's wait (or skip()) the phase is 'roundOver', no 11th bottle appears, and throwBottle does nothing.",
-        "Unit: restartRound() while aiming, mid-flight, during a result, or after the round ends gives throw 1, score 0, streak 0 and a still bottle in the hand.",
+        "Unit: restartRound() while aiming, mid-flight, during a result, or after the round ends gives throw 1, score 0, landings 0, streak 0 and a still bottle in the hand.",
         "E2E: texts() shows 'Throw 1 / 10', 'Score: 0' and 'Streak: 0' at the start; they update after each throw, and pressing R mid-round resets them.",
         "Snap: the throw number, score and streak sit together at the top, readable and clear of the power bar and the bottle."
       ],
@@ -315,9 +318,9 @@
       "milestone": "M3",
       "category": "ui",
       "title": "Round summary screen",
-      "description": "When the round is over, open a Round summary scene showing the score out of 10 ('7 / 10') and a Play again button that starts a new round in the Game scene. Enter or Space also chooses Play again, so the summary works from the keyboard. The best score and the Title button are added later, by F015 and F018.",
+      "description": "When the round is over, open a Round summary scene showing the round's points ('Score: 14') and its landings out of the throws ('Landed 7 / 10') and a Play again button that starts a new round in the Game scene. Enter or Space also chooses Play again, so the summary works from the keyboard. The best score and the Title button are added later, by F015 and F018.",
       "acceptance": [
-        "E2E: after 10 throws (driven with placeBottle and skip()), activeScenes() contains 'Summary' and texts() contains 'N / 10' matching the number of successes.",
+        "E2E: after 10 throws (driven with placeBottle and skip()), activeScenes() contains 'Summary' and texts() contains 'Score: P' matching the round's points and 'Landed N / 10' matching the number of successes (script at least one double, so points and landings differ).",
         "E2E: clicking Play again, and in a separate run pressing Enter, starts a new round: 'Game' is active with throw 1 and score 0.",
         "E2E: the summary doesn't appear before the 10th result, the Space press that skips the 10th result doesn't also start a new round (auto-repeat is ignored), and there are no console errors.",
         "Snap: the summary is centered and readable on the light background, and the Play again button clearly looks like a button."
@@ -335,11 +338,11 @@
       "milestone": "M3",
       "category": "persistence",
       "title": "Save the best round score in the browser",
-      "description": "Keep the best round score across visits. Add a pure updateBest(previousBest, score) in src/core that returns {best, isNewBest}, and a small storage module in src/game that keeps one versioned localStorage entry (for example 'flipper.save.v1', ready to hold settings too) and falls back to defaults when the entry is missing or corrupt or storage is unavailable. The Round summary shows 'Best: N' and a 'New best!' note when the round beat the saved best.",
+      "description": "Keep the best round score (the round's points, which can exceed 10 because a double scores 2) across visits. Add a pure updateBest(previousBest, score) in src/core that returns {best, isNewBest}, and a small storage module in src/game that keeps one versioned localStorage entry (for example 'flipper.save.v1', ready to hold settings too) and falls back to defaults when the entry is missing or corrupt or storage is unavailable. The Round summary shows 'Best: N' and a 'New best!' note when the round beat the saved best.",
       "acceptance": [
         "Unit: updateBest treats a higher score as a new best and an equal or lower one as not; with no saved best (0), any score above 0 is a new best.",
         "Unit: the storage module, given an in-memory Storage stand-in, returns defaults for a missing entry, invalid JSON, or a Storage that throws, and never throws itself.",
-        "E2E: a round with 3 successes shows 'Best: 3' and 'New best!'; after a reload, a round with 2 successes shows 'Best: 3' without 'New best!'.",
+        "E2E: a round scoring 3 points shows 'Best: 3' and 'New best!'; after a reload, a round scoring 2 points shows 'Best: 3' without 'New best!'; a later round scoring 12 points (with doubles) shows 'Best: 12' and 'New best!'.",
         "E2E: the best score is stored under the versioned localStorage key."
       ],
       "depends_on": [
@@ -439,11 +442,11 @@
       "milestone": "M5",
       "category": "gameplay",
       "title": "Tune difficulty against simulated players",
-      "description": "The design's starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10. Add src/core/difficulty.ts with a seeded benchmark of simulated players over 200 random bottles: a practiced player aims at each bottle's own single-flip window center, a new player aims at one fixed power for every bottle (the average center), both with seeded normal error (σ about 8 points). Print both success rates from scripts/flip-windows.ts and tune the defaults until they hit the targets while F009's window tests stay green. If the human retuned values after M1 (see progress.md and the git history of src/core/tuning.ts), keep their values unless the benchmark is off target.",
+      "description": "The design's starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10. Add src/core/difficulty.ts with a seeded benchmark of simulated players over 200 random bottles: a practiced player aims at each bottle's own single-flip window center, a new player aims at one fixed power for every bottle (the average center), both with seeded normal error (σ about 8 points). The targets count landings (successes), not points. Print both landing rates, and each player's average points per 10 throws, from scripts/flip-windows.ts and tune the defaults until they hit the targets while F009's window tests stay green. If the human retuned values after M1 (see progress.md and the git history of src/core/tuning.ts), keep their values unless the benchmark is off target.",
       "acceptance": [
         "Unit: the benchmark is deterministic for a seed, and its player models are described in code comments.",
         "Unit: with the default tuning the practiced player lands 60-80% of 200 throws and the new player 20-40%.",
-        "scripts/flip-windows.ts prints both rates, and the progress entry lists the old and new tuning values with their rates.",
+        "scripts/flip-windows.ts prints both landing rates and average points, and the progress entry lists the old and new tuning values with their rates.",
         "All F009 calibration tests still pass."
       ],
       "depends_on": [

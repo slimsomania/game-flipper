@@ -26,7 +26,7 @@ The fun is in the guess: every bottle holds a different amount of water, so the 
 One throw, start to finish:
 
 1. A bottle with a random amount of water appears in the "hand" position at the edge of the table. The water level is visible in the bottle. That is the only clue the player gets about its weight: there is no number and no power hint.
-2. The player decides how hard to throw and sets the **power** (see Controls). Too little power: the bottle doesn't turn far enough and lands on its side. Too much: it keeps spinning, does one or two extra turns, and lands depending on how far through the last turn it is.
+2. The player decides how hard to throw and sets the **power** (see Controls). Too little power: the bottle doesn't turn far enough and lands on its side. More power gives more turns: a double flip scores 2 points and a triple 3, but their windows are narrower, so aiming higher is a risk. Between windows, the bottle lands depending on how far through its last turn it is.
 3. The player throws (Space, or releasing the mouse). The bottle flies up, spins, falls and lands on the table.
 4. The physics decides the outcome. The game waits until the bottle comes to rest, or falls off the table.
 5. The result is shown and the next bottle appears.
@@ -40,13 +40,14 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 
 **Direction.** The throw goes mostly straight up with a small, fixed forward drift so the bottle lands on the table in front of the hand. The player controls only power, not angle. Keeping it to one variable keeps the guess clear.
 
-**Success.** The bottle comes to rest standing on its base, within 15° of upright, for at least 1 second. If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed. The bottle isn't snapped upright by a rule: physics decides.
+**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright, for at least 1 second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides.
 
-**Fail.** The bottle comes to rest on its side or on its cap, falls off the table, or leaves the screen. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall.
+**Fail.** The bottle comes to rest on its side or on its cap, falls off the table, or leaves the screen. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall. A bottle that lands upright without a full turn (for example a plain drop at very low power) is also a fail.
 
 **After the result.**
 
-- Success: a green flash and a short message ("Nailed it!"), and the score goes up.
+- Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that). The score goes up by that many points.
+- No flip (upright, but without a full turn): a red flash and the message "No flip!", and the score doesn't change.
 - Fail: a red flash and a short message ("Down!"), and the score doesn't change.
 - After about 1.5 seconds the next bottle appears automatically. Space or click skips the wait.
 
@@ -56,7 +57,7 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 - The only thing that changes between throws is the **amount of water**, chosen at random each throw (from nearly empty to nearly full, in small steps, using the seeded random generator so tests are repeatable).
 - Water is simulated as extra mass that sits low in the bottle. More water means a heavier bottle and a center of mass closer to the bottom. It does not slosh in the first version: the water level is drawn, but the water moves with the bottle as one solid body.
 - A heavier bottle gets less speed and less spin from the same power, so the "right" power is different for every bottle. The player must learn this from the visible water level alone.
-- For each bottle there is a window of power that gives a clean single flip. Higher power windows give double flips and so on. Starting values (best guess, to be tuned by playtesting): the single-flip window is about ±10% power around the ideal; the ideal power rises smoothly and noticeably from an empty to a full bottle (a full bottle needs roughly 1.5 to 2 times the power of an empty one); and the starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10.
+- For each bottle there is a window of power that gives a clean single flip. Above it there is a narrower window that gives a double flip (worth 2 points), and a triple above that where the physics allows it. Every bottle should have a reachable double-flip window; triples are not required. When a single-flip target and a double-flip target conflict, the single flip wins. Starting values (best guess, to be tuned by playtesting): the single-flip window is about ±10% power around the ideal; the ideal power rises smoothly and noticeably from an empty to a full bottle (a full bottle needs roughly 1.5 to 2 times the power of an empty one); and the starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10.
 - Water sloshing is wanted, but not in the first version (see M6): first it is one solid mass, then it becomes a real moving mass inside the bottle.
 - All tuning numbers (throw strength, spin, window width, tolerance angle, friction, bounciness) live in one config module so they are easy to adjust.
 
@@ -68,10 +69,11 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 
 ## 5. Scoring and progression
 
-- A **round** is 10 throws. Each success scores 1 point, so a round scores 0 to 10. A fail scores nothing and does not end the round.
-- A streak counter is shown during play (consecutive successes) but has no effect on points yet.
+- A **round** is 10 throws. Each upright landing scores one point per full turn: 1 for a single flip, 2 for a double, 3 for a triple, and so on. A fail (including "No flip!") scores nothing and does not end the round. A round can score more than 10.
+- The round also counts its **landings** (successful throws out of 10). The difficulty targets in section 3 count landings, not points.
+- A streak counter is shown during play (consecutive landings) but has no effect on points yet.
 - The **best round score** is saved in the browser (local storage) and shown on the title screen and the round summary. Settings (mute) are saved too.
-- Later ideas, not now: two-player and three-player turn-taking modes, streak bonuses, extra points for double flips, daily challenge.
+- Later ideas, not now: two-player and three-player turn-taking modes, streak bonuses, daily challenge.
 
 ## 6. Screens and UI
 
@@ -79,7 +81,7 @@ Screens, in order: **Title → Play → Round summary → Play again or Title**.
 
 - **Title:** game name, a Play button, the best score, a mute toggle, and a one-line hint about the controls.
 - **Play:** the table, the bottle with its visible water level, the power bar, the throw number ("Throw 3 / 10"), the current score, the streak, and the result flash and message after each throw.
-- **Round summary:** score out of 10, the best score (with a "New best!" note if beaten), a Play again button and a Title button.
+- **Round summary:** the round's points ("Score: 14") and its landings ("Landed 7 / 10"), the best score (with a "New best!" note if beaten), a Play again button and a Title button.
 - **Pause overlay:** Resume and Quit to title.
 
 ## 7. Controls
@@ -146,7 +148,9 @@ Decided:
 
 Decided after the first plan (2026-11-16), answering the planner's open questions:
 
-- **Single flips first, no double-flip windows required.** The goal is a clean single flip. Too much power must over-rotate (it may land upright by luck, but nothing aims for that). Reachable double-flip windows are not required in M1 to M5. They come back with the later "double-flip challenge" idea, and the single-flip window wins if the two ever conflict.
+- **Single flips first.** Superseded on 2026-11-16 by the two decisions below: doubles and triples are now worth aiming for.
+- **A landing needs at least one full turn (2026-11-16).** An upright landing with 0 turns is a fail shown as "No flip!".
+- **Points per turn (2026-11-16).** An upright landing scores its number of turns, so more power can earn more points. Every bottle has a reachable double-flip window, narrower than its single-flip window; the single-flip window wins if the two ever conflict. The difficulty targets count landings, not points.
 - **Tests lock targets, not tuning values.** Calibration and difficulty tests check the design's targets (window width, the full-to-empty power ratio, success rates), never specific power or tuning values. Retuning inside the targets needs no test change. When the human changes a target on purpose, they change it in section 3 first; agents then update the matching test ranges to the new target and say so in the progress log. That counts as following the design, not weakening a test.
 - **No landing indicator.** The player never sees where the bottle will land: no marker, no trajectory preview. The fixed forward drift is tuned so every throw in a bottle's flip window lands on the table, around its middle. This keeps the only guess the power.
 - **Water range:** 10% to 90% in 5% steps, as the plan assumes. Tunable.
