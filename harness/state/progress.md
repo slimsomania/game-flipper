@@ -584,3 +584,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `Reset` leaves the water lock alone (it is its own switch); change `reset()` in `tuningControl.ts` if the human would rather it also unlocks.
   - Compound shell commands with a `node -` heredoc and brace quoting were denied automatically, so I made that edit with the Edit tool instead.
 - Next: the reviewer should run `npm run verify`, press Backquote on `npm run dev`, edit a value, reload, then Copy, and look at the panel at a smaller window (the list scrolls under a fixed top part about 320 px tall). The next feature should leave the right 300 px of the canvas free for the panel or move it.
+
+> [harness] session 25 · builder F010 · todo → needs_review · ok · verify passed · 1 commit(s) · 112 tool calls · 17m 37s · ~$2.76 API-equivalent
