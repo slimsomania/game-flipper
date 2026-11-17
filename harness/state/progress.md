@@ -555,3 +555,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The 90% double window is clipped by power 100 (95-100, 5 wide). The 10% single is 13 wide, just over the minimum. Both pass, but they leave little margin for later retuning.
   - The spin curve gives about 24% of the full spin even at power 1. F010's tuning panel should expose `throwSpinExponent`, `throwSpinGrowth`, `bottleAngularDamping` and `bottleLinearDamping`.
   - A Monitor-based wait was denied in this session, so I waited on the background verify instead.
+
+> [harness] session 24 · reviewer F009 · needs_review → done · ok · 1 commit(s) · 23 tool calls · 2m 50s · ~$0.71 API-equivalent
