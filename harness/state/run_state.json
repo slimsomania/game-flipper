@@ -1,5 +1,5 @@
 {
-  "sessions": 21,
+  "sessions": 22,
   "doneAtLastMaintenance": 8,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -10,12 +10,15 @@
     "F006": "f40313433f9ca91042e2a7c5df72dceb61f355ac",
     "F007": "34defab1b1c9f924e8df76b27aeefb6f7d9adfb8",
     "F008": "a30a9dfd69b4fb8e862c1975a4f15589297b23a5",
-    "F011": "940bc3b44da3fd97721f285b06d399053228f1f8"
+    "F011": "940bc3b44da3fd97721f285b06d399053228f1f8",
+    "F009": "73f8cac64ee49f11c7d04866b3e1d472cb42eecc"
   },
   "lastGate": {
-    "session": 20,
-    "ok": true,
-    "tail": ""
+    "session": 22,
+    "ok": false,
+    "tail": "\nscripts/explore-trace.ts:5:24 - error TS1375: 'await' expressions are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module.\n\n5 const { Simulation } = await import('../src/core/simulation');\n                         ~~~~~\n\nscripts/explore-trace.ts:6:9 - error TS2451: Cannot redeclare block-scoped variable 'bottleExtent'.\n\n6 const { bottleExtent } = await import('../src/core/outcome');\n          ~~~~~~~~~~~~\n\n  scripts/explore-basin.ts:5:9 - 'bottleExtent' was also declared here.\n    5 const { bottleExtent } = await import('../src/core/outcome');\n              ~~~~~~~~~~~~\n\nscripts/explore-trace.ts:6:26 - error TS1375: 'await' expressions are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module.\n\n6 const { bottleExtent } = await import('../src/core/outcome');\n                           ~~~~~\n\nscripts/explore-trace.ts:8:7 - error TS2451: Cannot redeclare block-scoped variable 'tuning'.\n\n8 const tuning = process.argv[2] ? JSON.parse(process.argv[2]) : {};\n        ~~~~~~\n\n  scripts/explore-basin.ts:9:7 - 'tuning' was also declared here.\n    9 const tuning = process.argv[2] ? JSON.parse(process.argv[2]) : {};\n            ~~~~~~\n\nscripts/explore-trace.ts:9:7 - error TS2451: Cannot redeclare block-scoped variable 'water'.\n\n9 const water = Number(process.argv[3] ?? 0.5);\n        ~~~~~\n\n  scripts/explore-basin.ts:10:7 - 'water' was also declared here.\n    10 const water = Number(process.argv[3] ?? 0.5);\n             ~~~~~\n\nscripts/explore.ts:4:52 - error TS1375: 'await' expressions are only allowed at the top level of a file when that file is a module, but this file has no imports or exports. Consider adding an empty 'export {}' to make this file a module.\n\n4 const { findWindows, sweepPowers, widestWindow } = await import('../src/core/flipWindow');\n                                                     ~~~~~\n\ntests/unit/calibration.test.ts:136:14 - error TS2783: 'power' is specified more than once, so this usage will be overwritten.\n\n136     return { power, highest, left, right, ...snapshot };\n                 ~~~~~\n\n  tests/unit/calibration.test.ts:136:43 - This spread always overwrites this property.\n    136     return { power, highest, left, right, ...snapshot };\n                                                  ~~~~~~~~~~~\n\n\nFound 17 errors in 4 files.\n\nErrors  Files\n     8  scripts/explore-basin.ts:3\n     7  scripts/explore-trace.ts:3\n     1  scripts/explore.ts:4\n     1  tests/unit/calibration.test.ts:136"
   },
-  "lastViolations": []
+  "lastViolations": [
+    "ended with uncommitted changes (the harness committed them as WIP)"
+  ]
 }

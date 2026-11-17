@@ -487,3 +487,6 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The baseline has no real windows (0 to 1 point wide), so F009 starts from scratch.
 
 > [harness] session 21 · reviewer F008 · needs_review → done · ok · 1 commit(s) · 18 tool calls · 3m 21s · ~$0.66 API-equivalent
+
+> [harness] session 22 · builder F009 · todo → todo · usage_limit · verify FAILED · 1 commit(s) · 241 tool calls · 23m 15s · ~$4.31 API-equivalent
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
