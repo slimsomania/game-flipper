@@ -653,3 +653,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - `tests/unit/outcome.test.ts`, `throw.test.ts` and `push.test.ts` are still over the 300-line guideline (see sessions 19, 20 and 23).
   - Process: a compound command that redirected to `/tmp`, a `python3` heredoc and a `git checkout -p` were denied automatically, as in earlier sessions; I used single commands and the Edit tool, and restored mutated files by editing them back.
 - Next: F014 (screens) can use `snapshot().phase === 'roundOver'` plus `score`, `landings` and `throwsPerRound` for the summary ("Score: 14", "Landed 7 / 10"), and its Play again button should call `sim.restartRound()`. If a pause overlay or screen covers the canvas, call `sim.mouse.cancel()` when it opens (F012's note).
+
+> [harness] session 29 · builder F013 · todo → needs_review · ok · verify passed · 1 commit(s) · 136 tool calls · 19m 17s · ~$2.18 API-equivalent
