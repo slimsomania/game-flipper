@@ -801,3 +801,15 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 
 
 > [harness] session 39 · builder F017 · todo → needs_review · ok · verify passed · 1 commit(s) · 121 tool calls · 22m 57s · ~$2.80 API-equivalent
+
+## Session 40 · reviewer · F017 Mute toggle that is remembered
+- Verdict: pass
+- Evidence:
+  - `npm run verify` exit 0: format check, typecheck, unit tests, build, 162 e2e in 12.3 min. The criteria are covered by `mute.spec.ts` (M and the button toggle; the click doesn't throw, doesn't skip a result, doesn't end the round on the last result; presses that start or end off the button; a push ending over it) and `muteSound.spec.ts` (silent throw and landing, then sounds come back after unmuting; mute survives a reload and shows the muted icon; unmuting is remembered too).
+  - Read the diff. Mute is gated in `Sfx.play` and the master gain goes to 0; `mute.ts` connects it to the save; `parseSave` checks `muted` on its own, so an old F015 entry reads as not muted. `gameInput.ts` ignores scene presses that land on an interactive object. The only interactive objects in `src` are `createButton` zones, so nothing else is affected. No debug code, no `.only` or `.skip`. The changed assertions in `saveStore.test.ts` and `bestScore.spec.ts` only add `muted: false` to whole-object comparisons, so they check more than before.
+  - Snap at 1024x576 (`--url "/?seed=7"`): pause, three quick clicks on the speaker at 1228;52 left it muted (`muted()` true) with the cross icon; a Space throw and its landing ("Down!") logged nothing (`sounds()` returned `[]`); M during the result unmuted it (the waves icon came back), and the "Down!" result was still on screen, so M did not skip it. The button sits in the top-right corner, far from the HUD in the top-left. No console errors.
+- Problems: none
+- Notes for later:
+  - The speaker icon is small at 1024x576 but still readable. The cross and the waves differ in shape, not only in color.
+  - As the builder noted, the Summary scene has no mute control (M does nothing there). F018 and F019 should call `createMuteControl`.
+  - Process: a Monitor with a `[ -s file ]` test was auto-denied. I waited for the background verify's notification instead.
