@@ -774,3 +774,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The e2e suite takes 6 to 10 minutes; most of it is full 10-throw rounds through Playwright (`summary.spec.ts`, `summaryInput.spec.ts`, `bestScore.spec.ts`). Shortening rounds with the `throwsPerRound` tuning (as `bestScore.spec.ts` does) in the tests that don't need ten throws would help.
   - Nobody has listened to the sounds (F016's note); a human should playtest them.
   - Process: a heredoc appended to a file and a `diff <(...)` with process substitution were auto-denied, so I used the Edit and Write tools, `sed -n ... >> file` for the moves and `md5sum` through pipes for the comparison.
+
+> [harness] session 38 · maintainer · ok · verify passed · 1 commit(s) · 75 tool calls · 10m 49s · ~$1.31 API-equivalent
