@@ -842,3 +842,15 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F019 (Pause overlay): add a pause button to the left of the speaker (`MUTE_BUTTON` in `muteLayout.ts`), build the overlay as a scene like `SummaryScene` (the Game scene pauses under it), reuse `createButton` for Resume and Quit to title, and call `createMuteControl` there; "Quit to title" is `this.scene.stop('Game')` then `this.scene.start('Title')`, as in `SummaryScene.toTitle()`.
 
 > [harness] session 41 · builder F018 · todo → needs_review · ok · verify passed · 1 commit(s) · 139 tool calls · 40m 20s · ~$2.19 API-equivalent
+
+## Session 42 · reviewer · F018 Title screen
+- Verdict: pass
+- Evidence:
+  - `npm run verify` exit 0: format check, typecheck, unit tests, build, 183 e2e in 10.5 min. `title.spec.ts` (21 tests) covers each criterion: boot to Title with name, Play, `Best: 17` from localStorage and the hint, no errors; Play, Space and Enter start throw 1 with nothing thrown and power 50, a held Space is ignored, other input doesn't start it; the summary's Title button returns to a Title showing the new best; the speaker button and M toggle and save one setting.
+  - Read the diff. `TitleScene` and `titleView`/`titleText`/`titleLayout` are presentation only, and no rules were added outside `src/core`. `SummaryScene.toTitle()` stops Game and then starts Title, with a `closing` guard. No debug code, no `.only` or `.skip`. The changed tests are justified: `smoke.spec.ts` checks the new boot behavior and is stricter (`toEqual(['Title'])`, state null); `buttonLook.test.ts` now checks that the two-button row is centered, plus a new test for the gap; `summaryInput.spec.ts` moved the "next to the button" click off the new Title button and added a gap click. `openGame`/`reloadGame` keep the older tests driving play through `startScene('Game')`.
+  - Snap at 1280x720: "Flipper", Play, "or press Enter or Space", "Best: 0" and the hint, all centered with clear gaps, and the speaker alone in the top-right. Snap at 1024x576 (`?seed=7`, throwsPerRound 1), my own edge cases: a rapid double Enter on the title gave Game at throw 1, 0 throws, power 50. I played a round to the summary (Play again and Title side by side, nothing cut off), clicked Title (back to the title), then pressed M and Space, which started a fresh round at throw 1 with the muted icon showing. No console errors.
+- Problems: none
+- Notes for later:
+  - The summary still has no mute control, as the builder noted; F019's pause overlay should call `createMuteControl`.
+  - CLAUDE.md's snap example now starts on the Title, so snaps of play need `scene:Game` (or `key:Enter`) first.
+  - Process: a background verify that redirected to a file with `$?` was auto-denied. `npm run verify 2>&1 | tail` in the background worked.
