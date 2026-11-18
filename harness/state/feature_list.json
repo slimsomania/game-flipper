@@ -391,7 +391,7 @@
         "F016"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Mute state lives in Sfx (src/game/audio/sfx.ts: Sfx.play returns before logging or making sound while muted, and the master gain goes to 0); src/game/audio/mute.ts joins it to the save (new `muted` field in SaveData/parseSave, restored in main.ts). createMuteControl (src/game/view/muteButtonView.ts) draws the speaker button in the top-right corner (icon from speakerIcon.ts, via an icon option added to createButton) and binds M; GameScene calls it, and a press on a button no longer grabs or skips (gameInput.ts). Hooks: muted(), setMuted(), muteButton(). Verified with unit tests, tests/e2e/mute.spec.ts and muteSound.spec.ts (25 e2e; I checked they fail with the click guard or the mute gate removed), snaps in both states, and npm run verify. Existing assertions that pinned the saved entry as {version,best} now include muted:false (saveStore.test.ts, bestScore.spec.ts): the entry gained a field, nothing was weakened.",
       "review_feedback": ""
     },
