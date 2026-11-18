@@ -893,3 +893,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Several pause key presses within a single frame are partly dropped, because presses during the frame before the overlay opens are ignored. An odd number of instant presses can therefore end unpaused. A human can't press that fast, so this is minor.
   - The builder's open questions still stand: Quit to title doesn't score the unfinished round, losing window focus doesn't pause the game, and the summary has no mute control.
   - Process: verify takes about 13 min. Running snaps alongside it pushed my first run past a 15-min background timeout, so give it `timeout` 3600000 and don't run snaps at the same time.
+
+> [harness] session 44 · reviewer F019 · needs_review → done · ok · 1 commit(s) · 24 tool calls · 28m 54s · ~$0.75 API-equivalent
