@@ -880,3 +880,16 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: the reviewer should check the pause by playing it with the snap tool (`scene:Game,pause,key:Escape,...`), especially a pause during a held Up key or a grab. After F019 is reviewed, F020 (difficulty against simulated players) is next: it is core work, so start from `src/core/flipWindow.ts` (`sweepPowers`, `findWindows`) and `docs/ARCHITECTURE.md` D23. If another overlay is ever added, follow D32 and keep its veil a Graphics fill, not a canvas-sized Rectangle.
 
 > [harness] session 43 · builder F019 · todo → needs_review · ok · verify passed · 1 commit(s) · 141 tool calls · 27m 34s · ~$2.87 API-equivalent
+
+## Session 44 · reviewer · F019 Pause overlay
+- Verdict: pass
+- Evidence:
+  - `npm run verify` exit 0: format check, typecheck, unit tests, build, 213 e2e in 13.0 min. The new e2e files `pause.spec.ts`, `pauseFreeze.spec.ts` and `pauseActions.spec.ts` cover every criterion. `git diff 87397c46..HEAD -- tests` only adds files and lines: nothing was removed, skipped or weakened. There is no debug code; the only `skip` in the diff is the game's own `skip()` hook.
+  - Read the diff. `PauseScene` is launched over the paused Game scene, the same pattern as the summary. `openPause()` lets go of the power meter and the mouse grab, refuses when the round is over, and guards with `pauseRequested`. The hook `gamePaused()` is `isActive('Pause')`, separate from `pause()`/`resume()`. `quitToTitle` is shared with the summary. No rules were added outside `src/core`.
+  - Snap at 1024x576 (`?seed=7`): I threw with Space and paused mid-flight with the corner button. `state()` at +200 ms and +1200 ms of real time was identical (tick 44, same bottle pose). The screenshot shows the dimmed game, the frozen bottle, a white card with "Paused", Resume, Restart and Quit to title centered and readable, and the play icon beside the speaker. Five instant Esc/P presses in a row ended unpaused with the flight going on, and the game was not stuck.
+  - Snap at 1280x720: I held ArrowUp, pressed Esc, released Up while paused and resumed. Power stayed at 51 over the next 1.2 s while ticks advanced (24→33→64). I paused again and clicked Quit to title, and the active scene was Title. I also held Up mid-flight across a P pause and resume: power stayed at 51 through the result. No console errors in any snap.
+- Problems: none
+- Notes for later:
+  - Several pause key presses within a single frame are partly dropped, because presses during the frame before the overlay opens are ignored. An odd number of instant presses can therefore end unpaused. A human can't press that fast, so this is minor.
+  - The builder's open questions still stand: Quit to title doesn't score the unfinished round, losing window focus doesn't pause the game, and the summary has no mute control.
+  - Process: verify takes about 13 min. Running snaps alongside it pushed my first run past a 15-min background timeout, so give it `timeout` 3600000 and don't run snaps at the same time.
