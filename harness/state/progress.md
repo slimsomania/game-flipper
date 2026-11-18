@@ -854,3 +854,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The summary still has no mute control, as the builder noted; F019's pause overlay should call `createMuteControl`.
   - CLAUDE.md's snap example now starts on the Title, so snaps of play need `scene:Game` (or `key:Enter`) first.
   - Process: a background verify that redirected to a file with `$?` was auto-denied. `npm run verify 2>&1 | tail` in the background worked.
+
+> [harness] session 42 · reviewer F018 · needs_review → done · ok · 1 commit(s) · 24 tool calls · 11m 53s · ~$0.78 API-equivalent
