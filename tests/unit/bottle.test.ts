@@ -1,6 +1,6 @@
 import { World } from 'planck';
 import { describe, expect, it } from 'vitest';
-import { Bottle, HAND_X, HAND_Y } from '../../src/core/bottle';
+import { Bottle, HAND_X, HAND_Y, isFinitePose } from '../../src/core/bottle';
 import {
   BOTTLE_BODY_HEIGHT,
   BOTTLE_BODY_WIDTH,
@@ -207,6 +207,21 @@ describe('a released bottle', () => {
       expect(p.y).toBeGreaterThan(TABLE_TOP_Y - 0.05); // base on the tabletop (planck's 1 cm skin)
       expect(p.x).toBeCloseTo(HAND_X, 1);
       expect(bottle.body.isAwake()).toBe(false);
+    }
+  });
+});
+
+describe('isFinitePose', () => {
+  it('accepts a pose of finite numbers, with the optional fields left out or given', () => {
+    expect(isFinitePose({ x: 6, y: 2, angle: 0 })).toBe(true);
+    expect(isFinitePose({ x: 6, y: 2, angle: 7, vx: 1, vy: -2, omega: 3, turns: 2.5 })).toBe(true);
+  });
+
+  it('refuses a pose with any number that is not finite', () => {
+    const good = { x: 6, y: 2, angle: 0 };
+    for (const field of ['x', 'y', 'angle', 'vx', 'vy', 'omega', 'turns']) {
+      expect(isFinitePose({ ...good, [field]: Number.NaN })).toBe(false);
+      expect(isFinitePose({ ...good, [field]: Number.POSITIVE_INFINITY })).toBe(false);
     }
   });
 });

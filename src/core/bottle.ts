@@ -39,6 +39,12 @@ export interface BottlePose {
   turns?: number;
 }
 
+/** Is every number in the pose (left-out ones count as 0) finite? `placeBottle` refuses a pose that isn't. */
+export function isFinitePose(pose: BottlePose): boolean {
+  const numbers = [pose.x, pose.y, pose.angle, pose.vx, pose.vy, pose.omega, pose.turns];
+  return numbers.every((n) => Number.isFinite(n ?? 0));
+}
+
 const toVec = (points: readonly Point[]): { x: number; y: number }[] =>
   points.map((p) => ({ x: p.x, y: p.y }));
 

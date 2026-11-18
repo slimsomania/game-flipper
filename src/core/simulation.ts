@@ -1,24 +1,23 @@
 import { World, type Body } from 'planck';
-import { Bottle, drawWaterLevel, type BottlePose } from './bottle';
+import { Bottle, isFinitePose, type BottlePose } from './bottle';
 import { GRAVITY, SIM_DT, stepsFor } from './constants';
 import { SimEvents, type SimEvent } from './events';
 import { MouseControl } from './mouseControl';
 import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
 import { Round } from './round';
-import { createRng, type Rng } from './rng';
+import { createRng } from './rng';
 import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
 import { createTable } from './table';
 import { clampPower, throwImpulse, type ThrowSource } from './throw';
 import { resolveTuning, type Tuning } from './tuning';
+import { WaterSupply } from './waterSupply';
 
 // The snapshot types live in snapshot.ts; they are re-exported so callers import them from here.
 export type { BodySnapshot, BottleSnapshot, LastThrow, Phase, SimSnapshot } from './snapshot';
 
 const VELOCITY_ITERATIONS = 8;
 const POSITION_ITERATIONS = 3;
-
-const clampWater = (level: number): number => Math.min(1, Math.max(0, level));
 
 export interface SimulationOptions {
   /** Same seed + same inputs = same result. */
@@ -32,10 +31,9 @@ export interface SimulationOptions {
 export class Simulation {
   readonly seed: number;
   private currentTuning: Tuning;
-  /** The water level every bottle gets while it is set, or null for the seeded random levels. */
-  private waterLock: number | null = null;
   private readonly world: World;
-  private readonly rng: Rng;
+  /** The water level of each new bottle: the seed's draws, or the level a tuning tool locked. */
+  private readonly water: WaterSupply;
   private readonly table: Body;
   /** What happened, for the scene to drain each frame (sound, effects): see `drainEvents`. */
   private readonly events: SimEvents;
@@ -65,9 +63,6 @@ export class Simulation {
   constructor(options: SimulationOptions = {}) {
     this.seed = options.seed ?? 1;
     this.currentTuning = resolveTuning(options.tuning);
-    if (options.lockedWater != null && Number.isFinite(options.lockedWater)) {
-      this.waterLock = clampWater(options.lockedWater);
-    }
     this.powerMeter = new PowerMeter(() => this.currentTuning);
     this.mouse = new MouseControl({
       phase: () => this.currentPhase,
@@ -79,12 +74,16 @@ export class Simulation {
       },
       throwWithMouse: (power) => this.throwBottle(power, 'mouse'),
     });
-    this.rng = createRng(this.seed);
+    this.water = new WaterSupply(
+      createRng(this.seed),
+      () => this.currentTuning,
+      options.lockedWater,
+    );
     this.world = new World({ gravity: { x: 0, y: GRAVITY } });
 
     this.table = createTable(this.world);
     this.events = new SimEvents(this.world, this.table, () => this.ticks);
-    this.bottle = new Bottle(this.world, this.currentTuning, this.nextWaterLevel());
+    this.bottle = new Bottle(this.world, this.currentTuning, this.water.next());
   }
 
   /** The tuning in effect: the defaults, the constructor's overrides and any `setTuning` calls. */
@@ -94,29 +93,18 @@ export class Simulation {
 
   /** The locked water level (see `lockWater`), or null while the levels are random. */
   get lockedWater(): number | null {
-    return this.waterLock;
+    return this.water.locked;
   }
 
   /**
    * Give every bottle this water level (clamped to 0..1) from now on, or `null` to go back to the
    * seeded random levels. For tuning tools: the held bottle takes the level at once (while it is
    * `aiming`), and a number that isn't finite is ignored. The random draw is still made for every
-   * bottle, so unlocking carries on with the seed's own sequence, as if nothing had been locked.
+   * bottle, so unlocking carries on with the seed's own sequence (see `WaterSupply`).
    */
   lockWater(level: number | null): void {
-    if (level === null) {
-      this.waterLock = null;
-      return;
-    }
-    if (!Number.isFinite(level)) return;
-    this.waterLock = clampWater(level);
-    this.setWater(this.waterLock);
-  }
-
-  /** The water level of the next bottle: the lock if there is one, else the seed's next draw. */
-  private nextWaterLevel(): number {
-    const drawn = drawWaterLevel(this.rng, this.currentTuning);
-    return this.waterLock ?? drawn;
+    const locked = this.water.lock(level);
+    if (locked !== null) this.setWater(locked);
   }
 
   get phase(): Phase {
@@ -203,7 +191,7 @@ export class Simulation {
    */
   private nextBottle(): void {
     this.bottle.destroy();
-    this.bottle = new Bottle(this.world, this.currentTuning, this.nextWaterLevel());
+    this.bottle = new Bottle(this.world, this.currentTuning, this.water.next());
     this.judge = null;
     this.result = null;
     this.currentPhase = 'aiming';
@@ -230,18 +218,8 @@ export class Simulation {
    * `pose.turns` is counted as rotation already made, so an upright bottle can still succeed.
    */
   placeBottle(pose: BottlePose): boolean {
-    const turns = pose.turns ?? 0;
-    const numbers = [
-      pose.x,
-      pose.y,
-      pose.angle,
-      pose.vx ?? 0,
-      pose.vy ?? 0,
-      pose.omega ?? 0,
-      turns,
-    ];
-    if (this.currentPhase !== 'aiming' || !numbers.every(Number.isFinite)) return false;
-    this.startFlight(pose.angle, turns);
+    if (this.currentPhase !== 'aiming' || !isFinitePose(pose)) return false;
+    this.startFlight(pose.angle, pose.turns ?? 0);
     this.bottle.place(pose);
     return true;
   }

@@ -24,6 +24,17 @@ export function runToOutcome(sim: Simulation, limit = 600): number {
   return steps;
 }
 
+/** A simulation with `pose` placed (and an optional water level and tuning), not yet stepped. */
+export function placed(
+  pose: Parameters<Simulation['placeBottle']>[0],
+  options: { water?: number; tuning?: Partial<Tuning> } = {},
+): Simulation {
+  const sim = new Simulation({ seed: 1, tuning: options.tuning });
+  if (options.water !== undefined) sim.setWater(options.water);
+  expect(sim.placeBottle(pose)).toBe(true);
+  return sim;
+}
+
 /**
  * A simulation whose bottle has just been judged: placed as `pose` (by default a single flip, a
  * success), stepped to its outcome.
