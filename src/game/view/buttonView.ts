@@ -36,10 +36,21 @@ export interface ButtonSpec {
   y: number;
   width: number;
   height: number;
-  label: string;
+  /** The text on the face. Leave it out for a button that shows an `icon` instead. */
+  label?: string;
   /** Font size of the label, in pixels. */
   fontSize?: number;
-  /** Draw order: the face and lip at this depth, the label one above (default 0). */
+  /**
+   * Draws a picture on the face, in white: called with a cleared Graphics and the middle of the
+   * face (which moves down when the button is pressed) each time the button is drawn, so it can
+   * show a state. Call `refresh()` when that state changes.
+   */
+  icon?: (graphics: Phaser.GameObjects.Graphics, x: number, y: number) => void;
+  /** Corner radius of the face and lip, in pixels (default 18). */
+  radius?: number;
+  /** A name for the clickable area, so a test can find the button in the scene. */
+  name?: string;
+  /** Draw order: the face and lip at this depth, the label and icon one above (default 0). */
   depth?: number;
   /** What a click does. */
   onActivate: () => void;
@@ -48,6 +59,13 @@ export interface ButtonSpec {
 export interface ButtonView {
   /** Do what a click does (for the keyboard shortcut that stands for this button). */
   activate(): void;
+  /** Draw the button again, for an icon whose state changed. */
+  refresh(): void;
+  /**
+   * The clickable area (the face and the lip under it). The scene-level pointer handlers get the
+   * objects under a press, so this is how a scene can tell that a press belongs to the button.
+   */
+  zone: Phaser.GameObjects.Zone;
 }
 
 const CORNER_RADIUS = 18;
@@ -64,21 +82,27 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
   const { x, y, width, height } = spec;
   const canvas = scene.game.canvas;
   const depth = spec.depth ?? 0;
+  const radius = spec.radius ?? CORNER_RADIUS;
   const graphics = scene.add.graphics().setDepth(depth);
-  const label = scene.add
-    .text(x, y, spec.label, {
-      fontFamily: FONT_FAMILY,
-      fontSize: `${spec.fontSize ?? 36}px`,
-      fontStyle: 'bold',
-      color: COLORS.buttonText,
-    })
-    .setOrigin(0.5)
-    .setDepth(depth + 1);
+  // A button with no label has no text object at all, so it never shows up in the visible texts.
+  const label = spec.label
+    ? scene.add
+        .text(x, y, spec.label, {
+          fontFamily: FONT_FAMILY,
+          fontSize: `${spec.fontSize ?? 36}px`,
+          fontStyle: 'bold',
+          color: COLORS.buttonText,
+        })
+        .setOrigin(0.5)
+        .setDepth(depth + 1)
+    : null;
+  const icon = spec.icon ? scene.add.graphics().setDepth(depth + 1) : null;
   // The hit area covers the lip too: it is part of what the player sees.
   const zone = scene.add
     .zone(x, y + BUTTON_LIP / 2, width, height + BUTTON_LIP)
     .setDepth(depth + 2)
     .setInteractive();
+  if (spec.name) zone.setName(spec.name);
 
   let hover = false;
   let pressed = false;
@@ -90,10 +114,11 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
     graphics
       .clear()
       .fillStyle(look.lip)
-      .fillRoundedRect(left, top + BUTTON_LIP, width, height, CORNER_RADIUS)
+      .fillRoundedRect(left, top + BUTTON_LIP, width, height, radius)
       .fillStyle(look.face)
-      .fillRoundedRect(left, top + look.sink, width, height, CORNER_RADIUS);
-    label.setY(y + look.sink);
+      .fillRoundedRect(left, top + look.sink, width, height, radius);
+    label?.setY(y + look.sink);
+    if (icon && spec.icon) spec.icon(icon.clear(), x, y + look.sink);
     canvas.style.cursor = hover ? 'pointer' : '';
   };
 
@@ -122,5 +147,5 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
   });
 
   show();
-  return { activate: spec.onActivate };
+  return { activate: spec.onActivate, refresh: show, zone };
 }

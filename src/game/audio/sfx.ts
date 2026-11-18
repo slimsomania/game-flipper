@@ -6,6 +6,10 @@ import { playVoice } from './synth';
  * sound after the player has clicked or pressed a key, so the context is created (or resumed) only
  * by `unlock()`, which `unlockOnFirstInput` calls from the first of those. Before that, and in a
  * browser with no Web Audio, `play` is silent, so the rest of the game never has to ask.
+ *
+ * Mute is held here too, because every sound goes through `play`: while muted nothing is made and
+ * nothing is logged, and the master gain is 0, so a sound that is already ringing is cut as well.
+ * Who remembers the choice between visits is `mute.ts`; this class only holds it.
  */
 
 /** A sound the game played, as `window.__FLIPPER__.sounds()` lists it. */
@@ -34,8 +38,39 @@ export class Sfx {
   private context: AudioContext | null = null;
   private master: GainNode | null = null;
   private readonly entries: SoundLogEntry[] = [];
+  private isMuted = false;
+  private readonly listeners = new Set<(muted: boolean) => void>();
 
   constructor(private readonly makeContext: () => AudioContext | null = browserContext) {}
+
+  /** True while all sound is off. */
+  get muted(): boolean {
+    return this.isMuted;
+  }
+
+  /**
+   * Turn all sound off or on. A sound already playing is cut at once (the master gain goes to 0),
+   * and while muted `play` makes and logs nothing. Whoever listens (`onMutedChange`) hears about a
+   * change, not about setting the state it already has.
+   */
+  setMuted(muted: boolean): void {
+    if (muted === this.isMuted) return;
+    this.isMuted = muted;
+    if (this.master) this.master.gain.value = this.masterGain();
+    for (const listener of [...this.listeners]) listener(muted);
+  }
+
+  /** Call `listener` whenever the mute state changes. Returns a function that stops listening. */
+  onMutedChange(listener: (muted: boolean) => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private masterGain(): number {
+    return this.isMuted ? 0 : MASTER_GAIN;
+  }
 
   /** The context's state, or 'none' while there isn't one (nothing has unlocked the sound yet). */
   get state(): AudioContextState | 'none' {
@@ -56,7 +91,7 @@ export class Sfx {
       this.context = this.makeContext();
       if (!this.context) return;
       this.master = this.context.createGain();
-      this.master.gain.value = MASTER_GAIN;
+      this.master.gain.value = this.masterGain();
       this.master.connect(this.context.destination);
     }
     if (this.context.state === 'suspended') this.context.resume().catch(() => undefined);
@@ -64,9 +99,11 @@ export class Sfx {
 
   /**
    * Play a sound, and log it. The log records what the game asked to hear whether or not the browser
-   * lets it be heard yet, so tests can check the sounds without a running audio context.
+   * lets it be heard yet, so tests can check the sounds without a running audio context. While
+   * muted the game asks for nothing: no sound, and no log entry.
    */
   play(cue: SoundCue): void {
+    if (this.isMuted) return;
     this.entries.push({ name: cue.name, volume: cue.volume, tick: cue.tick });
     if (this.entries.length > LOG_LIMIT) this.entries.shift();
     const { context, master } = this;

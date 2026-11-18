@@ -2,7 +2,7 @@ import { updateBest, type BestUpdate } from '../core/round';
 
 /*
  * What the game remembers between visits: one versioned JSON entry in localStorage. It holds the
- * best round score now and has room for the settings (mute) later. The save is a convenience, never
+ * best round score and the mute setting. The save is a convenience, never
  * a requirement: a missing, damaged or blocked storage gives the defaults, and nothing in here
  * throws, so the game starts and plays the same with or without it.
  */
@@ -17,9 +17,11 @@ const VERSION = 1;
 export interface SaveData {
   /** The best round score (a whole number of points, 0 before any round scored). */
   best: number;
+  /** True when the player turned the sound off (false, sound on, by default). */
+  muted: boolean;
 }
 
-export const defaultSave = (): SaveData => ({ best: 0 });
+export const defaultSave = (): SaveData => ({ best: 0, muted: false });
 
 /** Read a save from the entry's text; every field that is missing or not valid is its default. */
 export function parseSave(text: string | null): SaveData {
@@ -34,8 +36,9 @@ export function parseSave(text: string | null): SaveData {
   if (typeof data !== 'object' || data === null) return save;
   const record = data as Record<string, unknown>;
   if (record.version !== VERSION) return save;
-  const { best } = record;
+  const { best, muted } = record;
   if (typeof best === 'number' && Number.isSafeInteger(best) && best >= 0) save.best = best;
+  if (typeof muted === 'boolean') save.muted = muted;
   return save;
 }
 

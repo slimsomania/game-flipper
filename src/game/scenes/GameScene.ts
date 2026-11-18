@@ -12,6 +12,7 @@ import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
 import { createHudView, type HudView } from '../view/hudView';
+import { createMuteControl } from '../view/muteButtonView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createTableView } from '../view/tableView';
@@ -55,6 +56,7 @@ export class GameScene extends Phaser.Scene {
     this.resultView = createResultView(this);
     this.hudView = createHudView(this);
     this.cursorView = createCursorView(this);
+    createMuteControl(this);
 
     bindGameInput(this, this.sim);
 

@@ -2,10 +2,12 @@ import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
 import type { SimSnapshot, Simulation } from '../core/simulation';
 import type { Tuning } from '../core/tuning';
+import { setMute } from '../game/audio/mute';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
+import { visibleMuteButton, type MuteButtonView } from './visibleMuteButton';
 import { visibleTexts } from './visibleTexts';
 
 /**
@@ -46,6 +48,23 @@ export interface FlipperTestApi {
    * or key press. Like `texts()` it shows what the scene last drained: wait a frame after stepping.
    */
   sounds(): SoundLogEntry[];
+  /**
+   * Whether all sound is muted. While it is, the game plays nothing and `sounds()` gets no new
+   * entries. It is the setting the M key and the speaker button flip, and it is saved.
+   */
+  muted(): boolean;
+  /**
+   * Mute or unmute exactly as the M key does (including saving the choice), and return the new
+   * state. Anything that isn't a boolean is ignored.
+   */
+  setMuted(muted: boolean): boolean;
+  /**
+   * The speaker button the player sees: the icon it last drew (`muted` true is the cross) and its
+   * clickable area (`x`, `y` the middle, `width`, `height`, in game pixels, so a test can click it
+   * with `page.mouse`). Null when the active scene has no such button. Like `texts()` it shows what
+   * the scene last drew: wait a frame after changing the state.
+   */
+  muteButton(): MuteButtonView | null;
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -141,6 +160,9 @@ export function installTestHooks(game: Phaser.Game): void {
     texts: () => visibleTexts(game.scene.getScenes(true)),
     flash: () => visibleFlash(game.scene.getScenes(true)),
     sounds: () => sharedSfx().log(),
+    muted: () => sharedSfx().muted,
+    setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),
+    muteButton: () => visibleMuteButton(game.scene.getScenes(true)),
     pause: () => {
       testControls.paused = true;
     },

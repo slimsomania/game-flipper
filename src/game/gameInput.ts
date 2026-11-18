@@ -21,6 +21,8 @@ const isLeftButton = (pointer: Phaser.Input.Pointer): boolean => pointer.button 
  * - Space: throws while aiming, ends the result wait during a result. Repeated keydowns are
  *   ignored, so holding Space through a result can't throw the next bottle.
  * - R: restarts the round (`Simulation.restartRound`), in any phase. Repeats are ignored too.
+ * - M and the speaker button are the mute control (`createMuteControl`, not here). A press that
+ *   lands on a button is left to it: it is neither a grab nor a click that skips a result.
  * - Left button down: grabs the held bottle if the press is on it, otherwise (in a result) ends the
  *   result wait, like any click. Moving while the button is down is the push; letting go throws
  *   (see `MouseControl.release`). A release outside the canvas, which the game sees only as the
@@ -58,12 +60,17 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
     if (dy !== 0) sim.powerMeter.wheel(dy < 0 ? 1 : -1);
   });
 
-  scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-    // Grabbing only works while aiming and skipping only during a result, so at most one happens.
-    if (isLeftButton(pointer) && sim.mouse.grab(pointer.x, pointer.y, eventSeconds(pointer)))
-      return;
-    sim.skip();
-  });
+  scene.input.on(
+    'pointerdown',
+    (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      // A press on a button (the speaker) belongs to the button: it grabs nothing and skips nothing.
+      if (currentlyOver.length > 0) return;
+      // Grabbing only works while aiming and skipping only during a result, so at most one happens.
+      if (isLeftButton(pointer) && sim.mouse.grab(pointer.x, pointer.y, eventSeconds(pointer)))
+        return;
+      sim.skip();
+    },
+  );
   scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
     sim.mouse.drag(pointer.y, eventSeconds(pointer));
   });

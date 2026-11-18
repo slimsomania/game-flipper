@@ -38,13 +38,13 @@ describe('SAVE_KEY', () => {
 
 describe('parseSave', () => {
   it('reads a saved best', () => {
-    expect(parseSave(JSON.stringify({ version: 1, best: 12 }))).toEqual({ best: 12 });
-    expect(parseSave(JSON.stringify({ version: 1, best: 0 }))).toEqual({ best: 0 });
+    expect(parseSave(JSON.stringify({ version: 1, best: 12 }))).toEqual({ best: 12, muted: false });
+    expect(parseSave(JSON.stringify({ version: 1, best: 0 }))).toEqual({ best: 0, muted: false });
   });
 
   it('gives the defaults for a missing entry', () => {
     expect(parseSave(null)).toEqual(defaultSave());
-    expect(defaultSave()).toEqual({ best: 0 });
+    expect(defaultSave()).toEqual({ best: 0, muted: false });
   });
 
   it('gives the defaults for text that is not valid JSON', () => {
@@ -66,34 +66,59 @@ describe('parseSave', () => {
 
   it('drops a best that is not a whole number of at least 0', () => {
     for (const best of [-1, 2.5, '12', null, true, {}, [3]]) {
-      expect(parseSave(JSON.stringify({ version: 1, best }))).toEqual({ best: 0 });
+      expect(parseSave(JSON.stringify({ version: 1, best }))).toEqual({ best: 0, muted: false });
     }
     // JSON has no NaN or Infinity, and a number too big to be exact is not trusted either.
-    expect(parseSave('{"version":1,"best":1e999}')).toEqual({ best: 0 });
-    expect(parseSave('{"version":1,"best":1e30}')).toEqual({ best: 0 });
+    expect(parseSave('{"version":1,"best":1e999}')).toEqual({ best: 0, muted: false });
+    expect(parseSave('{"version":1,"best":1e30}')).toEqual({ best: 0, muted: false });
+  });
+
+  it('reads the mute setting, and an entry saved before it existed is not muted', () => {
+    const read = (entry: object) => parseSave(JSON.stringify({ version: 1, ...entry }));
+    expect(read({ best: 4, muted: true })).toEqual({ best: 4, muted: true });
+    expect(read({ best: 4, muted: false })).toEqual({ best: 4, muted: false });
+    expect(read({ muted: true })).toEqual({ best: 0, muted: true });
+    expect(read({ best: 4 })).toEqual({ best: 4, muted: false });
+  });
+
+  it('drops a mute setting that is not true or false, and keeps the rest', () => {
+    for (const muted of [1, 0, 'true', 'false', null, {}, [true]]) {
+      expect(parseSave(JSON.stringify({ version: 1, best: 6, muted }))).toEqual({
+        best: 6,
+        muted: false,
+      });
+    }
+  });
+
+  it('keeps a good mute setting beside a damaged best, and the other way round', () => {
+    expect(parseSave('{"version":1,"best":"lots","muted":true}')).toEqual({
+      best: 0,
+      muted: true,
+    });
+    expect(parseSave('{"version":1,"best":8,"muted":"yes"}')).toEqual({ best: 8, muted: false });
   });
 });
 
 describe('SaveStore', () => {
   it('loads the defaults from an empty storage', () => {
-    expect(new SaveStore(memoryStorage()).load()).toEqual({ best: 0 });
+    expect(new SaveStore(memoryStorage()).load()).toEqual({ best: 0, muted: false });
   });
 
   it('loads the defaults from an entry with invalid JSON', () => {
     const storage = memoryStorage({ [SAVE_KEY]: '{oops' });
-    expect(new SaveStore(storage).load()).toEqual({ best: 0 });
+    expect(new SaveStore(storage).load()).toEqual({ best: 0, muted: false });
   });
 
   it('loads the defaults, and never throws, from a Storage that throws', () => {
     const store = new SaveStore(throwingStorage());
-    expect(store.load()).toEqual({ best: 0 });
+    expect(store.load()).toEqual({ best: 0, muted: false });
     expect(() => store.update({ best: 5 })).not.toThrow();
     expect(() => store.recordRound(5)).not.toThrow();
   });
 
   it('works with no storage at all', () => {
     const store = new SaveStore(null);
-    expect(store.load()).toEqual({ best: 0 });
+    expect(store.load()).toEqual({ best: 0, muted: false });
     expect(() => store.update({ best: 5 })).not.toThrow();
   });
 
@@ -102,26 +127,26 @@ describe('SaveStore', () => {
     new SaveStore(storage).update({ best: 12 });
 
     expect([...storage.data.keys()]).toEqual([SAVE_KEY]);
-    expect(JSON.parse(storage.data.get(SAVE_KEY)!)).toEqual({ version: 1, best: 12 });
-    expect(new SaveStore(storage).load()).toEqual({ best: 12 });
+    expect(JSON.parse(storage.data.get(SAVE_KEY)!)).toEqual({ version: 1, best: 12, muted: false });
+    expect(new SaveStore(storage).load()).toEqual({ best: 12, muted: false });
   });
 
   it('overwrites a damaged entry on the next save', () => {
     const storage = memoryStorage({ [SAVE_KEY]: 'garbage' });
     new SaveStore(storage).update({ best: 4 });
-    expect(new SaveStore(storage).load()).toEqual({ best: 4 });
+    expect(new SaveStore(storage).load()).toEqual({ best: 4, muted: false });
   });
 
   it('keeps the fields it was not asked to change', () => {
     const storage = memoryStorage({ [SAVE_KEY]: JSON.stringify({ version: 1, best: 9 }) });
-    expect(new SaveStore(storage).update({})).toEqual({ best: 9 });
-    expect(new SaveStore(storage).load()).toEqual({ best: 9 });
+    expect(new SaveStore(storage).update({})).toEqual({ best: 9, muted: false });
+    expect(new SaveStore(storage).load()).toEqual({ best: 9, muted: false });
   });
 
   it('does not hand out its own copy of the save', () => {
     const store = new SaveStore(null);
     store.update({ best: 3 }).best = 99;
-    expect(store.load()).toEqual({ best: 3 });
+    expect(store.load()).toEqual({ best: 3, muted: false });
   });
 
   it('holds the best for the visit when the storage cannot be used', () => {
@@ -130,7 +155,7 @@ describe('SaveStore', () => {
       expect(store.recordRound(3)).toEqual({ best: 3, isNewBest: true });
       expect(store.recordRound(2)).toEqual({ best: 3, isNewBest: false });
       expect(store.recordRound(12)).toEqual({ best: 12, isNewBest: true });
-      expect(store.load()).toEqual({ best: 12 });
+      expect(store.load()).toEqual({ best: 12, muted: false });
     }
   });
 
@@ -159,7 +184,7 @@ describe('SaveStore', () => {
       expect(new SaveStore(storage).recordRound(3)).toEqual({ best: 3, isNewBest: true });
       expect(new SaveStore(storage).recordRound(2)).toEqual({ best: 3, isNewBest: false });
       expect(new SaveStore(storage).recordRound(12)).toEqual({ best: 12, isNewBest: true });
-      expect(new SaveStore(storage).load()).toEqual({ best: 12 });
+      expect(new SaveStore(storage).load()).toEqual({ best: 12, muted: false });
     });
 
     it('does not write when the round was not a new best', () => {
@@ -173,6 +198,36 @@ describe('SaveStore', () => {
       const storage = memoryStorage({ [SAVE_KEY]: '{"version":1,"best":"lots"}' });
       expect(new SaveStore(storage).recordRound(1)).toEqual({ best: 1, isNewBest: true });
     });
+  });
+});
+
+describe('SaveStore and the mute setting', () => {
+  it('saves it in the same entry and a new store reads it back', () => {
+    const storage = memoryStorage();
+    new SaveStore(storage).update({ muted: true });
+
+    expect([...storage.data.keys()]).toEqual([SAVE_KEY]);
+    expect(JSON.parse(storage.data.get(SAVE_KEY)!)).toEqual({ version: 1, best: 0, muted: true });
+    expect(new SaveStore(storage).load()).toEqual({ best: 0, muted: true });
+  });
+
+  it('and the best score do not overwrite each other', () => {
+    const storage = memoryStorage();
+    const store = new SaveStore(storage);
+    store.update({ muted: true });
+    expect(store.recordRound(5)).toEqual({ best: 5, isNewBest: true });
+    expect(new SaveStore(storage).load()).toEqual({ best: 5, muted: true });
+
+    store.update({ muted: false });
+    expect(new SaveStore(storage).load()).toEqual({ best: 5, muted: false });
+  });
+
+  it('holds for the visit when the storage cannot be used', () => {
+    for (const storage of [null, throwingStorage()]) {
+      const store = new SaveStore(storage);
+      expect(() => store.update({ muted: true })).not.toThrow();
+      expect(store.load().muted).toBe(true);
+    }
   });
 });
 

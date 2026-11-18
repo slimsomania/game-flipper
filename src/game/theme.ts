@@ -31,6 +31,8 @@ export const COLORS = {
   buttonPressed: 0x2262a8,
   buttonLip: 0x1b4f8a,
   buttonText: '#ffffff',
+  /** The same white, as a number, for icons drawn with Graphics. */
+  buttonIcon: 0xffffff,
   /**
    * Result colors: a flash over the whole screen (hex numbers) and the message text on top of it
    * (CSS colors, dark enough to read over the flash and over the light background after it).
