@@ -68,6 +68,15 @@ export interface FlipperTestApi {
    * the scene last drew: wait a frame after changing the state.
    */
   muteButton(): MuteButtonView | null;
+  /**
+   * Whether the player has paused the game: the pause overlay is open (Esc, P or the corner button)
+   * and the Game scene waits underneath, not stepping the simulation or hearing input. This is the
+   * game's own pause. It is separate from `pause()` and `resume()` below, which only stop and start
+   * the test clock that drives the simulation (the game is not paused by them, and keeps taking
+   * input), and from the round summary, which also stops the Game scene but is not a pause. The
+   * overlay opens a frame after the key press, so poll this after pressing.
+   */
+  gamePaused(): boolean;
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -166,6 +175,7 @@ export function installTestHooks(game: Phaser.Game): void {
     muted: () => sharedSfx().muted,
     setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),
     muteButton: () => visibleMuteButton(game.scene.getScenes(true)),
+    gamePaused: () => game.scene.isActive('Pause'),
     pause: () => {
       testControls.paused = true;
     },

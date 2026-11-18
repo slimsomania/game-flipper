@@ -4,8 +4,8 @@ import { BUTTON_LIP } from './buttonView';
 /**
  * Where the speaker button is on the 1280x720 canvas (game pixels): the top-right corner, which
  * the round HUD (top-left) leaves free. `x` and `y` are the middle of its face when it isn't
- * pressed; the lip under the face adds `BUTTON_LIP` to its height. The pause button (F019) goes to
- * the left of it, in the same row.
+ * pressed; the lip under the face adds `BUTTON_LIP` to its height. The pause button (`pauseLayout.ts`)
+ * is to the left of it, in the same row.
  */
 const SIZE = 56;
 const MARGIN = 24;

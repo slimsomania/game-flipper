@@ -1,39 +1,16 @@
 import type Phaser from 'phaser';
 import { toggleMute } from '../audio/mute';
 import { sharedSfx } from '../audio/sfx';
-import { COLORS } from '../theme';
 import { createButton, type ButtonView } from './buttonView';
+import { drawIcon } from './iconDraw';
 import { MUTE_BUTTON } from './muteLayout';
-import { ICON_STROKE, speakerIcon } from './speakerIcon';
+import { speakerIcon } from './speakerIcon';
 
 /** Name of the button's clickable area in the scene: what `window.__FLIPPER__.muteButton()` finds. */
 export const MUTE_BUTTON_NAME = 'muteButton';
 
 /** Above the result flash and level with the HUD, so the flash never tints the button. */
 const BUTTON_DEPTH = 20;
-
-/** Draw the speaker icon centered at (`x`, `y`) in white. */
-function drawSpeaker(graphics: Phaser.GameObjects.Graphics, x: number, y: number, muted: boolean) {
-  graphics.fillStyle(COLORS.buttonIcon, 1).lineStyle(ICON_STROKE, COLORS.buttonIcon, 1);
-  for (const shape of speakerIcon(muted)) {
-    switch (shape.kind) {
-      case 'polygon':
-        graphics.fillPoints(
-          shape.points.map((point) => ({ x: x + point.x, y: y + point.y })),
-          true,
-        );
-        break;
-      case 'arc':
-        graphics.beginPath();
-        graphics.arc(x + shape.x, y + shape.y, shape.radius, shape.from, shape.to);
-        graphics.strokePath();
-        break;
-      case 'line':
-        graphics.lineBetween(x + shape.x1, y + shape.y1, x + shape.x2, y + shape.y2);
-        break;
-    }
-  }
-}
 
 /**
  * The mute control of a screen: the speaker button in the top-right corner and the M key. Both do
@@ -56,7 +33,7 @@ export function createMuteControl(scene: Phaser.Scene): ButtonView {
     radius,
     depth: BUTTON_DEPTH,
     name: MUTE_BUTTON_NAME,
-    icon: (graphics, iconX, iconY) => drawSpeaker(graphics, iconX, iconY, sfx.muted),
+    icon: (graphics, iconX, iconY) => drawIcon(graphics, iconX, iconY, speakerIcon(sfx.muted)),
     onActivate: () => {
       toggleMute();
     },

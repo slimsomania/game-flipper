@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
 import { saveStore } from '../storage';
 import { createSummaryView, type SummaryView } from '../view/summaryView';
+import { quitToTitle } from './toTitle';
 
 export interface SummaryData {
   /** The simulation of the round that just ended; the Game scene waits, paused, underneath. */
@@ -70,8 +71,7 @@ export class SummaryScene extends Phaser.Scene {
   private toTitle(): void {
     if (this.closing) return;
     this.closing = true;
-    this.scene.stop('Game');
-    this.scene.start('Title');
+    quitToTitle(this);
   }
 
   /** Close this scene and let the Game scene carry on. */

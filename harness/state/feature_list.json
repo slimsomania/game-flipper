@@ -432,9 +432,9 @@
       "depends_on": [
         "F018"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the overlay has Restart as well as Resume and Quit to title, because the design's controls table puts a Restart button on it (section 6 lists only Resume and Quit).",
+      "notes": "Assumption: the overlay has Restart as well as Resume and Quit to title, because the design's controls table puts a Restart button on it (section 6 lists only Resume and Quit). Built: a Pause scene (src/game/scenes/PauseScene.ts, views in src/game/view/pause*.ts) launched over the Game scene, which pauses itself, like the summary; Esc, P and a corner button left of the speaker open it, and Esc, P, the corner button (now a play icon) and Resume close it; hook gamePaused() is separate from pause()/resume(). Verified by 30 new e2e tests (pause.spec.ts, pauseFreeze.spec.ts, pauseActions.spec.ts), 16 unit tests (pauseOverlay.test.ts), npm run verify and snaps at 1280x720 and 1024x576. Quit to title does not score the unfinished round; the pause also lets go of a held key and a mouse grab.",
       "review_feedback": ""
     },
     {

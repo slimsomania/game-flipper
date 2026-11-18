@@ -8,14 +8,17 @@ import { tuningControl } from '../../debug/tuningControl';
 import { sharedSfx } from '../audio/sfx';
 import { SoundPlanner } from '../audio/soundPlan';
 import { bindGameInput } from '../gameInput';
+import { bindPauseKeys } from '../pauseKeys';
 import { intParam } from '../urlParams';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
 import { createHudView, type HudView } from '../view/hudView';
 import { createMuteControl } from '../view/muteButtonView';
+import { createPauseButton } from '../view/pauseButtonView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createTableView } from '../view/tableView';
+import type { PauseData } from './PauseScene';
 import type { SummaryData } from './SummaryScene';
 
 interface GameSceneData {
@@ -36,6 +39,8 @@ export class GameScene extends Phaser.Scene {
   private hudView!: HudView;
   private cursorView!: CursorView;
   private planner = new SoundPlanner();
+  /** The pause overlay has been asked for and this scene is about to be paused (until it resumes). */
+  private pauseRequested = false;
 
   constructor() {
     super('Game');
@@ -48,7 +53,15 @@ export class GameScene extends Phaser.Scene {
     this.stepper.reset();
     this.planner = new SoundPlanner(); // its knock rate limit counts this simulation's ticks
     registerSimulation(this.sim);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => registerSimulation(null));
+    this.pauseRequested = false;
+    const onResume = (): void => {
+      this.pauseRequested = false;
+    };
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(Phaser.Scenes.Events.RESUME, onResume);
+      registerSimulation(null);
+    });
 
     createTableView(this);
     this.bottleView = createBottleView(this);
@@ -56,15 +69,19 @@ export class GameScene extends Phaser.Scene {
     this.resultView = createResultView(this);
     this.hudView = createHudView(this);
     this.cursorView = createCursorView(this);
+    createPauseButton(this, 'pause', () => this.openPause());
     createMuteControl(this);
 
     bindGameInput(this, this.sim);
+    bindPauseKeys(this, () => this.openPause());
 
     this.draw();
     markReady();
   }
 
   update(_time: number, delta: number): void {
+    // The pause overlay opens next frame: step nothing more in the meantime.
+    if (this.pauseRequested) return;
     if (!testControls.paused) this.stepper.advance(delta, () => this.sim.step());
     this.draw();
     this.playSounds();
@@ -86,6 +103,22 @@ export class GameScene extends Phaser.Scene {
     this.sim.powerMeter.release();
     this.sim.mouse.cancel();
     this.scene.launch('Summary', { sim: this.sim } satisfies SummaryData);
+    this.scene.pause();
+  }
+
+  /**
+   * Pause (Esc, P or the corner button): the Pause scene opens over this one, which is paused
+   * until the overlay closes, so the simulation stops where it is and nothing is heard until then
+   * (a paused scene hears no keys or mouse). Held keys and a grab would otherwise carry on at the
+   * resume, as their release is never heard, so both are let go first, as at the round summary. Not
+   * while the round is over (the summary opens instead), nor when a pause is already on its way.
+   */
+  private openPause(): void {
+    if (this.pauseRequested || this.sim.phase === 'roundOver') return;
+    this.pauseRequested = true;
+    this.sim.powerMeter.release();
+    this.sim.mouse.cancel();
+    this.scene.launch('Pause', { sim: this.sim } satisfies PauseData);
     this.scene.pause();
   }
 

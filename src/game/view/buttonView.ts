@@ -76,7 +76,7 @@ const CORNER_RADIUS = 18;
  * any click it activates when the button is released over it after being pressed over it, so a
  * press that began elsewhere (the click that skipped the last result, say) never activates it, and
  * moving off it before the release cancels the click. The cursor goes back to the arrow when the
- * scene ends.
+ * scene ends, and a scene that is paused lets go of the hover and the press.
  */
 export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView {
   const { x, y, width, height } = spec;
@@ -142,7 +142,16 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
     show();
     spec.onActivate();
   });
+  // A paused scene hears no pointer events, so a button under the pointer when it pauses would stay
+  // lit (its pointerout never comes) until the first mouse move after the scene resumes.
+  const letGo = (): void => {
+    hover = false;
+    pressed = false;
+    show();
+  };
+  scene.events.on('pause', letGo);
   scene.events.once('shutdown', () => {
+    scene.events.off('pause', letGo);
     canvas.style.cursor = '';
   });
 
