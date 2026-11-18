@@ -840,3 +840,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Not done: a Title-screen decoration (a bottle or table); the design only asks for text and buttons.
   - Process: a redirect-to-file with an `echo "...$?"` and a `cd` + `tail` of a file were auto-denied; I used a `| tail` pipeline for the background verify and the Read and Grep tools for the file.
 - Next: F019 (Pause overlay): add a pause button to the left of the speaker (`MUTE_BUTTON` in `muteLayout.ts`), build the overlay as a scene like `SummaryScene` (the Game scene pauses under it), reuse `createButton` for Resume and Quit to title, and call `createMuteControl` there; "Quit to title" is `this.scene.stop('Game')` then `this.scene.start('Title')`, as in `SummaryScene.toTitle()`.
+
+> [harness] session 41 · builder F018 · todo → needs_review · ok · verify passed · 1 commit(s) · 139 tool calls · 40m 20s · ~$2.19 API-equivalent
