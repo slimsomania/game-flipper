@@ -10,12 +10,15 @@ const TEXT_DEPTH = 2;
 export interface SummaryView {
   /** The Play again button (its click and the keyboard shortcuts do the same thing). */
   playAgain: ButtonView;
+  /** The Title button: back to the title screen (click only). */
+  title: ButtonView;
 }
 
 /**
  * The round summary: a white card, centered on the plain light background, with "Round over", the
  * round's points as the biggest line, its landings out of its throws, the best score (with "New
- * best!" under it when this round set it), the Play again button and a line about the keys. The
+ * best!" under it when this round set it), the Play again and Title buttons side by side and a line
+ * about the keys (they are for Play again; Title is a click). The
  * background is the same light color as in play, drawn over the Game scene, which waits underneath;
  * the card is what stands out.
  */
@@ -23,6 +26,7 @@ export function createSummaryView(
   scene: Phaser.Scene,
   state: SummaryState,
   onPlayAgain: () => void,
+  onTitle: () => void,
 ): SummaryView {
   const layout = SUMMARY_LAYOUT;
   const texts = summaryTexts(state);
@@ -62,17 +66,20 @@ export function createSummaryView(
     if (text.width > layout.maxTextWidth) text.setScale(layout.maxTextWidth / text.width);
   }
 
-  const { playAgain } = layout;
-  const button = createButton(scene, {
-    x: playAgain.x,
-    y: playAgain.y,
-    width: playAgain.width,
-    height: playAgain.height,
-    label: texts.playAgainLabel,
-    depth: TEXT_DEPTH,
-    onActivate: onPlayAgain,
-  });
+  type Spot = { x: number; y: number; width: number; height: number };
+  const button = (spot: Spot, label: string, onActivate: () => void) =>
+    createButton(scene, {
+      x: spot.x,
+      y: spot.y,
+      width: spot.width,
+      height: spot.height,
+      label,
+      depth: TEXT_DEPTH,
+      onActivate,
+    });
+  const playAgain = button(layout.playAgain, texts.playAgainLabel, onPlayAgain);
+  const title = button(layout.title, texts.toTitleLabel, onTitle);
   line(layout.keyHintY, texts.keyHint, 24, COLORS.muted).setFontStyle('normal');
 
-  return { playAgain: button };
+  return { playAgain, title };
 }

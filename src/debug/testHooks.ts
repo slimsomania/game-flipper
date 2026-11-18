@@ -20,7 +20,10 @@ import { visibleTexts } from './visibleTexts';
  * game rules.
  */
 export interface FlipperTestApi {
-  /** True once the first interactive scene is up and accepts input. */
+  /**
+   * True once the first interactive scene is up and accepts input: the Title scene (the game boots
+   * to it, so there is no simulation until `startScene('Game')` or a click on Play).
+   */
   ready: boolean;
   /**
    * Keys of the scenes that are running, e.g. ["Game"]. A paused scene is not in the list: while

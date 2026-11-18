@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
 import { waterSequence } from '../shared';
-import { gameState, openGame, stepUntilOutcome } from './helpers';
+import { gameState, openGame, reloadGame, stepUntilOutcome } from './helpers';
 
 /*
  * What the tuning panel shows about the game and lets the developer pin down: the water lock, the
@@ -71,8 +71,7 @@ test.describe('the water lock', () => {
     await page.locator('#tuning-water-level').fill('0.7');
     await expect.poll(async () => (await gameState(page)).bottle.water).toBe(0.7);
 
-    await page.reload();
-    await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
+    await reloadGame(page);
     expect((await gameState(page)).bottle.water).toBe(0.7);
     await showPanel(page);
     await expect(page.locator('#tuning-water-lock')).toBeChecked();

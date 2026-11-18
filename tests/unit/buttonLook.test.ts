@@ -57,8 +57,24 @@ describe('SUMMARY_LAYOUT', () => {
     );
   });
 
-  it('centers the button horizontally and fits it in the card', () => {
-    expect(playAgain.x).toBe(card.x);
-    expect(playAgain.width).toBeLessThan(card.width);
+  // F018 put the Title button beside Play again, so it is the row of the two that is centered.
+  it('centers the row of the Play again and Title buttons and fits it in the card', () => {
+    const { title } = SUMMARY_LAYOUT;
+    const rowLeft = playAgain.x - playAgain.width / 2;
+    const rowRight = title.x + title.width / 2;
+    expect((rowLeft + rowRight) / 2).toBe(card.x);
+    expect(rowLeft).toBeGreaterThan(card.x - card.width / 2);
+    expect(rowRight).toBeLessThan(card.x + card.width / 2);
+  });
+
+  it('puts the Title button right of Play again, in the same row, with a gap between them', () => {
+    const { title } = SUMMARY_LAYOUT;
+    expect(title.y).toBe(playAgain.y);
+    expect(title.height).toBe(playAgain.height);
+    const gap = title.x - title.width / 2 - (playAgain.x + playAgain.width / 2);
+    expect(gap).toBeGreaterThanOrEqual(16);
+    // Both are wide enough for their labels ("Play again" is the longer one at 36 px bold).
+    expect(playAgain.width).toBeGreaterThanOrEqual(260);
+    expect(title.width).toBeGreaterThanOrEqual(150);
   });
 });

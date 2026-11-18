@@ -12,7 +12,8 @@ export interface SummaryData {
  * The round summary, opened by the Game scene when the round is over. It is drawn over the Game
  * scene, which is paused (so it neither steps the simulation nor hears keys or the mouse) until
  * Play again: the click, Enter, Space and R all call `Simulation.restartRound()` on the same
- * simulation, then the summary closes and the Game scene carries on with throw 1.
+ * simulation, then the summary closes and the Game scene carries on with throw 1. The Title button
+ * (a click) ends the Game scene and opens the Title scene instead.
  *
  * A key's auto-repeat is ignored, so a key still held down from the last throw (Space skips the
  * last result) can't choose Play again by itself.
@@ -32,7 +33,12 @@ export class SummaryScene extends Phaser.Scene {
     // The round's score is kept as the best here, once, when the summary opens (not on Play again).
     const snapshot = this.sim.snapshot();
     const { best, isNewBest } = saveStore().recordRound(snapshot.score);
-    this.view = createSummaryView(this, { ...snapshot, best, isNewBest }, () => this.playAgain());
+    this.view = createSummaryView(
+      this,
+      { ...snapshot, best, isNewBest },
+      () => this.playAgain(),
+      () => this.toTitle(),
+    );
 
     const keyboard = this.input.keyboard;
     if (keyboard) {
@@ -54,6 +60,18 @@ export class SummaryScene extends Phaser.Scene {
     if (this.closing) return;
     if (this.sim.phase === 'roundOver') this.sim.restartRound();
     this.close();
+  }
+
+  /**
+   * Leave the round for the title screen: the finished round is dropped (its score is already
+   * saved), so both this scene and the paused Game scene end, and the Title scene, which reads the
+   * best score as it opens, starts.
+   */
+  private toTitle(): void {
+    if (this.closing) return;
+    this.closing = true;
+    this.scene.stop('Game');
+    this.scene.start('Title');
   }
 
   /** Close this scene and let the Game scene carry on. */

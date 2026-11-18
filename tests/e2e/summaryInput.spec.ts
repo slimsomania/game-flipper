@@ -104,9 +104,14 @@ test('a press on Play again that is released somewhere else is not a click', asy
   expect((await gameState(page)).phase).toBe('roundOver');
 
   // Clicks next to the button, on the card's lines or on the empty background do nothing either.
+  // "Next to" is its left side and the gap between it and the Title button (F018 put that button
+  // on its right, so a spot 30 px to the right is now on the Title button).
+  const { title } = SUMMARY_LAYOUT;
+  const gapMiddle = (playAgain.x + playAgain.width / 2 + (title.x - title.width / 2)) / 2;
   for (const [x, y] of [
     [SUMMARY_LAYOUT.card.x, SUMMARY_LAYOUT.scoreY],
-    [playAgain.x + playAgain.width / 2 + 30, playAgain.y],
+    [playAgain.x - playAgain.width / 2 - 20, playAgain.y],
+    [gapMiddle, playAgain.y],
     [60, 60],
   ]) {
     const point = await gamePoint(page, x, y);

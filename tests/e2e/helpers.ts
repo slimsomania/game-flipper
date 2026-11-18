@@ -2,10 +2,11 @@ import type { Page } from '@playwright/test';
 import type { SimSnapshot } from '../../src/core/simulation';
 
 /**
- * Opens the game and waits until it accepts input. Returns a live list of console and page
- * errors; assert it is empty at the end of the test.
+ * Opens the page and waits until it accepts input: the game boots to the Title scene, so there is
+ * no simulation yet. Returns a live list of console and page errors; assert it is empty at the end
+ * of the test. Tests of the title screen itself use this; every other test wants `openGame`.
  */
-export async function openGame(page: Page, query = ''): Promise<string[]> {
+export async function openTitle(page: Page, query = ''): Promise<string[]> {
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
   page.on('console', (msg) => {
@@ -14,6 +15,37 @@ export async function openGame(page: Page, query = ''): Promise<string[]> {
   await page.goto(`/${query}`);
   await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
   return errors;
+}
+
+/**
+ * From the title screen, start the Game scene (the test hook, as `npm run snap`'s `scene:Game`: no
+ * click, no key) and wait until its simulation runs. A page that is already in the Game scene is
+ * started afresh.
+ */
+export async function startGame(page: Page): Promise<void> {
+  await page.evaluate(() => window.__FLIPPER__!.startScene('Game'));
+  await page.waitForFunction(
+    () =>
+      window.__FLIPPER__!.activeScenes().includes('Game') && window.__FLIPPER__!.state() !== null,
+  );
+}
+
+/**
+ * Opens the game in play and waits until it accepts input: the title screen, then the Game scene
+ * started through `startGame`, so a test of play doesn't depend on the title's own input. Returns
+ * a live list of console and page errors; assert it is empty at the end of the test.
+ */
+export async function openGame(page: Page, query = ''): Promise<string[]> {
+  const errors = await openTitle(page, query);
+  await startGame(page);
+  return errors;
+}
+
+/** Visit the page again, in the Game scene: a new game in the same browser, with the same localStorage. */
+export async function reloadGame(page: Page): Promise<void> {
+  await page.reload();
+  await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
+  await startGame(page);
 }
 
 /** Current simulation snapshot. Throws if no game scene is running. */

@@ -1,15 +1,19 @@
 import { expect, test } from '@playwright/test';
 import { GAME_HEIGHT, GAME_WIDTH } from '../../src/core/constants';
 import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
-import { gameState, openGame, stepFrames } from './helpers';
+import { gameState, openGame, openTitle, startGame, stepFrames } from './helpers';
 
-test('boots straight into the Game scene without errors', async ({ page }) => {
-  const errors = await openGame(page);
+// F018: the game boots to the title screen (no simulation yet); the Game scene comes after it.
+test('boots to the Title scene without errors, and the Game scene starts after it', async ({
+  page,
+}) => {
+  const errors = await openTitle(page);
   await expect(page.locator('canvas')).toBeVisible();
+  expect(await page.evaluate(() => window.__FLIPPER__!.activeScenes())).toEqual(['Title']);
+  expect(await page.evaluate(() => window.__FLIPPER__!.state())).toBeNull();
 
-  const scenes = await page.evaluate(() => window.__FLIPPER__!.activeScenes());
-  expect(scenes).toContain('Game');
-  expect(scenes).not.toContain('Menu');
+  await startGame(page);
+  expect(await page.evaluate(() => window.__FLIPPER__!.activeScenes())).toEqual(['Game']);
   expect(errors).toEqual([]);
 });
 

@@ -5,7 +5,7 @@
  */
 import { expect, type Page } from '@playwright/test';
 import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
-import { settleInput, stepUntilOutcome } from './helpers';
+import { reloadGame, settleInput, stepUntilOutcome } from './helpers';
 import { gamePoint, phaseOf, type Point } from './mouseHelpers';
 
 export const SAVE_KEY = 'flipper.save.v1';
@@ -85,8 +85,5 @@ export async function savedEntry(page: Page): Promise<unknown> {
   return text === null ? null : JSON.parse(text);
 }
 
-/** Visit the page again: a new game in the same browser, with the same localStorage. */
-export async function reload(page: Page): Promise<void> {
-  await page.reload();
-  await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
-}
+/** Visit the page again, in the Game scene: a new game in the same browser, with the same localStorage. */
+export const reload = reloadGame;

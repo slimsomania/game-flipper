@@ -20,6 +20,8 @@ export interface SummaryTexts {
   /** "New best!" when the round beat the saved best, otherwise null: no line at all. */
   newBestLine: string | null;
   playAgainLabel: string;
+  /** The button that goes back to the title screen. */
+  toTitleLabel: string;
   keyHint: string;
 }
 
@@ -36,6 +38,7 @@ export function summaryTexts(state: SummaryState): SummaryTexts {
     bestLine: `Best: ${state.best}`,
     newBestLine: state.isNewBest ? 'New best!' : null,
     playAgainLabel: 'Play again',
+    toTitleLabel: 'Title',
     keyHint: 'or press Enter or Space',
   };
 }

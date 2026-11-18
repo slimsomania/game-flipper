@@ -411,9 +411,9 @@
       "depends_on": [
         "F017"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "E2E tests from earlier features that assume the game boots into play must now start the Game scene first (startScene or clicking Play); that is an intended behavior change, not a weakened test. Assumption: Space and Enter also start the game.",
+      "notes": "Built the Title scene (src/game/scenes/TitleScene.ts, view/titleView.ts, titleText.ts, titleLayout.ts): Boot goes to Title, which shows 'Flipper', Play, 'or press Enter or Space', 'Best: N' (read from the save each time it opens), the controls hint and the F017 mute control; Play, Enter and Space start the Game scene and nothing else does. The Summary now has Play again and Title side by side, and Title stops the Game scene and opens the Title. Earlier e2e tests start play through openGame (tests/e2e/helpers.ts: boots to Title, then startScene('Game')); tests/e2e/title.spec.ts (21 tests) covers every criterion, and npm run verify passed (683 unit, 183 e2e). Snaps at 1280x720 and 1024x576 show a centered, readable title with nothing overlapping.",
       "review_feedback": ""
     },
     {

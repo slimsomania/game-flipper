@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { SIDE, flipped, type PlacedPose } from '../shared';
-import { openGame } from './helpers';
+import { openGame, reloadGame as reload } from './helpers';
 import { activeScenes, next, playThrows } from './roundHelpers';
 import { POINTS, ROUND, expectBackInGame, playToSummary } from './summaryHelpers';
 
@@ -31,12 +31,6 @@ async function playRound(page: Page, poses: readonly PlacedPose[]): Promise<void
 async function playAgain(page: Page): Promise<void> {
   await page.keyboard.press('Enter');
   await expectBackInGame(page);
-}
-
-/** Visit the page again: a new game in the same browser, with the same localStorage. */
-async function reload(page: Page): Promise<void> {
-  await page.reload();
-  await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
 }
 
 /** Wait for the summary's text, then check its score and best lines and whether "New best!" is shown. */

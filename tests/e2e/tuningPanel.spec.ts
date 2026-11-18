@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { DEFAULT_TUNING, type Tuning } from '../../src/core/tuning';
 import { FLIPPED } from '../shared';
-import { gameState, openGame, settleInput, stepUntilOutcome } from './helpers';
+import { gameState, openGame, reloadGame, settleInput, stepUntilOutcome } from './helpers';
 
 /*
  * The developer tuning panel (F010): an HTML overlay, #tuning-panel, that Backquote shows and
@@ -178,8 +178,7 @@ test('an edited value is still applied after a reload, and is marked as changed'
   await page.locator(field('bottleFriction')).fill('0.3');
   await expect.poll(async () => (await tuningOf(page)).bottleFriction).toBe(0.3);
 
-  await page.reload();
-  await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
+  await reloadGame(page);
   // In effect from the very first bottle, with the panel still closed.
   expect(await tuningOf(page)).toEqual({
     ...DEFAULT_TUNING,
@@ -209,8 +208,7 @@ test('Reset restores the defaults, in the fields, in tuning() and after a reload
   );
   await expect(page.locator('.tp-row.changed')).toHaveCount(0);
 
-  await page.reload();
-  await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
+  await reloadGame(page);
   expect(await tuningOf(page)).toEqual(DEFAULT_TUNING);
 });
 

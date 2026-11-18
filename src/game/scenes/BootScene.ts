@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 /**
  * First scene. Everything is drawn in code for now, so there is nothing to load or generate yet:
- * it starts the game straight away. Load assets (and generate textures) here when they appear.
+ * it opens the title screen straight away. Load assets (and generate textures) here when they appear.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +10,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('Game');
+    this.scene.start('Title');
   }
 }

@@ -45,6 +45,10 @@ describe('summaryTexts', () => {
     );
   });
 
+  it('labels the button that goes back to the title screen "Title"', () => {
+    expect(summaryTexts(state()).toTitleLabel).toBe('Title');
+  });
+
   it('says that Enter and Space also choose Play again', () => {
     expect(summaryTexts(state()).keyHint).toContain('Enter');
     expect(summaryTexts(state()).keyHint).toContain('Space');
