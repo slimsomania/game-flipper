@@ -813,3 +813,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The speaker icon is small at 1024x576 but still readable. The cross and the waves differ in shape, not only in color.
   - As the builder noted, the Summary scene has no mute control (M does nothing there). F018 and F019 should call `createMuteControl`.
   - Process: a Monitor with a `[ -s file ]` test was auto-denied. I waited for the background verify's notification instead.
+
+> [harness] session 40 · reviewer F017 · needs_review → done · ok · 1 commit(s) · 32 tool calls · 13m 11s · ~$1.00 API-equivalent
