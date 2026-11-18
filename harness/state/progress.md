@@ -878,3 +878,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The HUD text shows through the veil (darker than the background around it) rather than being hidden, which keeps the paused game recognizable; it is readable but not the overlay's focus.
   - Process: a background `( ...; ... )` subshell compound command was auto-denied; plain commands and `npm run verify 2>&1 | tail -60` in the background were allowed.
 - Next: the reviewer should check the pause by playing it with the snap tool (`scene:Game,pause,key:Escape,...`), especially a pause during a held Up key or a grab. After F019 is reviewed, F020 (difficulty against simulated players) is next: it is core work, so start from `src/core/flipWindow.ts` (`sweepPowers`, `findWindows`) and `docs/ARCHITECTURE.md` D23. If another overlay is ever added, follow D32 and keep its veil a Graphics fill, not a canvas-sized Rectangle.
+
+> [harness] session 43 · builder F019 · todo → needs_review · ok · verify passed · 1 commit(s) · 141 tool calls · 27m 34s · ~$2.87 API-equivalent
