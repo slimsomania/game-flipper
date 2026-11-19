@@ -497,7 +497,7 @@
         "F017"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "SaveStore (src/game/storage.ts) now remembers that its last setItem threw (`writeFailed`); until a write works again, load() gives what the store last wrote, with the best the higher of that and the stored best, and with working storage it still reads the entry afresh. No change to src/core. 16 new unit cases in saveStore.test.ts (empty and older-best-3 starts, mute, other-tab best, recovery, a second failure; 11 of them fail on the old code, the rest guard what must not change) and 2 new e2e tests in bestScore.spec.ts with `Storage.prototype.setItem` throwing before load (both fail on the old code); the storage row and D28 in ARCHITECTURE.md are updated. `npm run verify` passed (230 e2e).",
       "review_feedback": ""
     },

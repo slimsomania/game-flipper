@@ -1088,3 +1088,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - A `Mute` toggle through `src/game/audio/mute.ts` already goes through `SaveStore.update`, so it gets the same fix; I didn't add an e2e test for the mute with `setItem` blocked (the unit tests cover it).
   - Process: a stash of one file (`git stash push -- <file>`, then `git stash pop`) worked to check that the new tests fail on the old code.
 - Next: F021 is the next todo in M5 (see `feature_list.json`); the reviewer of F032 could also try `Storage.prototype.setItem = () => { throw ... }` in a real page with `?seed=7` through two rounds and the Title.
+
+> [harness] session 52 · builder F032 · todo → needs_review · ok · verify passed · 1 commit(s) · 45 tool calls · 19m 50s · ~$0.70 API-equivalent
