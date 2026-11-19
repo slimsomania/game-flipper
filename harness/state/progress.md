@@ -1131,3 +1131,13 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: the reviewer should run `npm run snap -- --url "/?seed=7" --do "pause,scene:Game,pause,call:lockWater;0.5,call:setPower;40,key:Space,step:96,shot:burst,step:30,call:cameraOffset,shot:rest"` and look at the burst and the camera; F031 (shading) is next after the review and must keep the overscan.
 
 > [harness] session 54 · builder F021 · todo → needs_review · ok · verify passed · 1 commit(s) · 116 tool calls · 54m 56s · ~$3.11 API-equivalent
+
+## Human session · Gemini check of the bottle's proportions (2026-11-19)
+- What: the human noticed that the bottle has looked squeezed from top and bottom since M1 and asked Gemini 3.8 Flash (high) in Google Antigravity (read-only, conversation 7fa5641e) to check it. Claude checked its report against git, the docs, a snap and a probe of the flip windows.
+- Findings and decisions:
+  1. The bottle was made squat in F009 (commit `5dbf018`): **confirmed, fix, new F034.** Body 0.66 → 1.0 m wide, total height 1.74 → 1.13 m, neck 0.18 → 0.06 m tall; height to width 2.64:1 → 1.13:1 (a 500 ml bottle is about 3:1). It was a deliberate calibration lever (D23: a wide, low bottle tips back from about 0.27 of a turn instead of 0.1), and the 2026-11-18 design note kept it ("the bottle's shape stays as calibrated"), but on screen it reads as a jar or a water-cooler jug. That note is reversed in GAME_DESIGN.md (sections 3 and 13).
+  2. Gemini's first remedy, drawing a slim bottle over the wide physics shape: **rejected.** The bottle would visibly stand back up from angles at which its drawn outline should fall, and the physics and the drawing are one shape on purpose (`bottleShape.ts`).
+  3. Gemini's second remedy, retune the physics for a slimmer bottle: **taken, with a limit.** A probe with today's tuning (not retuned, shape restored afterwards): at 0.80 × 1.48 m (1.85:1) the single-flip windows stay 10 to 13 wide, but the ratio drops to 2.2, the 80% and 90% bottles lose their doubles and the practiced player lands 59%, so a retune is needed and looks within reach. The F002 shape (2.64:1) gives windows only 3 to 4 wide, so F034 asks for at least 1.8:1 (aim 2:1) and keeps every target; F025's notes ask whether sloshing leaves room to go slimmer.
+  4. Gemini's claim that later milestones require a realistic bottle look for sloshing: **not found** in the design or the plan (but see 1 and section 3 now).
+- Plan: F034 added to M5 after F021 (depends on F020 and F021); F031 now also depends on F034, so the shading is drawn for the final shape.
+- Next: review F021, then F034, F031, F033, F022.

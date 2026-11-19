@@ -523,6 +523,27 @@
       "review_feedback": ""
     },
     {
+      "id": "F034",
+      "milestone": "M5",
+      "category": "presentation",
+      "title": "Make the bottle look like a water bottle again: taller and slimmer, retuned to the same targets",
+      "description": "Found by the human and confirmed by the outside review of 2026-11-19 (see the progress log). F009 changed the bottle from 0.66 m wide and 1.74 m tall (2.6:1, like a real bottle) to 1.0 m wide and 1.13 m tall (1.13:1) with a 6 cm neck, because a wide, low bottle tips back onto its base from a larger landing angle (D23). It now reads as a squat jar or a water-cooler jug, not a plastic water bottle (design section 3). Real 500 ml bottles are about 3:1. Make the bottle taller and slimmer in src/core/bottleShape.ts: its total height (BOTTLE_HEIGHT) at least 1.8 times its body width, aiming for about 2:1, with a visible neck (at least 0.10 m tall and narrower than half the body width), a shoulder that narrows like a bottle's, and a cap a little wider than the neck. Then retune DEFAULT_TUNING so every design target in section 3 is met again, using scripts/flip-windows.ts and the D33 search approach (exact expected rates, not one seed). A probe on 2026-11-19 with today's tuning and a 0.80 m by 1.48 m bottle (body 0.95, shoulder 0.28, neck 0.25 by 0.12, cap 0.30 by 0.13) kept single-flip windows 10 to 13 wide, but the centers moved to 32 to 70.5 (2.2 times, under the 2.5 target), the 80% and 90% bottles lost their double windows and the practiced player fell to 59%; the F002 shape itself gave windows only 3 to 4 wide, so don't go that slim before sloshing (F025). The physics and the drawing stay one shape (what you see is what is simulated): don't draw a different outline from the one the physics uses. Watch for: a taller bottle near the hand, the power bar and the screen top (the whole flight stays on screen), the grab area and the mouse tests that grab the bottle, the F021 success burst spread along the base, and any test that hard-codes a power expecting an outcome (take the power from a sweep instead, as F020 did). Update the comment in bottleShape.ts, D23 and D33 in docs/ARCHITECTURE.md with the new shape and tuning.",
+      "acceptance": [
+        "Unit: BOTTLE_HEIGHT is at least 1.8 times BOTTLE_BODY_WIDTH, the neck is at least 0.10 m tall and narrower than half the body width, and the cap is wider than the neck (a test locks these as design minimums, not the exact numbers).",
+        "Every case in tests/unit/calibration.test.ts and tests/unit/difficulty.test.ts passes with no target range changed: windows 10 to 28 wide, a 2.5 to 4 times rise, a double window at every tested level below power 100, no fixed power landing more than 60% of levels, practiced 60 to 80% and new 20 to 40%.",
+        "Snaps (1280x720, ?seed=7) of the bottle held, mid-flight, standing after a success and lying after a fail show a recognizable plastic water bottle, and throws at the 10%, 50% and 90% window centers rise clearly above the hand, stay fully on screen and land upright well out on the table; no console errors.",
+        "The progress entry lists the old and new shape, the old and new tuning values, the new flip-windows table and benchmark rates, and every test whose fixed power had to come from a sweep instead; npm run verify passes."
+      ],
+      "depends_on": [
+        "F020",
+        "F021"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Added 2026-11-19 after the human noticed the bottle looked squeezed since M1; overrides the 2026-11-18 note 'the bottle's shape stays as calibrated (D23)' in GAME_DESIGN.md section 13. If a real search finds no tuning that meets every target at 1.8:1, say so in the progress entry with the slimmest shape that does meet them and the search done, and don't weaken any target.",
+      "review_feedback": ""
+    },
+    {
       "id": "F031",
       "milestone": "M5",
       "category": "presentation",
@@ -535,11 +556,12 @@
         "Snaps at rest, mid-flight and right after a success show the shadow under the bottle, the water's surface line, the table's top edge, the gradient background and a light flash under which the bottle and table stay clearly visible; text stays readable on the gradient, and there are no console errors."
       ],
       "depends_on": [
-        "F021"
+        "F021",
+        "F034"
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "From the outside review of 2026-11-18. Keep the style flat: soft shapes and gradients, no outlines or textures.",
+      "notes": "From the outside review of 2026-11-18. Keep the style flat: soft shapes and gradients, no outlines or textures. Depends on F034 so the shadow and the shell highlight are drawn for the final bottle shape.",
       "review_feedback": ""
     },
     {
@@ -641,7 +663,7 @@
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "",
+      "notes": "Sloshing is what lets a real slim bottle land (the water falls back to the base and damps the bounce). If the recalibration has room, report in the progress entry whether a slimmer bottle than F034's (toward the real 2.5 to 3:1) would also meet every target, so the human can decide on it.",
       "review_feedback": ""
     },
     {
