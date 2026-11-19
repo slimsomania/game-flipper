@@ -30,6 +30,23 @@ const throwingStorage = (): SaveStorage => ({
   },
 });
 
+/**
+ * A storage that can be read but whose writes throw while `writable.on` is false, like one that is
+ * full or write-blocked. Once `writable.on` is true it behaves like the plain memory storage.
+ */
+function readOnlyStorage(initial: Record<string, string> = {}) {
+  const storage = memoryStorage(initial);
+  const writable = { on: false };
+  const write = storage.setItem;
+  storage.setItem = (key, value) => {
+    if (!writable.on) throw new DOMException('full', 'QuotaExceededError');
+    write(key, value);
+  };
+  return { storage, writable };
+}
+
+const entry = (fields: object) => JSON.stringify({ version: 1, ...fields });
+
 describe('SAVE_KEY', () => {
   it('is one versioned key', () => {
     expect(SAVE_KEY).toBe('flipper.save.v1');
@@ -228,6 +245,147 @@ describe('SaveStore and the mute setting', () => {
       expect(() => store.update({ muted: true })).not.toThrow();
       expect(store.load().muted).toBe(true);
     }
+  });
+});
+
+describe('SaveStore when the storage can be read but not written', () => {
+  const starts: [string, Record<string, string>][] = [
+    ['empty', {}],
+    ['holding an older best of 3', { [SAVE_KEY]: entry({ best: 3 }) }],
+  ];
+
+  for (const [name, initial] of starts) {
+    describe(name, () => {
+      it('keeps the best for the visit, and never throws', () => {
+        const { storage } = readOnlyStorage(initial);
+        const store = new SaveStore(storage);
+
+        expect(() => store.recordRound(8)).not.toThrow();
+        expect(store.load().best).toBe(8);
+        expect(store.recordRound(8)).toEqual({ best: 8, isNewBest: false });
+        expect(store.recordRound(5)).toEqual({ best: 8, isNewBest: false });
+        expect(store.load()).toEqual({ best: 8, muted: false });
+      });
+
+      it('reports the new best of 8 once, then a later better round again', () => {
+        const store = new SaveStore(readOnlyStorage(initial).storage);
+
+        expect(store.recordRound(8)).toEqual({ best: 8, isNewBest: true });
+        expect(store.recordRound(9)).toEqual({ best: 9, isNewBest: true });
+        expect(store.load().best).toBe(9);
+      });
+
+      it('keeps the best of 8 when the mute setting changes, and holds the mute', () => {
+        const store = new SaveStore(readOnlyStorage(initial).storage);
+        store.recordRound(8);
+
+        expect(() => store.update({ muted: true })).not.toThrow();
+        expect(store.load()).toEqual({ best: 8, muted: true });
+        expect(store.update({ muted: false })).toEqual({ best: 8, muted: false });
+        expect(store.load()).toEqual({ best: 8, muted: false });
+      });
+
+      it('holds the mute even when it is changed before any round', () => {
+        const store = new SaveStore(readOnlyStorage(initial).storage);
+        store.update({ muted: true });
+        expect(store.load().muted).toBe(true);
+        expect(store.recordRound(5)).toEqual({ best: 5, isNewBest: true });
+        expect(store.load()).toEqual({ best: 5, muted: true });
+      });
+    });
+  }
+
+  it('does not change what the storage holds', () => {
+    const { storage } = readOnlyStorage({ [SAVE_KEY]: entry({ best: 3 }) });
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+    store.update({ muted: true });
+    expect(storage.data.get(SAVE_KEY)).toBe(entry({ best: 3 }));
+  });
+
+  it('keeps the higher best when another tab saved a better one', () => {
+    const { storage } = readOnlyStorage({ [SAVE_KEY]: entry({ best: 3 }) });
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+
+    // Another tab, which can write, saves 20: the stored entry is now higher than what we hold.
+    storage.data.set(SAVE_KEY, entry({ best: 20 }));
+    expect(store.load().best).toBe(20);
+    expect(store.recordRound(12)).toEqual({ best: 20, isNewBest: false });
+    expect(store.recordRound(25)).toEqual({ best: 25, isNewBest: true });
+    expect(store.load().best).toBe(25);
+  });
+
+  it('writes the in-memory values at the next write once writing works again', () => {
+    const { storage, writable } = readOnlyStorage({ [SAVE_KEY]: entry({ best: 3 }) });
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+    expect(storage.data.get(SAVE_KEY)).toBe(entry({ best: 3 }));
+
+    writable.on = true;
+    // Reading does not write: the stored entry still has the old best until something is saved.
+    expect(store.load().best).toBe(8);
+    expect(storage.data.get(SAVE_KEY)).toBe(entry({ best: 3 }));
+
+    expect(store.update({ muted: true })).toEqual({ best: 8, muted: true });
+    expect(JSON.parse(storage.data.get(SAVE_KEY)!)).toEqual({ version: 1, best: 8, muted: true });
+    expect(new SaveStore(storage).load()).toEqual({ best: 8, muted: true });
+  });
+
+  it('a round that is a new best after writing works again is written with its best', () => {
+    const { storage, writable } = readOnlyStorage();
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+
+    writable.on = true;
+    expect(store.recordRound(9)).toEqual({ best: 9, isNewBest: true });
+    expect(JSON.parse(storage.data.get(SAVE_KEY)!)).toMatchObject({ best: 9 });
+  });
+
+  it('reads the entry afresh again after a write has worked', () => {
+    const { storage, writable } = readOnlyStorage();
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+    writable.on = true;
+    store.update({ muted: true });
+
+    // A value another tab wrote, even a lower best and another mute setting, is seen as it is.
+    storage.data.set(SAVE_KEY, entry({ best: 2, muted: false }));
+    expect(store.load()).toEqual({ best: 2, muted: false });
+    storage.data.set(SAVE_KEY, entry({ best: 40, muted: true }));
+    expect(store.load()).toEqual({ best: 40, muted: true });
+  });
+
+  it('goes back to using the fallback if writing fails again', () => {
+    const { storage, writable } = readOnlyStorage();
+    const store = new SaveStore(storage);
+    store.recordRound(8);
+    writable.on = true;
+    store.update({ muted: true });
+
+    writable.on = false;
+    expect(() => store.recordRound(11)).not.toThrow();
+    expect(store.load()).toEqual({ best: 11, muted: true });
+    expect(store.recordRound(11).isNewBest).toBe(false);
+  });
+
+  it('is one store per visit: a new store starts from what the storage holds', () => {
+    const { storage } = readOnlyStorage({ [SAVE_KEY]: entry({ best: 3 }) });
+    new SaveStore(storage).recordRound(8);
+    expect(new SaveStore(storage).load().best).toBe(3);
+  });
+
+  it('never throws when the storage can be written but not read', () => {
+    const data = new Map<string, string>();
+    const store = new SaveStore({
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: (key, value) => void data.set(key, value),
+    });
+    expect(store.recordRound(4)).toEqual({ best: 4, isNewBest: true });
+    expect(store.recordRound(3)).toEqual({ best: 4, isNewBest: false });
+    expect(store.load()).toEqual({ best: 4, muted: false });
   });
 });
 

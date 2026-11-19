@@ -52,32 +52,45 @@ export function browserStorage(): SaveStorage | null {
 }
 
 /**
- * The save, kept in `storage` (null for none). `load()` reads it afresh every time, so another tab's
- * progress is seen. When the storage can't be used at all (none, or it throws), the store falls back
- * to what it last wrote itself, so the best score still holds for the rest of the visit.
+ * The save, kept in `storage` (null for none). With working storage `load()` reads the entry afresh
+ * every time, so another tab's progress is seen. The store also remembers what it last wrote, so the
+ * best score and the mute choice still hold for the rest of the visit when the storage can't be used:
+ * - there is none, or `getItem` throws: `load()` gives what the store last wrote;
+ * - it can be read but not written (full, or write-blocked: `setItem` throws): until a write
+ *   succeeds again, `load()` gives what the store last wrote, except that the best is the higher of
+ *   that and the stored one, so progress another tab saved is not lost.
  */
 export class SaveStore {
   private lastSaved: SaveData = defaultSave();
+  /** True from a write that threw until the next one that works: the stored entry is then stale. */
+  private writeFailed = false;
 
   constructor(private readonly storage: SaveStorage | null) {}
 
   load(): SaveData {
     if (!this.storage) return { ...this.lastSaved };
+    let stored: SaveData;
     try {
-      return parseSave(this.storage.getItem(SAVE_KEY));
+      stored = parseSave(this.storage.getItem(SAVE_KEY));
     } catch {
       return { ...this.lastSaved };
     }
+    if (!this.writeFailed) return stored;
+    return { best: Math.max(this.lastSaved.best, stored.best), muted: this.lastSaved.muted };
   }
 
   /** Change some fields of the save, keeping the rest. Returns the save as it now is. */
   update(changes: Partial<SaveData>): SaveData {
     const save = { ...this.load(), ...changes };
     this.lastSaved = save;
-    try {
-      this.storage?.setItem(SAVE_KEY, JSON.stringify({ version: VERSION, ...save }));
-    } catch {
-      // Full or blocked: the game goes on, and the best holds until the page is closed.
+    if (this.storage) {
+      try {
+        this.storage.setItem(SAVE_KEY, JSON.stringify({ version: VERSION, ...save }));
+        this.writeFailed = false;
+      } catch {
+        // Full or blocked: the game goes on, and what was written holds until the page is closed.
+        this.writeFailed = true;
+      }
     }
     return { ...save };
   }
