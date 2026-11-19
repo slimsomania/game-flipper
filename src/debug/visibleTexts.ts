@@ -16,15 +16,24 @@ function childrenOf(object: Phaser.GameObjects.GameObject): Phaser.GameObjects.G
   return [];
 }
 
-function collect(objects: Phaser.GameObjects.GameObject[], found: string[]): void {
+function collect(objects: Phaser.GameObjects.GameObject[], found: Phaser.GameObjects.Text[]): void {
   for (const object of objects) {
     if (!isShown(object)) continue;
     if (object instanceof Phaser.GameObjects.Text) {
-      if (object.text !== '') found.push(object.text);
+      if (object.text !== '') found.push(object);
     } else {
       collect(childrenOf(object), found);
     }
   }
+}
+
+/** Every shown, non-empty `Text` of the given scenes (the visible ones), in display order. */
+function shownTexts(scenes: readonly Phaser.Scene[]): Phaser.GameObjects.Text[] {
+  const found: Phaser.GameObjects.Text[] = [];
+  for (const scene of scenes) {
+    if (scene.sys.isVisible()) collect(scene.children.list, found);
+  }
+  return found;
 }
 
 /**
@@ -34,9 +43,27 @@ function collect(objects: Phaser.GameObjects.GameObject[], found: string[]): voi
  * out, and so is every text of a scene that isn't visible.
  */
 export function visibleTexts(scenes: readonly Phaser.Scene[]): string[] {
-  const found: string[] = [];
-  for (const scene of scenes) {
-    if (scene.sys.isVisible()) collect(scene.children.list, found);
-  }
-  return found;
+  return shownTexts(scenes).map((text) => text.text);
+}
+
+/** Where a visible text is, in game pixels (before the camera's own movement), as a box. */
+export interface TextBounds {
+  text: string;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * The same texts as `visibleTexts`, each with the box it fills in game pixels, so a test can check
+ * that none of them is near enough to the edge of the canvas to be cut off by a camera shake. The
+ * boxes are where the objects are in the world; the camera's scroll (`cameraOffset()`) moves them
+ * on screen.
+ */
+export function visibleTextBounds(scenes: readonly Phaser.Scene[]): TextBounds[] {
+  return shownTexts(scenes).map((text) => {
+    const box = text.getBounds();
+    return { text: text.text, left: box.left, top: box.top, right: box.right, bottom: box.bottom };
+  });
 }

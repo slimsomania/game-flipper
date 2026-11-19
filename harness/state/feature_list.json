@@ -517,9 +517,9 @@
         "F007",
         "F016"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "New src/game/effects/: a pure planner turns the simulation's impact and outcome events into shake, burst and pop cues; the camera shake and the particle burst are pure functions of simulation ticks (no Phaser shake, no Math.random), and effectsView.ts only sets the camera scroll and draws the particles. The shake numbers (shakeMinSpeed, shakeFullSpeed, shakeMaxPixels 6, shakeSeconds) are in the Tuning; the message pop-in is popScale(resultSteps) in resultStyle.ts; the flash and the table legs are drawn 16 px past the canvas edge. New hooks effects(), cameraOffset() and textBounds(). Verified with 61 new unit tests, 11 new e2e tests in effects.spec.ts (hard vs gentle shake within the cap, none when still, burst on success only, camera at rest 0.5 s later, no text within the cap of an edge, pop-in size), and snaps of the mid-shake, the burst and the camera at rest. npm run verify was not green in two full runs, each with one different timing-sensitive e2e test (round.spec.ts:161, which also flakes on the code before this change, then mouse.spec.ts:67, a real-mouse test); each passes alone 10 of 10 and every test passed in at least one of the two runs (see the progress entry).",
       "review_feedback": ""
     },
     {

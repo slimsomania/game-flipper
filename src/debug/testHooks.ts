@@ -4,11 +4,12 @@ import type { SimSnapshot, Simulation } from '../core/simulation';
 import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
+import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
 import { visibleMuteButton, type MuteButtonView } from './visibleMuteButton';
-import { visibleTexts } from './visibleTexts';
+import { visibleTextBounds, visibleTexts, type TextBounds } from './visibleTexts';
 
 /**
  * window.__FLIPPER__ lets e2e tests and `npm run snap` observe and drive the game
@@ -38,6 +39,27 @@ export interface FlipperTestApi {
    * frame: after stepping or acting from a test, wait a frame (or poll) before reading it.
    */
   texts(): string[];
+  /**
+   * The same visible texts as `texts()`, each with the box it fills (`left`, `top`, `right`,
+   * `bottom`, in game pixels, where the object is in the world). The camera's own movement is
+   * separate (`cameraOffset()`), so a test can check that a shake never cuts a text off the canvas.
+   */
+  textBounds(): TextBounds[];
+  /**
+   * The small effects the game has played since its Game scene started, oldest first: `name`
+   * ('shake', 'burst' or 'pop'), `intensity` and the `tick` of the event behind it. A `shake`'s
+   * intensity is the farthest it moves the picture in game pixels (never above the tuning's
+   * `shakeMaxPixels`; an impact softer than `shakeMinSpeed` makes none); a `burst` (a success only)
+   * is its number of particles; a `pop` (every result message) is 1. Like `sounds()` it shows what
+   * the scene last drained: wait a frame after stepping.
+   */
+  effects(): EffectLogEntry[];
+  /**
+   * How far the Game scene's camera is moved from rest, in game pixels: (0, 0) at rest, anything
+   * else while a camera shake is on. Null when no game scene is running. Like `texts()` it shows
+   * what the scene last drew: wait a frame after stepping.
+   */
+  cameraOffset(): { x: number; y: number } | null;
   /**
    * The full-screen result flash the player can see, as its color (a hex number) and opacity, or
    * null when there is none (no result yet, or the flash has faded out). Like `texts()` it shows
@@ -171,6 +193,12 @@ export function installTestHooks(game: Phaser.Game): void {
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     state: () => currentSimulation()?.snapshot() ?? null,
     texts: () => visibleTexts(game.scene.getScenes(true)),
+    textBounds: () => visibleTextBounds(game.scene.getScenes(true)),
+    effects: () => sharedEffectLog().log(),
+    cameraOffset: () => {
+      const camera = currentSimulation() && game.scene.getScene('Game')?.cameras.main;
+      return camera ? { x: camera.scrollX, y: camera.scrollY } : null;
+    },
     flash: () => visibleFlash(game.scene.getScenes(true)),
     sounds: () => sharedSfx().log(),
     muted: () => sharedSfx().muted,

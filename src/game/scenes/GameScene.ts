@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
 import { SIM_DT } from '../../core/constants';
 import { createFixedStepper } from '../../core/fixedStep';
-import { Simulation } from '../../core/simulation';
+import { Simulation, type SimSnapshot } from '../../core/simulation';
+import type { SimEvent } from '../../core/events';
 import { registerSimulation } from '../../debug/currentSimulation';
 import { markReady, testControls } from '../../debug/testHooks';
 import { tuningControl } from '../../debug/tuningControl';
 import { sharedSfx } from '../audio/sfx';
 import { SoundPlanner } from '../audio/soundPlan';
+import { createEffectsView, type EffectsView } from '../effects/effectsView';
 import { bindGameInput } from '../gameInput';
 import { bindPauseKeys } from '../pauseKeys';
 import { intParam } from '../urlParams';
@@ -38,6 +40,7 @@ export class GameScene extends Phaser.Scene {
   private resultView!: ResultView;
   private hudView!: HudView;
   private cursorView!: CursorView;
+  private effectsView!: EffectsView;
   private planner = new SoundPlanner();
   /** The pause overlay has been asked for and this scene is about to be paused (until it resumes). */
   private pauseRequested = false;
@@ -69,13 +72,14 @@ export class GameScene extends Phaser.Scene {
     this.resultView = createResultView(this);
     this.hudView = createHudView(this);
     this.cursorView = createCursorView(this);
+    this.effectsView = createEffectsView(this);
     createPauseButton(this, 'pause', () => this.openPause());
     createMuteControl(this);
 
     bindGameInput(this, this.sim);
     bindPauseKeys(this, () => this.openPause());
 
-    this.draw();
+    this.draw(this.sim.snapshot());
     markReady();
   }
 
@@ -83,14 +87,17 @@ export class GameScene extends Phaser.Scene {
     // The pause overlay opens next frame: step nothing more in the meantime.
     if (this.pauseRequested) return;
     if (!testControls.paused) this.stepper.advance(delta, () => this.sim.step());
-    this.draw();
-    this.playSounds();
+    const snapshot = this.sim.snapshot();
+    this.draw(snapshot);
+    // What happened since the last frame (core never plays or draws anything): heard and seen.
+    const events = this.sim.drainEvents();
+    this.playSounds(events);
+    this.effectsView.update(events, snapshot, this.sim.tuning);
     if (this.sim.phase === 'roundOver') this.openSummary();
   }
 
-  /** Make the sounds for what the simulation reported since the last frame (core never plays any). */
-  private playSounds(): void {
-    const events = this.sim.drainEvents();
+  /** Make the sounds for what the simulation reported since the last frame. */
+  private playSounds(events: readonly SimEvent[]): void {
     for (const cue of this.planner.plan(events, this.sim.tuning)) sharedSfx().play(cue);
   }
 
@@ -102,6 +109,7 @@ export class GameScene extends Phaser.Scene {
   private openSummary(): void {
     this.sim.powerMeter.release();
     this.sim.mouse.cancel();
+    this.effectsView.stop(); // a paused scene's camera would hold a shake's offset until it resumed
     this.scene.launch('Summary', { sim: this.sim } satisfies SummaryData);
     this.scene.pause();
   }
@@ -118,12 +126,12 @@ export class GameScene extends Phaser.Scene {
     this.pauseRequested = true;
     this.sim.powerMeter.release();
     this.sim.mouse.cancel();
+    this.effectsView.stop();
     this.scene.launch('Pause', { sim: this.sim } satisfies PauseData);
     this.scene.pause();
   }
 
-  private draw(): void {
-    const snapshot = this.sim.snapshot();
+  private draw(snapshot: SimSnapshot): void {
     this.bottleView.update(snapshot.bottle);
     this.powerBarView.update(snapshot.power);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);

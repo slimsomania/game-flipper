@@ -42,4 +42,6 @@ export const COLORS = {
   failFlash: 0xe5473f,
   successText: '#12683a',
   failText: '#a3211b',
+  /** The particles of a success burst: greens and warm yellows, none of them the bottle's blue. */
+  burst: [0x3fbf6a, 0x8fd9a8, 0xf2b33d, 0xe8963c],
 } as const;

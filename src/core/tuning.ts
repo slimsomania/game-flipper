@@ -122,6 +122,18 @@ export interface Tuning {
   knockFullSpeed: number;
   /** No knock sounds within this many seconds of the one before it (a bounce is not a roll of drums). */
   knockGapSeconds: number;
+  /** An impact with the table slower than this, in m/s, shakes nothing (a bottle settling, not landing). */
+  shakeMinSpeed: number;
+  /** An impact at or above this speed, in m/s, shakes the camera by the most it ever does (`shakeMaxPixels`). */
+  shakeFullSpeed: number;
+  /**
+   * The cap on the camera shake: the farthest, in logical game pixels, the picture is ever moved
+   * from where it rests. It stays well inside the smallest margin between any text and the edge of
+   * the canvas (22 px), so the shake never cuts a text off.
+   */
+  shakeMaxPixels: number;
+  /** A shake dies away in a straight line over this many seconds. */
+  shakeSeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -193,6 +205,12 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   knockMinSpeed: 0.35,
   knockFullSpeed: 8,
   knockGapSeconds: 0.1,
+  // F021: the same speeds as the knock, so a hit you can hear is one you can feel. The cap of 6 px
+  // is a shiver at full hit speed, not a lurch: the HUD sits 22 px from the top-left corner.
+  shakeMinSpeed: 1,
+  shakeFullSpeed: 8,
+  shakeMaxPixels: 6,
+  shakeSeconds: 0.25,
 };
 
 /** The defaults with `overrides` applied on top. */
