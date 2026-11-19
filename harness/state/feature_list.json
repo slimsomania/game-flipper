@@ -24,7 +24,7 @@
     {
       "id": "M5",
       "title": "Polish and tuning",
-      "goal": "Difficulty tuned to the design's targets, camera shake and small effects, and a bug-fix pass over awkward input."
+      "goal": "Quicker result timing, difficulty tuned to the design's targets so that reading the water level matters, camera shake and small effects, soft shading that makes the scene and the water level easier to read, and a bug-fix pass over awkward input."
     },
     {
       "id": "M6",
@@ -439,23 +439,45 @@
       "review_feedback": ""
     },
     {
-      "id": "F020",
+      "id": "F030",
       "milestone": "M5",
       "category": "gameplay",
-      "title": "Tune difficulty against simulated players",
-      "description": "The design's starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10. Add src/core/difficulty.ts with a seeded benchmark of simulated players over 200 random bottles: a practiced player aims at each bottle's own single-flip window center, a new player aims at one fixed power for every bottle (the average center), both with seeded normal error (σ about 8 points). The targets count landings (successes), not points. Print both landing rates, and each player's average points per 10 throws, from scripts/flip-windows.ts and tune the defaults until they hit the targets while F009's window tests stay green. If the human retuned values after M1 (see progress.md and the git history of src/core/tuning.ts), keep their values unless the benchmark is off target.",
+      "title": "Quicker result timing",
+      "description": "Design section 2 changed on 2026-11-18 (see section 13, 'Decided after an outside review'): a success needs the bottle upright within 15°, on the table and nearly still for half a second instead of 1 s, and the next bottle comes about 1 s after the result instead of 1.5 s. Change the defaults in src/core/tuning.ts (uprightHoldSeconds 0.5, resultDelaySeconds 1) and update the tests that locked the old design values (1 s hold, 90-step delay) to the new ones, saying so in the progress entry; that is following the design, not weakening a test. Update D12 and D15 in docs/ARCHITECTURE.md.",
       "acceptance": [
-        "Unit: the benchmark is deterministic for a seed, and its player models are described in code comments.",
-        "Unit: with the default tuning the practiced player lands 60-80% of 200 throws and the new player 20-40%.",
-        "scripts/flip-windows.ts prints both landing rates and average points, and the progress entry lists the old and new tuning values with their rates.",
-        "All F009 calibration tests still pass."
+        "Unit: a bottle that settles upright and nearly still is judged a success 30 steps (0.5 s) after it settles, not earlier, and one that is still tipping or rocking past the still limits is not judged a success.",
+        "Unit: the result phase lasts 60 steps (1 s) before the next bottle, and skip() still ends it at once.",
+        "E2E: after an upright landing the next bottle appears about 1 s after the outcome, and Space or a click skips the wait as before.",
+        "All F009 calibration tests still pass, and scripts/flip-windows.ts gives the same windows as before (the hold changes when a success is declared, not whether it happens)."
       ],
       "depends_on": [
         "F009"
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "The simulated players are a proxy for the design's targets; the error size and the aiming rules are assumptions for the human to confirm by playing.",
+      "notes": "An upright bottle that is nearly still cannot fall any more (it would have to pass about 55° to tip), so the second half of the old hold was only waiting.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F020",
+      "milestone": "M5",
+      "category": "gameplay",
+      "title": "Tune difficulty against simulated players",
+      "description": "The design's targets changed on 2026-11-18 (section 3 and section 13, 'Decided after an outside review'): a full bottle needs about 2.5 to 4 times the power of an empty one, the single-flip window is at least 10 points wide, and no single fixed power may land a single flip on more than about 60% of water levels; an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10. Today one fixed power (46) lands 7 of the 9 tested levels. First update tests/unit/calibration.test.ts to the new targets (the ratio test to 2.5-4.0, the width test to at least 10) and add a test that no power from 0 to 100 lands a single flip on more than 60% of the water levels 10% to 90% in 10% steps; say in the progress entry that these follow the design change. Then add src/core/difficulty.ts with a seeded benchmark of simulated players over 200 random bottles: a practiced player aims at each bottle's own single-flip window center, a new player aims at one fixed power for every bottle (the average center), both with seeded normal error (σ about 8 points). The targets count landings (successes), not points. Print both landing rates, the best fixed power's landing rate, and each player's average points per 10 throws, from scripts/flip-windows.ts, and tune the defaults until every target is met. A search on 2026-11-18 found one tuning that meets them all and is a good place to start: shellDensity 0.32, throwLinearImpulse 2.06, throwAngularImpulse 4.13, throwSpinGrowth 0.0153, bottleAngularDamping 2.59 (centers about 17.5 at 10% water to 60.5 at 90%, widths 11 to 16, a double window at every level; best fixed power about 56%, new player about 39%, practiced about 67%). Its flight is a little lower and shorter than today's: check with snaps that a throw at a window center still rises clearly above the hand and lands well out on the table, and prefer a tuning whose flight is at least as high as today's if one meets the targets. Lighter bottles may change which outcome a fixed power gives in older tests: tests that throw at a fixed power expecting a particular outcome should take the power from a sweep (a window center) instead of a hard-coded number; fix them that way and list them in the progress entry.",
+      "acceptance": [
+        "Unit: the benchmark is deterministic for a seed, and its player models are described in code comments.",
+        "Unit: with the default tuning the practiced player lands 60-80% of 200 throws and the new player 20-40%.",
+        "Unit (calibration): the full-to-empty power ratio is 2.5 to 4.0, every tested single-flip window is 10 to 28 points wide, every tested level has a double-flip window below power 100, and no fixed power lands a single flip on more than 60% of the water levels 10% to 90%.",
+        "scripts/flip-windows.ts prints both landing rates, the best fixed power and its rate, and average points, and the progress entry lists the old and new tuning values with the new flip-windows table.",
+        "Snaps of throws at the 10%, 50% and 90% window centers show the bottle rising clearly above the hand, flipping, and landing upright well out on the table."
+      ],
+      "depends_on": [
+        "F009",
+        "F030"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "The simulated players are a proxy for the design targets; the error size and the aiming rules are assumptions for the human to confirm by playing. The targets were raised on 2026-11-18 after an outside review found that one fixed power landed most bottles.",
       "review_feedback": ""
     },
     {
@@ -477,6 +499,26 @@
       "status": "todo",
       "attempts": 0,
       "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F031",
+      "milestone": "M5",
+      "category": "presentation",
+      "title": "Soft shading: bottle shadow, readable water, table edge, gradient, gentler flash",
+      "description": "Design section 8 changed on 2026-11-18. All in src/game, drawn in code: (1) a soft elliptical shadow on the tabletop under the bottle, widest and darkest when the bottle rests on the table and smaller and fainter the higher it flies, hidden when the bottle is not over the table; its size and opacity come from a small pure function of the bottle's height above the table, so it can be unit-tested; (2) a light line along the water's surface and a faint highlight strip on the bottle's shell drawn over the water, so the level reads at a glance; (3) a lighter strip along the top edge of the tabletop and a soft shadow under it across the legs; (4) a gentle vertical gradient background, generated as a texture in BootScene; (5) a gentler result flash: lower its peak opacity from 0.4 to at most 0.2, and the message stays as it is; (6) buttons and other UI accents get a color clearly different from the water's blue (today the accent and the water are both #2f7fd6). Expose the shadow's current width and opacity through window.__FLIPPER__ (thin: it calls the pure function).",
+      "acceptance": [
+        "Unit: the shadow function gives its largest width and opacity for a bottle resting on the table, smaller values the higher the bottle, never below zero, and nothing for a bottle that is not over the table.",
+        "Unit: the flash's peak opacity is at most 0.2, and the theme's button and accent colors differ from the water color.",
+        "E2E: the hooks report the shadow wider and darker with the bottle at rest on the table than near the top of a flight.",
+        "Snaps at rest, mid-flight and right after a success show the shadow under the bottle, the water's surface line, the table's top edge, the gradient background and a light flash under which the bottle and table stay clearly visible; text stays readable on the gradient, and there are no console errors."
+      ],
+      "depends_on": [
+        "F021"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "From the outside review of 2026-11-18. Keep the style flat: soft shapes and gradients, no outlines or textures.",
       "review_feedback": ""
     },
     {

@@ -40,7 +40,7 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 
 **Direction.** The throw goes mostly straight up with a small, fixed forward drift so the bottle lands on the table in front of the hand. The player controls only power, not angle. Keeping it to one variable keeps the guess clear.
 
-**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright, for at least 1 second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides.
+**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright and nearly still, for at least half a second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides.
 
 **Fail.** The bottle comes to rest on its side or on its cap, falls off the table, or leaves the screen. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall. A bottle that lands upright without a full turn (for example a plain drop at very low power) is also a fail.
 
@@ -49,7 +49,7 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 - Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that). The score goes up by that many points.
 - No flip (upright, but without a full turn): a red flash and the message "No flip!", and the score doesn't change.
 - Fail: a red flash and a short message ("Down!"), and the score doesn't change.
-- After about 1.5 seconds the next bottle appears automatically. Space or click skips the wait.
+- After about 1 second the next bottle appears automatically. Space or click skips the wait.
 
 ## 3. The object and its physics
 
@@ -57,13 +57,14 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 - The only thing that changes between throws is the **amount of water**, chosen at random each throw (from nearly empty to nearly full, in small steps, using the seeded random generator so tests are repeatable).
 - Water is simulated as extra mass that sits low in the bottle. More water means a heavier bottle and a center of mass closer to the bottom. It does not slosh in the first version: the water level is drawn, but the water moves with the bottle as one solid body.
 - A heavier bottle gets less speed and less spin from the same power, so the "right" power is different for every bottle. The player must learn this from the visible water level alone.
-- For each bottle there is a window of power that gives a clean single flip. Above it there is a narrower window that gives a double flip (worth 2 points), and a triple above that where the physics allows it. Every bottle should have a reachable double-flip window; triples are not required. When a single-flip target and a double-flip target conflict, the single flip wins. Starting values (best guess, to be tuned by playtesting): the single-flip window is about ±10% power around the ideal; the ideal power rises smoothly and noticeably from an empty to a full bottle (a full bottle needs roughly 1.5 to 2 times the power of an empty one); and the starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10.
+- For each bottle there is a window of power that gives a clean single flip. Above it there is a narrower window that gives a double flip (worth 2 points), and a triple above that where the physics allows it. Every bottle should have a reachable double-flip window; triples are not required. When a single-flip target and a double-flip target conflict, the single flip wins. Starting values (best guess, to be tuned by playtesting): the single-flip window is at least 10 points of power wide (about ±6 to ±8 around the ideal); the ideal power rises smoothly and strongly from an empty to a full bottle (a full bottle needs about 2.5 to 4 times the power of an empty one); and the starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10.
+- **Reading the water must matter.** No single fixed power may land a single flip on more than about 60% of water levels; otherwise a player can leave the bar at one value, press Space ten times and land most bottles without looking at them. This is why the bottles are spread so widely across the power range.
 - Water sloshing is wanted, but not in the first version (see M6): first it is one solid mass, then it becomes a real moving mass inside the bottle.
 - All tuning numbers (throw strength, spin, window width, tolerance angle, friction, bounciness) live in one config module so they are easy to adjust.
 
 ## 4. Surfaces, levels and challenges
 
-- One flat table, wide enough that a reasonable throw lands on it. Nothing else on screen except a plain background.
+- One flat table, wide enough that a reasonable throw lands on it. Nothing else on screen except a calm background with a gentle gradient.
 - No levels and no special challenge rules for now. The variety comes from the random water level.
 - Later ideas, not now: narrower tables, shelves, moving platforms, wind, landing on a target, a double-flip challenge.
 
@@ -100,7 +101,9 @@ PC browser only, mouse and keyboard.
 ## 8. Art direction
 
 - Flat and minimal: soft solid colors, no outlines or textures. A calm light background, a wooden-brown table, a translucent blue bottle with a lighter cap and a blue water fill.
-- Result colors: green for success, red for fail. They should also be told apart by the message text, not by color alone.
+- Soft shading for depth and readability is welcome, as long as it stays flat in style: a soft shadow on the table under the bottle (smaller and fainter the higher the bottle flies, so the player can judge its height), a light line along the water's surface and a faint highlight on the bottle's shell (so the water level reads at a glance), a lighter top edge on the table with a shadow under the tabletop, and a gentle vertical gradient in the background.
+- The water's blue is the bottle's color only: buttons and other UI accents use a clearly different color, so the eye doesn't mix them up.
+- Result colors: green for success, red for fail. They should also be told apart by the message text, not by color alone. The result flash is a light tint, not a strong wash over the whole screen: it shows up on every throw, so it must not tire the eyes.
 - Everything is drawn in code (shapes and generated textures) as placeholders. Real art can replace it later.
 
 ## 9. Audio
@@ -123,7 +126,7 @@ PC browser only, mouse and keyboard.
 - **M2, mouse push:** grab and push with the mouse, converted to the same power value. Throw and power values are visible to tests.
 - **M3, rounds and best score:** 10-throw rounds, round summary, best score saved in the browser, streak counter.
 - **M4, screens and audio:** title screen, pause overlay, generated sound effects, mute toggle.
-- **M5, polish and tuning:** tune difficulty so a good player can reach 6 to 8 out of 10, camera shake and small effects, bug fixes.
+- **M5, polish and tuning:** quicker result timing, tune difficulty so a good player can reach 6 to 8 out of 10 and reading the water matters, camera shake and small effects, the soft shading and readability of section 8, bug fixes.
 - **M6, sloshing and replay:** water that moves inside the bottle and affects the flip, and a short slow-motion replay of the landing after each throw (skippable).
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
@@ -156,7 +159,15 @@ Decided after the first plan (2026-11-16), answering the planner's open question
 - **Water range:** 10% to 90% in 5% steps, as the plan assumes. Tunable.
 - **Browsers:** automated tests run in Chromium only, which also covers Edge (same engine). The human checks Firefox by hand at milestone stops. Revisit adding Playwright's Firefox at M7.
 
+Decided after an outside review of the game (Gemini, 2026-11-18), checked against the code by Claude:
+
+- **The water level must matter (section 3).** With the 1.5–2× rule, the bottles' single-flip windows overlapped so much that one fixed power (46) landed 7 of the 9 tested water levels, about 78% of bottles, without looking at the bottle. F020's own model of a new player (one fixed power, ±8 points of error) landed about 55%, against its 20–40% target, and no tuning could fix that within 1.5–2×. A search of tunings found one that spreads the bottles from about power 17 to 60 (3.5×): one fixed power then lands about 56%, the new-player model 39% and the practiced model 67%, with every bottle keeping a double-flip window. So the ratio is now 2.5 to 4×, the window at least 10 points wide, and no fixed power may land more than about 60% of water levels.
+- **Quicker results (section 2).** A success now needs half a second of standing upright and nearly still, not a full second: a bottle that is upright within 15° and still cannot fall any more, so the extra half second was only waiting. The next bottle comes after about 1 s instead of 1.5 s. Together that removes about 1 s of waiting from every throw.
+- **Soft shading and a gentler flash (section 8).** A shadow under the bottle gives a sense of its height, the water's surface line makes the level easier to read (the player's only clue), the background is no longer an empty flat color, and the full-screen flash (40% opacity on every throw) becomes a light tint.
+- **Not changed:** points stay 1/2/3 per turn (the human's decision of 2026-11-16), streaks still give no bonus, triples stay optional, the mouse push is unchanged (it already uses the fastest 50 ms of the push, so a short pause before release doesn't lose the throw), and the bottle's shape stays as calibrated (D23).
+- **Ideas kept for later** (none planned yet): an endless mode (play until you miss), a daily challenge with the same bottles for everyone, a practice mode that shows each bottle's window on the power bar, a special score for landing on the cap, more surfaces and bottle types.
+
 Still open, to be settled by playtesting after M1:
 
-1. **Difficulty numbers.** The window width, the weight effect and the score targets in section 3 are best guesses.
+1. **Difficulty numbers.** The window width, the weight effect and the score targets in section 3 are best guesses (the weight effect was raised after the review above).
 2. **Streak rewards.** The streak counter has no effect on points yet.
