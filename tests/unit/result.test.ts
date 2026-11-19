@@ -78,14 +78,14 @@ describe('score and throws', () => {
 });
 
 describe('the next bottle', () => {
-  it('appears after 90 steps, and not before: upright, still, in the hand', () => {
+  it('appears after 60 steps, and not before: upright, still, in the hand', () => {
     const sim = judged(FLIPPED);
     const decided = sim.snapshot();
     expect(decided.phase).toBe('result');
     run(sim, RESULT_STEPS - 1);
-    expect(sim.phase).toBe('result'); // 89 steps: not yet
+    expect(sim.phase).toBe('result'); // 59 steps: not yet
     expect(sim.snapshot().outcome).toEqual(decided.outcome);
-    run(sim, 1); // the 90th
+    run(sim, 1); // the 60th
     const next = sim.snapshot();
     expect(next.phase).toBe('aiming');
     expectHeld(next);

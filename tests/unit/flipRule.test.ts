@@ -33,7 +33,7 @@ const UPRIGHT_AT_REST: LandingSample = {
 function restUpright(credit: number | undefined, tuning = {}) {
   const judge = new LandingJudge(resolveTuning(tuning), 0, credit);
   let outcome = judge.outcome;
-  for (let i = 0; i < 60; i++) outcome = judge.observe(UPRIGHT_AT_REST);
+  for (let i = 0; i < 30; i++) outcome = judge.observe(UPRIGHT_AT_REST);
   return outcome;
 }
 
@@ -64,7 +64,7 @@ describe('a landing needs a full turn (the judge)', () => {
   it('decides it in the same step as a success would be decided: after the full hold', () => {
     for (const credit of [0, 1]) {
       const judge = new LandingJudge(resolveTuning(), 0, credit);
-      for (let i = 0; i < 59; i++) expect(judge.observe(UPRIGHT_AT_REST)).toBeNull();
+      for (let i = 0; i < 29; i++) expect(judge.observe(UPRIGHT_AT_REST)).toBeNull();
       expect(judge.observe(UPRIGHT_AT_REST)).not.toBeNull();
     }
   });
@@ -85,7 +85,7 @@ describe('a landing needs a full turn (the judge)', () => {
     const judge = new LandingJudge(resolveTuning(), 0);
     const flight = { ...UPRIGHT_AT_REST, onTable: false, y: 1 };
     for (let angle = 0.1; angle < 0.9 * TWO_PI; angle += 0.1) judge.observe({ ...flight, angle });
-    for (let i = 0; i < 59; i++) judge.observe({ ...UPRIGHT_AT_REST, angle: TWO_PI });
+    for (let i = 0; i < 29; i++) judge.observe({ ...UPRIGHT_AT_REST, angle: TWO_PI });
     expect(judge.observe({ ...UPRIGHT_AT_REST, angle: TWO_PI })).toMatchObject({
       result: 'success',
       turns: 1,

@@ -5,8 +5,8 @@ import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import type { Tuning } from '../../src/core/tuning';
 import { FLIPPED, flipped, type PlacedPose } from '../shared';
 
-/** The result wait: 1.5 s at 60 steps per second. */
-export const RESULT_STEPS = 90;
+/** The result wait: 1 s at 60 steps per second (design section 2, F030). */
+export const RESULT_STEPS = 60;
 
 /** Step `steps` times and return the snapshot. */
 export function run(sim: Simulation, steps: number): SimSnapshot {

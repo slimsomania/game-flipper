@@ -40,7 +40,7 @@ test('throwBottle(50) launches the bottle: it rises above its start, then comes 
   });
   expect(apex).toBeLessThan(HAND_Y - 1); // it rose well above where it started
 
-  // Look at the landing in the step the outcome is decided: 90 steps later the bottle is replaced.
+  // Look at the landing in the step the outcome is decided: 60 steps later the bottle is replaced.
   const landed = await stepUntilOutcome(page);
   expect(landed.phase).toBe('result');
   expect(landed.outcome).not.toBeNull(); // the landing is judged (see outcome.spec.ts)

@@ -218,7 +218,7 @@ test('auto-repeated Space keydowns are ignored: holding Space through a result n
   expect(await gameState(page)).toEqual(decided);
 
   // The wait ends by itself and the next bottle appears; more repeats must not throw it.
-  const next = await stepFrames(page, 90);
+  const next = await stepFrames(page, 60);
   expect(next).toMatchObject({ phase: 'aiming', throws: 1 });
   await page.keyboard.down('Space');
   await page.keyboard.down('Space');
@@ -247,7 +247,7 @@ test('the power starts at 50 and keeps its value when the next bottle appears', 
   expect(decided.power).toBe(72); // throwing doesn't reset the bar
 
   // The wait runs out by itself...
-  const next = await stepFrames(page, 90);
+  const next = await stepFrames(page, 60);
   expect(next).toMatchObject({ phase: 'aiming', power: 72 });
 
   // ...and a second throw uses the same value without touching the bar.

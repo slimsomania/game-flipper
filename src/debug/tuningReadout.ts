@@ -32,7 +32,7 @@ export const NO_THROW: LastThrowReadout = {
 
 /**
  * Remembers the last throw that was decided. The snapshot's `outcome` only lasts until the next
- * bottle appears (about 1.5 s), and the panel should keep showing the throw until the next one
+ * bottle appears (about 1 s), and the panel should keep showing the throw until the next one
  * is decided, so it watches the snapshots and keeps what it saw. Feed it every snapshot you read
  * (a frame, say); a game that starts over (the tick goes back) makes it forget.
  *

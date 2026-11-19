@@ -3,7 +3,7 @@ import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { SIDE, FLIPPED, waterSequence } from '../shared';
 import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
 
-test('after a throw resolves and 90 more frames pass, the next bottle waits in the hand', async ({
+test('after a throw resolves and 60 more frames (1 s) pass, the next bottle waits in the hand', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -18,8 +18,8 @@ test('after a throw resolves and 90 more frames pass, the next bottle waits in t
   expect(decided).toMatchObject({ score: earned, throws: 1 });
   expect(decided.bottle.water).toBe(firstWater); // still the bottle that was thrown
 
-  // 89 frames later it is still the result; the 90th brings the next bottle.
-  const waiting = await stepFrames(page, 89);
+  // 59 frames later it is still the result; the 60th brings the next bottle.
+  const waiting = await stepFrames(page, 59);
   expect(waiting.phase).toBe('result');
   expect(waiting.outcome).toEqual(decided.outcome);
   expect(waiting.bottle.water).toBe(firstWater);
@@ -47,7 +47,7 @@ test('a success adds a point, a fail does not, and the bottles follow the seed',
     const decided = await stepUntilOutcome(page);
     results.push(decided.outcome!.result);
     scores.push(decided.score);
-    await stepFrames(page, 90);
+    await stepFrames(page, 60);
   }
   expect(results).toEqual(['success', 'fail', 'success']);
   expect(scores).toEqual([1, 1, 2]);
@@ -93,7 +93,7 @@ test('the real-time clock brings the next bottle by itself', async ({ page }) =>
   const errors = await openGame(page, '?seed=7');
   const [, nextWater] = waterSequence(7, 2);
   await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
-  // About 1 s to stand still plus the 1.5 s wait, in real time.
+  // About 0.5 s to stand still plus the 1 s wait, in real time.
   await page.waitForFunction(() => window.__FLIPPER__!.state()?.phase === 'result', null, {
     timeout: 10_000,
   });

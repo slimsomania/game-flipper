@@ -89,10 +89,36 @@ describe('LandingJudge (synthetic samples)', () => {
    */
   const flipped = (tuning: Partial<Tuning> = {}) => judge(tuning, 0, 1);
 
-  it('needs the full hold time standing upright, on the table and nearly still', () => {
+  it('needs the full hold time standing upright, on the table and nearly still: 0.5 s, 30 steps', () => {
+    // F030: the design's hold went from 1 s (60 steps) to half a second (30 steps).
+    expect(DEFAULT_TUNING.uprightHoldSeconds).toBe(0.5);
     const j = flipped();
-    expect(feed(j, 59, resting(0))).toBeNull();
+    expect(feed(j, 29, resting(0))).toBeNull();
     expect(j.observe(resting(0))).toMatchObject({ result: 'success', reason: 'upright' });
+  });
+
+  it('is not a success while the bottle keeps rocking or tipping past the still limits', () => {
+    const upright = resting(0);
+    const limits = { speed: DEFAULT_TUNING.stillSpeed, spin: DEFAULT_TUNING.stillSpin };
+    // Just inside the limits it counts as still; at or past them it never does, however long.
+    expect(feed(flipped(), 30, { ...upright, vx: limits.speed * 0.9 })?.reason).toBe('upright');
+    expect(feed(flipped(), 30, { ...upright, omega: limits.spin * 0.9 })?.reason).toBe('upright');
+    expect(feed(flipped(), 600, { ...upright, vx: limits.speed * 1.1 })?.reason).toBe('timeout');
+    expect(feed(flipped(), 600, { ...upright, omega: limits.spin * 1.1 })?.reason).toBe('timeout');
+    // A bottle rocking on its base (still, then moving, every 29 steps) never completes a hold.
+    const rocking = flipped({ timeoutSeconds: 100 });
+    let outcome = null;
+    for (let cycle = 0; cycle < 20; cycle++) {
+      outcome = feed(rocking, 29, upright);
+      expect(outcome).toBeNull();
+      outcome = rocking.observe({ ...upright, omega: 1 });
+      expect(outcome).toBeNull();
+    }
+    // A bottle that is still tipping, 20° off upright, is not a success either: it is a side.
+    expect(feed(flipped(), 600, resting(deg(20)))).toMatchObject({
+      result: 'fail',
+      reason: 'side',
+    });
   });
 
   it('starts counting again whenever the bottle moves, leaves the table or tips past the limit', () => {
@@ -102,23 +128,23 @@ describe('LandingJudge (synthetic samples)', () => {
     const airborne = { ...upright, onTable: false };
     for (const interruption of [moving, spinning, airborne, resting(deg(20))]) {
       const j = flipped();
-      feed(j, 59, upright);
+      feed(j, 29, upright);
       expect(j.observe(interruption)).toBeNull();
-      expect(feed(j, 59, upright)).toBeNull(); // the count restarted, 59 is not enough
+      expect(feed(j, 29, upright)).toBeNull(); // the count restarted, 29 is not enough
       expect(j.observe(upright)?.reason).toBe('upright');
     }
   });
 
   it('accepts a tilt up to the tolerance and rejects more, at any number of whole turns', () => {
-    expect(feed(flipped(), 60, resting(deg(14.9)))?.reason).toBe('upright');
-    expect(feed(flipped(), 60, resting(deg(-14.9)))?.reason).toBe('upright');
-    expect(feed(flipped(), 60, resting(TWO_PI + deg(14.9)))?.reason).toBe('upright');
-    expect(feed(flipped(), 60, resting(-3 * TWO_PI))?.reason).toBe('upright');
+    expect(feed(flipped(), 30, resting(deg(14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 30, resting(deg(-14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 30, resting(TWO_PI + deg(14.9)))?.reason).toBe('upright');
+    expect(feed(flipped(), 30, resting(-3 * TWO_PI))?.reason).toBe('upright');
     // Just past the tolerance and lying still it is a fail, not a success, however long it waits.
     expect(feed(judge(), 60, resting(deg(15.1)))).toMatchObject({ result: 'fail', reason: 'side' });
     expect(feed(judge(), 60, resting(deg(-15.1)))).toMatchObject({ reason: 'side' });
     expect(feed(judge({ uprightToleranceDeg: 5 }), 60, resting(deg(10)))?.reason).toBe('side');
-    expect(feed(flipped({ uprightToleranceDeg: 20 }), 60, resting(deg(18)))?.reason).toBe(
+    expect(feed(flipped({ uprightToleranceDeg: 20 }), 30, resting(deg(18)))?.reason).toBe(
       'upright',
     );
   });

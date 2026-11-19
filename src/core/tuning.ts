@@ -147,9 +147,10 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // is still within reach of a full bottle.
   throwSpinExponent: 0.03,
   throwSpinGrowth: 0.013,
-  // Design section 2: upright within 15° for 1 s; a throw with no outcome after 5 s fails.
+  // Design section 2: upright within 15° for 0.5 s (an upright, still bottle cannot fall any
+  // more, so a longer hold was only waiting); a throw with no outcome after 5 s fails.
   uprightToleranceDeg: 15,
-  uprightHoldSeconds: 1,
+  uprightHoldSeconds: 0.5,
   timeoutSeconds: 5,
   // Past 135° from upright the bottle is on its cap, otherwise on its side.
   capAngleDeg: 135,
@@ -159,8 +160,8 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // A fail is decided sooner than a success, so a lost bottle doesn't make the player wait.
   failRestSeconds: 0.5,
   offTableDepth: 0.1,
-  // Design section 2: the next bottle appears about 1.5 s after the result.
-  resultDelaySeconds: 1.5,
+  // Design section 2: the next bottle appears about 1 s after the result.
+  resultDelaySeconds: 1,
   // F006: a tap is a fine step, the wheel a coarser one, and a held key speeds up from a slow
   // creep (for a few points) to a fast sweep (about 2.5 s for the whole bar).
   powerStart: 50,

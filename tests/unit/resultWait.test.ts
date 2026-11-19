@@ -5,8 +5,22 @@ import { SIDE, FLIPPED, waterSequence } from '../shared';
 import { RESULT_STEPS, expectHeld, judged, run, runToOutcome } from './helpers';
 
 describe('the result delay', () => {
-  it('comes from the tuning: 1.5 s by default, and a different value changes the wait', () => {
-    expect(DEFAULT_TUNING.resultDelaySeconds).toBe(1.5);
+  it('is 1 s, 60 steps, by default (F030: it was 1.5 s, 90 steps), and skip() still ends it at once', () => {
+    expect(DEFAULT_TUNING.resultDelaySeconds).toBe(1);
+    expect(RESULT_STEPS).toBe(60);
+    const waited = judged(FLIPPED);
+    run(waited, 59);
+    expect(waited.phase).toBe('result'); // 59 steps after the outcome: still showing it
+    run(waited, 1);
+    expect(waited.phase).toBe('aiming'); // the 60th brings the next bottle
+
+    const skipped = judged(FLIPPED);
+    run(skipped, 1);
+    expect(skipped.skip()).toBe(true); // no need to wait for the 60
+    expect(skipped.phase).toBe('aiming');
+  });
+
+  it('comes from the tuning, and a different value changes the wait', () => {
     const sim = judged(FLIPPED, { tuning: { resultDelaySeconds: 0.5 } });
     run(sim, 29);
     expect(sim.phase).toBe('result');

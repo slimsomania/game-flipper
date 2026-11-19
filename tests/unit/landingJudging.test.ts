@@ -12,14 +12,14 @@ const deg = (degrees: number): number => (degrees * Math.PI) / 180;
 const HALF_WIDTH = BOTTLE_BODY_WIDTH / 2;
 
 describe('judging a landing in the simulation', () => {
-  it('judges an upright bottle placed just above the table a success once it stood still for 1 s', () => {
+  it('judges an upright bottle placed just above the table a success once it stood still for 0.5 s', () => {
     const sim = placed(FLIPPED); // credited one turn: without one it would be a "no flip"
-    // Not while it is falling or settling, and not before a full second of standing still.
-    expect(run(sim, 30).outcome).toBeNull();
-    expect(run(sim, 29).outcome).toBeNull(); // 59 steps in
-    const steps = 59 + runToOutcome(sim);
-    expect(steps).toBeGreaterThan(60);
-    expect(steps).toBeLessThan(150); // the e2e test relies on 150 frames being enough
+    // Not while it is falling or settling, and not before half a second (30 steps) of standing still.
+    expect(run(sim, 20).outcome).toBeNull();
+    expect(run(sim, 14).outcome).toBeNull(); // 34 steps in
+    const steps = 34 + runToOutcome(sim);
+    expect(steps).toBeGreaterThan(30); // the fall and landing come before the 30-step hold
+    expect(steps).toBeLessThan(90); // the e2e test relies on 90 frames being enough
     const { outcome, bottle } = sim.snapshot();
     expect(outcome).toMatchObject({ result: 'success', reason: 'upright', turns: 1, points: 1 });
     expect(Math.abs(outcome!.rotation - TWO_PI)).toBeLessThan(0.01); // the credit, nothing more
@@ -28,10 +28,10 @@ describe('judging a landing in the simulation', () => {
     expect(bottle.y).toBeGreaterThan(TABLE_TOP_Y - 0.1);
   });
 
-  it('holds the success back for the whole second even when the bottle starts at rest on the table', () => {
+  it('holds the success back for the whole half second even when the bottle starts at rest on the table', () => {
     const sim = placed({ ...FLIPPED, y: TABLE_TOP_Y - 0.012 });
-    expect(run(sim, 58).outcome).toBeNull();
-    expect(runToOutcome(sim)).toBeLessThan(30);
+    expect(run(sim, 28).outcome).toBeNull();
+    expect(runToOutcome(sim)).toBeLessThan(15);
     expect(sim.snapshot().outcome?.reason).toBe('upright');
   });
 

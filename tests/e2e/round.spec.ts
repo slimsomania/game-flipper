@@ -53,10 +53,10 @@ test('the HUD updates after each throw: a landing, a double, a fail and the next
   await next(page);
   expect(await hud(page)).toEqual(['Throw 4 / 10', 'Score: 3', 'Streak: 0']);
 
-  // The result wait ends by itself too: the next bottle comes after 1.5 s of simulation.
+  // The result wait ends by itself too: the next bottle comes after 1 s of simulation.
   await land(page, FLIPPED);
   expect(await hud(page)).toEqual(['Throw 4 / 10', 'Score: 4', 'Streak: 1']);
-  await page.evaluate(() => window.__FLIPPER__!.step(90));
+  await page.evaluate(() => window.__FLIPPER__!.step(60));
   expect(await hud(page)).toEqual(['Throw 5 / 10', 'Score: 4', 'Streak: 1']);
   expect(await gameState(page)).toMatchObject({ phase: 'aiming', landings: 3, throwNumber: 5 });
   expect(errors).toEqual([]);
@@ -135,7 +135,7 @@ test('after the 10th throw the round is over: no new bottle, throws and clicks d
   expect(await hud(page)).toEqual(['Throw 10 / 10', 'Score: 9', 'Streak: 0']);
 
   // The wait ends: the round is over and the last bottle stays on the table.
-  await page.evaluate(() => window.__FLIPPER__!.step(90));
+  await page.evaluate(() => window.__FLIPPER__!.step(60));
   const over = await gameState(page);
   expect(over).toMatchObject({ phase: 'roundOver', throws: 10, throwNumber: 10, score: 9 });
   expect(over.landings).toBe(9);

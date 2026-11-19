@@ -45,7 +45,7 @@ test('after the 10th throw the Summary shows the round’s points and its landin
 test('the summary also opens when the 10th result’s wait runs out', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
   await playToLastResult(page);
-  await page.evaluate(() => window.__FLIPPER__!.step(90));
+  await page.evaluate(() => window.__FLIPPER__!.step(60));
   await expect.poll(() => activeScenes(page)).toEqual(['Summary']);
   expect(await visibleTexts(page)).toEqual(
     expect.arrayContaining([`Score: ${POINTS}`, `Landed ${LANDINGS} / 10`]),
@@ -70,10 +70,10 @@ test('the summary does not appear before the 10th result is over', async ({ page
   }
   // Not during the 10th throw's flight and result either: only when its wait ends.
   await land(page, ROUND[9]);
-  await page.evaluate(() => window.__FLIPPER__!.step(60));
+  await page.evaluate(() => window.__FLIPPER__!.step(30));
   expect((await gameState(page)).phase).toBe('result');
   await notSummary();
-  await page.evaluate(() => window.__FLIPPER__!.step(40));
+  await page.evaluate(() => window.__FLIPPER__!.step(30));
   await expect.poll(() => activeScenes(page)).toEqual(['Summary']);
   expect(errors).toEqual([]);
 });

@@ -58,7 +58,7 @@ export async function gameState(page: Page): Promise<SimSnapshot> {
 /**
  * Freeze the real-time clock and step one frame at a time until the throw's outcome is decided (at
  * most `limit` frames). Returns the snapshot of that very step, with the phase `result`: the
- * thrown bottle is replaced 90 steps later, so tests that look at where it landed stop here.
+ * thrown bottle is replaced 60 steps later, so tests that look at where it landed stop here.
  */
 export async function stepUntilOutcome(page: Page, limit = 400): Promise<SimSnapshot> {
   const state = await page.evaluate((max) => {

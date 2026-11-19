@@ -95,13 +95,13 @@ for (const [name, pose, message] of [
     await land(page, pose);
     expect(await visibleTexts(page)).toContain(message);
 
-    // 40 frames on, the flash is long gone but the message is still up (a result lasts 90 steps).
+    // 40 frames on, the flash is gone but the message is still up (a result lasts 60 steps).
     expect((await stepFrames(page, 40)).phase).toBe('result');
     expect(await visibleTexts(page)).toContain(message);
-    expect((await stepFrames(page, 49)).phase).toBe('result');
+    expect((await stepFrames(page, 19)).phase).toBe('result');
     expect(await visibleTexts(page)).toContain(message);
 
-    // The 90th step brings the next bottle, and the message goes with the old one.
+    // The 60th step brings the next bottle, and the message goes with the old one.
     expect((await stepFrames(page, 1)).phase).toBe('aiming');
     const texts = await visibleTexts(page);
     expect(texts).not.toContain(SUCCESS_MESSAGE);
@@ -150,7 +150,7 @@ test('in real time the message appears with the result and goes when the next bo
 }) => {
   const errors = await openGame(page, '?seed=7');
   await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
-  // About 1 s to stand still, then the message; 1.5 s later the next bottle.
+  // About 0.5 s to stand still, then the message; 1 s later the next bottle.
   await expect
     .poll(async () => (await visibleTexts(page)).includes(SUCCESS_MESSAGE), { timeout: 10_000 })
     .toBe(true);

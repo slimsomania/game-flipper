@@ -5,7 +5,7 @@ import { gameState, openGame, stepFrames, stepUntilOutcome } from './helpers';
 
 const HALF_WIDTH = BOTTLE_BODY_WIDTH / 2;
 
-test('a bottle placed upright just above the table is judged a success once it stood still for a second', async ({
+test('a bottle placed upright just above the table is judged a success once it stood still for half a second', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -21,12 +21,12 @@ test('a bottle placed upright just above the table is judged a success once it s
   expect(placed?.outcome).toBeNull();
 
   // Not decided while it is still settling...
-  const early = await stepFrames(page, 30);
+  const early = await stepFrames(page, 25);
   expect(early.outcome).toBeNull();
-  // ...and judged once it has stood still for a second (60 steps), within 150 frames of the start.
+  // ...and judged once it has stood still for half a second (30 steps), within 90 frames of the start.
   const done = await stepUntilOutcome(page, 120);
-  expect(done.tick - placed!.tick).toBeGreaterThan(60);
-  expect(done.tick - placed!.tick).toBeLessThanOrEqual(150);
+  expect(done.tick - placed!.tick).toBeGreaterThan(30);
+  expect(done.tick - placed!.tick).toBeLessThanOrEqual(90);
   expect(done.phase).toBe('result');
   expect(done.outcome).toMatchObject({
     result: 'success',
@@ -92,8 +92,8 @@ test('every throw gets an outcome within the timeout, which stays the same throu
   expect(Number.isInteger(first.outcome!.turns)).toBe(true);
   expect(first.outcome!.rotation).toBeGreaterThan(0); // thrown with a clockwise spin
 
-  // Still the same 89 steps later, when the result is about to give way to the next bottle.
-  const later = await stepFrames(page, 89);
+  // Still the same 59 steps later, when the result is about to give way to the next bottle.
+  const later = await stepFrames(page, 59);
   expect(later.phase).toBe('result');
   expect(later.outcome).toEqual(first.outcome);
   expect(errors).toEqual([]);
