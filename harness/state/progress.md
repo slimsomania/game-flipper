@@ -1053,3 +1053,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The error size (σ 8) and the aiming rules are assumptions to confirm by playing, as the feature notes say.
   - Process: a glob in `rm` and a `for` loop with a shell variable were auto-denied; plain commands with exact paths worked.
 - Next: the reviewer should play at the 10%, 50% and 90% window centers (`call:lockWater;<w>,call:setPower;<center>`), judge the 10% flight, and confirm `npx tsx scripts/flip-windows.ts` prints the table above. F032 is next after the review.
+
+> [harness] session 50 · builder F020 · todo → needs_review · ok · verify passed · 1 commit(s) · 52 tool calls · 20m 14s · ~$1.05 API-equivalent
