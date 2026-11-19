@@ -934,3 +934,15 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: the reviewer should play the summary with the snap tool (reach it with `scene:Game,call:setTuningValue;throwsPerRound;1,key:Space,wait:6000`), press M and click the speaker, and check the Title shows the same state after the Title button. After F017, M4 is complete: F030 (shorter holds) is next, then F020.
 
 > [harness] session 45 · builder F017 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 22m 31s · ~$1.13 API-equivalent
+
+## Session 46 · reviewer · F017 Mute toggle that is remembered
+- Verdict: pass
+- Evidence:
+  - `npm run verify` exit 0: format check, typecheck, unit tests, build, 225 e2e in 13.6 min, including the 12 new tests in `muteSummary.spec.ts`.
+  - Read the attempt-2 diff (`6de8b4e..4fa96e1`): the only source change is `createMuteControl(this)` in `SummaryScene.create`, plus doc comments. The `muteButton()` hook reads `game.scene.getScenes(true)`, which leaves out the paused Game scene, so it reports the summary's own button. The test diff only adds tests or makes them stricter. The one rewritten test (`muteSound.spec.ts`, which asserted no button on the summary) pinned the old gap that the new criterion removes, so rewriting it is correct. No debug code is left.
+  - Snap at 1024x576 (`?seed=7`, 1-throw round, real Space throw): the summary shows the speaker alone in the top-right corner, well clear of the card, Play again and Title. A click on it switched the icon to the cross and `muted()` to true. Three instant M presses flipped it three times, ending at false (an odd count, so none were dropped). A click at 1100;300 (beside the card) did nothing. `activeScenes()` stayed `["Summary"]` throughout. Enter then started Play again, and the Game scene's speaker showed the same state. No console errors.
+  - The other criteria (M and the button in play, silence while muted, surviving a reload) were checked in session 40 and are still covered by `mute.spec.ts` and `muteSound.spec.ts`, which passed in this verify run.
+- Problems: none
+- Notes for later:
+  - The summary has the speaker but not the pause button. That is right, since a finished round has nothing to pause, but the corner row differs from play.
+  - Process: `npm run verify > file; echo`, a Monitor `until` loop and a compound shell command with a heredoc were all auto-denied. A plain `npm run verify 2>&1 | tail -60` in the background and the Edit tool were allowed.
