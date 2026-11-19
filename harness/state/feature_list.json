@@ -543,6 +543,26 @@
       "review_feedback": ""
     },
     {
+      "id": "F033",
+      "milestone": "M5",
+      "category": "input",
+      "title": "Measure the mouse push from every pointer sample, not one per frame",
+      "description": "Found by the outside review of M2 (2026-11-19, see the progress log). Browsers deliver one pointer move per rendered frame, and Phaser listens to `mousemove`, which carries no samples from between frames, so the samples `gameInput.ts` forwards are only as frequent as the frame rate. `pushPower` (src/core/push.ts, D21) reads a gap longer than `MAX_BRIDGE_SECONDS` (1/60 s) as 'the pointer sat still, then moved in the last 1/60 s', which is right for a pause but wrong for a pointer that kept moving while frames were slow. So the same hand motion reads high: about +11 points for a steady 200 px push over 150 ms at 30 fps (66.7 at 60 Hz or 1000 Hz, 77.8 at 30 Hz), and about +16 when one 50 ms frame hitch lands inside a push at 60 fps. Keyboard throws are not affected. Fix it in src/game: while the button is down, also read `getCoalescedEvents()` from native `pointermove` events on the canvas, and forward each coalesced sample to `sim.mouse.drag` with its own `timeStamp` and its y converted to logical game pixels the way Phaser converts a pointer, so the core sees the mouse's real rate (125 Hz or more) even when frames are slow. No sample may be forwarded twice (the Phaser `pointermove` for the same move must not add it again), the release still comes from the Phaser `pointerup`/`pointerupoutside`, and where `getCoalescedEvents` is missing or returns nothing the game behaves exactly as today. Keep the rule in core: `pushPower` and the D25 timing rules don't change; only if the builder can show a better bridge rule that keeps every existing push.test.ts case passing unchanged may push.ts change. Update D21 and D25 in docs/ARCHITECTURE.md and the `mouseHelpers.ts` row.",
+      "acceptance": [
+        "E2E: a steady 200 px push over 150 ms made on the virtual clock as pointer events at 30 fps, each carrying the in-between samples at 125 Hz as coalesced events (Chromium's PointerEvent constructor takes a `coalescedEvents` list; check that it reaches the game), throws with power within 2 points of the same push delivered as plain events at 125 Hz.",
+        "E2E: the same push at 60 fps with one 50 ms gap whose event carries the missing samples as coalesced events throws within 2 points of the push without the gap.",
+        "E2E: a push whose events carry no coalesced samples throws exactly `pushPower` of the events the page saw, as today, and every existing test in mouse.spec.ts and mouseNothing.spec.ts passes unchanged.",
+        "E2E: while not dragging (no grab, during flight or a result) the extra listener forwards nothing: the power bar and `throws` don't change, and no console errors appear in any case."
+      ],
+      "depends_on": [
+        "F012"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
       "id": "F022",
       "milestone": "M5",
       "category": "gameplay",
