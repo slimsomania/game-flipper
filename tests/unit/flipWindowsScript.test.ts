@@ -4,9 +4,22 @@ import { describe, expect, it } from 'vitest';
 /*
  * `npx tsx scripts/flip-windows.ts` is how agents and the human read the game's feel, so its shape
  * is tested: one row per water level from 10% to 90% with a single-flip window and a double-flip
- * window, each a window or "none", and a run time well under a minute. The numbers themselves are
- * not checked here; F009 locks those.
+ * window, each a window or "none"; then the difficulty benchmark (F020): the landing rates of the
+ * practiced and the new player, the best fixed power and its rate, the best-scoring fixed power,
+ * and each one's points per 10 throws; and a run time well under a minute. The numbers themselves are not checked here:
+ * calibration.test.ts and difficulty.test.ts lock those.
  */
+
+/** Run the script with `args` (tuning overrides) and return what it printed. */
+function runScript(args: string[] = []) {
+  const started = Date.now();
+  const run = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/flip-windows.ts', ...args], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+    timeout: 60_000,
+  });
+  return { run, seconds: (Date.now() - started) / 1000 };
+}
 
 /** Read one window off the front of `cells`: `none`, or low, high, center and width. */
 function takeWindow(cells: string[]): void {
@@ -24,13 +37,7 @@ function takeWindow(cells: string[]): void {
 
 describe('scripts/flip-windows.ts', () => {
   it('prints one row per water level, 10% to 90%, each with a single and a double window or "none", in under a minute', () => {
-    const started = Date.now();
-    const run = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/flip-windows.ts'], {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      timeout: 60_000,
-    });
-    const seconds = (Date.now() - started) / 1000;
+    const { run, seconds } = runScript();
     expect(run.stderr).toBe('');
     expect(run.status).toBe(0);
     expect(seconds).toBeLessThan(60);
@@ -51,5 +58,56 @@ describe('scripts/flip-windows.ts', () => {
       takeWindow(cells); // double flip
       expect(cells).toEqual([]); // nothing else on the row
     }
+  }, 70_000);
+
+  it('then prints both landing rates, the best fixed power and its rate, and each player’s points per 10 throws', () => {
+    const { run } = runScript();
+    expect(run.status).toBe(0);
+    const lines = run.stdout.trim().split(/\r?\n/);
+    const start = lines.findIndex((line) => line.startsWith('difficulty benchmark'));
+    expect(start).toBeGreaterThan(10); // after the table
+    expect(lines[start]).toMatch(/200 random bottles, seed \d+, error σ 8 points/);
+    expect(lines[start + 1]).toMatch(/player\s+landing rate\s+points per 10/);
+
+    const practiced = lines[start + 2]!.match(/^practiced player .*?\s(\d+\.\d)%\s+(\d+\.\d)$/);
+    const newPlayer = lines[start + 3]!.match(
+      /^new player \(one fixed power, \d+(?:\.\d)?\)\s+(\d+\.\d)%\s+(\d+\.\d)$/,
+    );
+    const best = lines[start + 4]!.match(
+      /^best fixed power \((\d+), no error\)\s+(\d+\.\d)%\s+(\d+\.\d)$/,
+    );
+    const scoring = lines[start + 5]!.match(
+      /^best-scoring fixed power \((\d+), no error\)\s+(\d+\.\d)%\s+(\d+\.\d)$/,
+    );
+    expect(practiced, lines[start + 2]).not.toBeNull();
+    expect(newPlayer, lines[start + 3]).not.toBeNull();
+    expect(best, lines[start + 4]).not.toBeNull();
+    expect(scoring, lines[start + 5]).not.toBeNull();
+    // Rates are percentages; a fixed power is a power from 0 to 100; points are not negative.
+    for (const rate of [practiced![1], newPlayer![1], best![2], scoring![2]]) {
+      expect(Number(rate)).toBeGreaterThanOrEqual(0);
+      expect(Number(rate)).toBeLessThanOrEqual(100);
+    }
+    for (const power of [best![1], scoring![1]]) expect(Number(power)).toBeLessThanOrEqual(100);
+    for (const points of [practiced![2], newPlayer![2], best![3], scoring![3]]) {
+      expect(Number(points)).toBeGreaterThanOrEqual(0);
+    }
+    // The best-scoring power scores at least what the most-landing one does.
+    expect(Number(scoring![3])).toBeGreaterThanOrEqual(Number(best![3]));
+    // The timing line closes the output.
+    expect(lines[lines.length - 1]).toMatch(/^\(power 0 to 100 in steps of 1; [\d.]+ s\)$/);
+  }, 70_000);
+
+  it('takes tuning overrides as name=value, and refuses an unknown name', () => {
+    // A heavier throw changes the table (a 10% bottle thrown 3 times as hard needs far less power).
+    const normal = runScript().run.stdout.split(/\r?\n/)[2]!;
+    const { run } = runScript(['throwLinearImpulse=30']);
+    expect(run.status).toBe(0);
+    expect(run.stdout.split(/\r?\n/)[2]!).not.toBe(normal);
+
+    const bad = runScript(['notATuningValue=3']).run;
+    expect(bad.status).toBe(1);
+    expect(bad.stderr).toContain('Unknown argument "notATuningValue=3"');
+    expect(bad.stdout).toBe('');
   }, 70_000);
 });

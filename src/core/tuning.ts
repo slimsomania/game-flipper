@@ -129,24 +129,27 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   waterMin: 0.1,
   waterMax: 0.9,
   waterStep: 0.05,
-  // F009 calibration (see D23 in docs/ARCHITECTURE.md). A heavy shell keeps the water from
-  // dominating the mass, so the power a bottle needs rises by a factor of 1.5 to 2 from 10% to 90%.
-  shellDensity: 0.9,
+  // F009 calibration (see D23 in docs/ARCHITECTURE.md), retuned in F020 against the simulated
+  // players (D33): a light shell lets the water dominate the mass, so the power a bottle needs
+  // rises by a factor of about 3.7 from 10% to 90%, and no single power lands most bottles.
+  shellDensity: 0.2969,
   waterDensity: 1,
   // High friction and almost no bounce make a landing stick instead of skipping, and strong spin
   // damping makes the rotation settle early in the flight, so the angle at landing changes slowly
   // with the power: that is what gives a single flip a window of power instead of one lucky value.
-  bottleFriction: 0.7,
-  bottleRestitution: 0.04,
-  bottleAngularDamping: 2.55,
-  bottleLinearDamping: 0.34,
-  throwAngleDeg: 6,
-  throwLinearImpulse: 9.2,
-  throwAngularImpulse: 6.25,
+  bottleFriction: 0.7571,
+  bottleRestitution: 0.0182,
+  bottleAngularDamping: 2.535,
+  bottleLinearDamping: 0.3013,
+  throwAngleDeg: 5.893,
+  // The linear impulse sets the height of the flight: at a window's center the bottle rises
+  // about 1.15 to 1.3 m above the hand, whatever the water (F009's tuning: about 1.3 m).
+  throwLinearImpulse: 5.226,
+  throwAngularImpulse: 3.3933,
   // A spin that is almost the same at every power but climbs steadily toward 100, so a double flip
   // is still within reach of a full bottle.
-  throwSpinExponent: 0.03,
-  throwSpinGrowth: 0.013,
+  throwSpinExponent: 0.0307,
+  throwSpinGrowth: 0.0149,
   // Design section 2: upright within 15° for 0.5 s (an upright, still bottle cannot fall any
   // more, so a longer hold was only waiting); a throw with no outcome after 5 s fails.
   uprightToleranceDeg: 15,

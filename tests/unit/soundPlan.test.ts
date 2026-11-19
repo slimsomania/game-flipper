@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../src/core/events';
+import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
 import { Simulation } from '../../src/core/simulation';
 import { DEFAULT_TUNING, resolveTuning, type Tuning } from '../../src/core/tuning';
 import {
@@ -199,9 +200,14 @@ describe('planning a real throw', () => {
   });
 
   it('gives a whoosh, at least one knock and then a thud for a failed throw', () => {
+    // A throw 10 points below the single-flip window of a half-full bottle turns too little and
+    // falls over: the power comes from a sweep, not from a number that depends on the tuning.
+    const low = widestWindow(findWindows(sweepPowers(0.5)), 1)!.low;
     const sim = new Simulation({ seed: 3 });
-    sim.throwBottle(20); // lands on its side
+    sim.setWater(0.5);
+    sim.throwBottle(low - 10);
     runToOutcome(sim);
+    expect(sim.snapshot().outcome).toMatchObject({ result: 'fail' });
     const names = plan(sim.drainEvents(), sim.tuning).map((c) => c.name);
     expect(names[0]).toBe('whoosh');
     expect(names.filter((n) => n === 'knock').length).toBeGreaterThanOrEqual(1);
