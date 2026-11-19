@@ -946,3 +946,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Notes for later:
   - The summary has the speaker but not the pause button. That is right, since a finished round has nothing to pause, but the corner row differs from play.
   - Process: `npm run verify > file; echo`, a Monitor `until` loop and a compound shell command with a heredoc were all auto-denied. A plain `npm run verify 2>&1 | tail -60` in the background and the Edit tool were allowed.
+
+> [harness] session 46 · reviewer F017 · needs_review → done · ok · 1 commit(s) · 35 tool calls · 15m 41s · ~$0.93 API-equivalent
