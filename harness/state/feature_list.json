@@ -496,9 +496,9 @@
         "F015",
         "F017"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "SaveStore (src/game/storage.ts) now remembers that its last setItem threw (`writeFailed`); until a write works again, load() gives what the store last wrote, with the best the higher of that and the stored best, and with working storage it still reads the entry afresh. No change to src/core. 16 new unit cases in saveStore.test.ts (empty and older-best-3 starts, mute, other-tab best, recovery, a second failure; 11 of them fail on the old code, the rest guard what must not change) and 2 new e2e tests in bestScore.spec.ts with `Storage.prototype.setItem` throwing before load (both fail on the old code); the storage row and D28 in ARCHITECTURE.md are updated. `npm run verify` passed (230 e2e).",
+      "notes": "SaveStore (src/game/storage.ts) now remembers that its last setItem threw (`writeFailed`); until a write works again, load() gives what the store last wrote, with the best the higher of that and the stored best, and with working storage it still reads the entry afresh. No change to src/core. 16 new unit cases in saveStore.test.ts (empty and older-best-3 starts, mute, other-tab best, recovery, a second failure; 11 of them fail on the old code, the rest guard what must not change) and 2 new e2e tests in bestScore.spec.ts with `Storage.prototype.setItem` throwing before load (both fail on the old code); the storage row and D28 in ARCHITECTURE.md are updated. `npm run verify` passed (230 e2e). Reviewed: session 53 `npm run verify` passed (230 e2e, 15.1 min); saveStore.test.ts 46/46 and bestScore.spec.ts 11/11 rerun; the tests diff only adds cases; a temporary e2e (not committed) at 1024x576 with setItem throwing: mute set, rounds of 3 (new best), R twice then 2, then 3 (tie, no new best), Title 'Best: 3' with mute held and nothing stored, then writes allowed and a mute toggle stored {best: 3, muted: false}, no console errors; snaps of the Title and the Game at 1024x576 are fine.",
       "review_feedback": ""
     },
     {

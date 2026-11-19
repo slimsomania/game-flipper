@@ -1090,3 +1090,16 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F021 is the next todo in M5 (see `feature_list.json`); the reviewer of F032 could also try `Storage.prototype.setItem = () => { throw ... }` in a real page with `?seed=7` through two rounds and the Title.
 
 > [harness] session 52 · builder F032 · todo → needs_review · ok · verify passed · 1 commit(s) · 45 tool calls · 19m 50s · ~$0.70 API-equivalent
+
+## Session 53 · reviewer · F032 Keep the best score and mute for the visit when the save can be read but not written
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: format check, typecheck, unit tests, build and 230 e2e passed (15.1 min).
+  - Read the diff: only `SaveStore` in `src/game/storage.ts` changed (`writeFailed`, set when `setItem` throws, cleared by the next write that works; while set, `load()` gives `lastSaved` with the best `max(lastSaved.best, stored.best)`). No change to `src/core`. The storage row and D28 in ARCHITECTURE.md are updated. `git diff e2054303..HEAD -- tests` only adds tests and helpers; no existing case was changed or removed.
+  - Reran `tests/unit/saveStore.test.ts` (46/46) and `tests/e2e/bestScore.spec.ts` (11/11, including the 2 new read-only-storage tests). Unit criteria 1 to 3 map to the empty and best-3 starts, the mute cases, the recovery and other-tab cases, and the unchanged older cases.
+  - My own temporary e2e (deleted, not committed), at a 1024x576 window with `Storage.prototype.setItem` throwing until a page flag is set: mute on through the hook, a round of 3 (Best: 3, New best!), Play again, R pressed twice midway, a round of 2 (Best: 3, no note), a round of 3 (a tie, no note), Title shows "Best: 3", mute still on, nothing stored. Then I allowed writes and toggled mute off, and the entry stored was `{version: 1, best: 3, muted: false}`. No console errors.
+  - Snaps at 1024x576 (`?seed=7`): the Title ("Best: 0", Play, speaker, hint) and the Game after a throw with mute set (crossed speaker icon, HUD, "Double! +2") are drawn correctly. No console errors.
+- Problems: none
+- Notes for later:
+  - As the builder noted, while writes fail the mute comes from memory, so a mute change made in another tab isn't seen until a write works. The feature only asks to keep the other tab's best, so this is fine.
+  - After a failed write, the store only retries at the next `update` (a new best or a mute toggle), not on every round. That fits "until a write succeeds again".
