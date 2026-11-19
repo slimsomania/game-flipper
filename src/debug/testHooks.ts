@@ -64,8 +64,9 @@ export interface FlipperTestApi {
   /**
    * The speaker button the player sees: the icon it last drew (`muted` true is the cross) and its
    * clickable area (`x`, `y` the middle, `width`, `height`, in game pixels, so a test can click it
-   * with `page.mouse`). Null when the active scene has no such button. Like `texts()` it shows what
-   * the scene last drew: wait a frame after changing the state.
+   * with `page.mouse`). Null when no running scene has one (every screen the player can reach does:
+   * the Title, the Game scene, the pause overlay and the round summary). Like `texts()` it shows
+   * what the scene last drew: wait a frame after changing the state.
    */
   muteButton(): MuteButtonView | null;
   /**

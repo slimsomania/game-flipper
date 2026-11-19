@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
 import { saveStore } from '../storage';
+import { createMuteControl } from '../view/muteButtonView';
 import { createSummaryView, type SummaryView } from '../view/summaryView';
 import { quitToTitle } from './toTitle';
 
@@ -18,6 +19,9 @@ export interface SummaryData {
  *
  * A key's auto-repeat is ignored, so a key still held down from the last throw (Space skips the
  * last result) can't choose Play again by itself.
+ *
+ * The mute control (the speaker button and M) works here: it only toggles the sound and its saved
+ * setting, and neither starts Play again nor goes to the title.
  */
 export class SummaryScene extends Phaser.Scene {
   private sim!: Simulation;
@@ -40,6 +44,9 @@ export class SummaryScene extends Phaser.Scene {
       () => this.playAgain(),
       () => this.toTitle(),
     );
+    // The Game scene's own speaker and M are deaf while it is paused underneath, so the summary
+    // carries its own, in the top-right corner beside the card (not over it).
+    createMuteControl(this);
 
     const keyboard = this.input.keyboard;
     if (keyboard) {

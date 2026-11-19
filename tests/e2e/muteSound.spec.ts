@@ -259,7 +259,7 @@ test.describe('the test hooks', () => {
     expect(errors).toEqual([]);
   });
 
-  test('muteButton() is null while the summary is open, and back when it closes', async ({
+  test('muteButton() is the summary speaker while it is open, and the game speaker after', async ({
     page,
   }) => {
     const errors = await openGame(page, '?seed=7');
@@ -267,7 +267,8 @@ test.describe('the test hooks', () => {
     await land(page, FLIPPED);
     await skipResult(page);
     await expect.poll(() => activeScenes(page)).toEqual(['Summary']);
-    expect(await page.evaluate(() => window.__FLIPPER__!.muteButton())).toBeNull();
+    // The Game scene's button is paused behind the summary; this one is the summary's (F017 fix).
+    expect(await muteState(page)).toEqual(ON);
 
     await page.keyboard.press('Enter'); // Play again
     await expect.poll(() => activeScenes(page)).toEqual(['Game']);
@@ -285,6 +286,7 @@ test.describe('the test hooks', () => {
     await expect.poll(() => activeScenes(page)).toEqual(['Summary']);
 
     await page.evaluate(() => window.__FLIPPER__!.setMuted(true));
+    await expect.poll(() => muteState(page)).toEqual(MUTED); // the summary's button follows too
     await page.keyboard.press('Enter'); // Play again: the Game scene runs again
     await expect.poll(() => activeScenes(page)).toEqual(['Game']);
     await expect.poll(() => muteState(page)).toEqual(MUTED);
