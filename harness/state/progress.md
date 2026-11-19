@@ -1129,3 +1129,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The success particles in green are low contrast on the green flash; the yellow and orange ones carry the effect. Left as it is.
   - Process: a Bash command with a Python heredoc and one with a heredoc that had braces next to quotes were auto-denied, so I used the Edit tool and plain commands instead; a background-monitor `until` loop was denied too.
 - Next: the reviewer should run `npm run snap -- --url "/?seed=7" --do "pause,scene:Game,pause,call:lockWater;0.5,call:setPower;40,key:Space,step:96,shot:burst,step:30,call:cameraOffset,shot:rest"` and look at the burst and the camera; F031 (shading) is next after the review and must keep the overscan.
+
+> [harness] session 54 · builder F021 · todo → needs_review · ok · verify passed · 1 commit(s) · 116 tool calls · 54m 56s · ~$3.11 API-equivalent
