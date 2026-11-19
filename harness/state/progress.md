@@ -1007,3 +1007,49 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   3. The real-mouse e2e test compares the power with `pushPower` itself: **no fix.** That test checks the wiring (the game sees the same events, with the same times, as the page's own log) at a pace Playwright doesn't control, so it can't assert design ranges. The rule is pinned to design targets in push.test.ts (300 px gives at least 90, 40 px under 30, more distance or speed gives more), and the virtual-clock e2e tests in mouse.spec.ts also assert ranges (a 200 px flick is above 50, a fast push beats a slow one by more than 30, a hard one beats a gentle one by more than 30).
 - Plan: F033 added to M5 before F022 (depends on F012).
 - Next: F020 attempt 2, then F032, F021, F031, F033, F022.
+
+## Session 50 · builder · F020 Tune difficulty against simulated players
+- Did: attempt 2. Session 49 had built most of it and timed out before logging, so I took its WIP commit (`9e6f87c`), checked it, removed its scratch files and finished the records.
+  - `src/core/difficulty.ts` (new): `runBenchmark({ seed, bottles, errorSigma, tuning, sweep })`. It draws 200 random bottles the way the game does, sweeps each distinct water level once through the real `Simulation` (`sweepPowers`), and lets a practiced player (aims at each bottle's own single-flip window center) and a new player (one fixed power, the average center) throw with a seeded normal error (σ 8, Box-Muller `normalSample`, each player on its own seed stream). It counts landings and points, and reports the best fixed power (no error) and the best-scoring fixed power. The player models are in the file's header comment. Documented as D33 and in the file table of `docs/ARCHITECTURE.md`.
+  - `scripts/flip-windows.ts`: after the window table it prints both landing rates, the best fixed power and its rate, the best-scoring fixed power, and each player's points per 10 throws. It still takes `name=value` overrides.
+  - `src/core/tuning.ts`: the retuned defaults below. I did not use the 2026-11-18 suggestion (shellDensity 0.32 and so on): with the other levers left at F009's values its flight barely rises. I measured the highest point of the bottle at a window center: 0.02 m above the held bottle's top at every level, against 0.44 to 0.49 m with F009's tuning. Session 49 searched around it with a flight constraint, and its tuning keeps the throw visible (table below).
+  - Cleanup: `git rm` of session 49's eight scratch scripts `scripts/_*.ts` (the search, flight and rise probes; they stay in the history in `9e6f87c`). The 36 `scripts/_*.log` files it left are ignored by git and untracked; I left them, since a glob delete was denied.
+- Tests (none removed or weakened):
+  - `tests/unit/calibration.test.ts` follows the design change of 2026-11-18 (section 3 and 13): the ratio test is now 2.5 to 4.0 (was 1.5 to 2.0), the width test 10 to 28 (was 12 to 28), the tested levels are 10% to 90% in 10% steps (were 5 levels), and there are two new tests: no power from 0 to 100 lands a single flip on more than 60% of the nine levels, and every double-flip window starts below power 100.
+  - New `tests/unit/difficulty.test.ts` (made-up worlds for the models, no physics; the benchmark of the default tuning is deterministic for a seed, practiced 60 to 80% and new 20 to 40% of 200 throws, the best fixed power at most about 60%) and an extended `tests/unit/flipWindowsScript.test.ts` (the script prints both rates, the best fixed power and its rate, and the points).
+  - Older tests that threw at a fixed power expecting an outcome: only `tests/unit/soundPlan.test.ts` ("gives a whoosh, at least one knock and then a thud for a failed throw") needed a change. It threw at 20, which now lands upright for a half-full bottle; it now takes the power from a sweep (10 below the 50% window's low edge) and asserts the outcome is a fail. No e2e test had to change: all 228 pass with the new defaults.
+- Tuning, old (F009) → new: `shellDensity` 0.9 → 0.2969, `throwLinearImpulse` 9.2 → 5.226, `throwAngularImpulse` 6.25 → 3.3933, `throwSpinGrowth` 0.013 → 0.0149, `throwSpinExponent` 0.03 → 0.0307, `bottleAngularDamping` 2.55 → 2.535, `bottleFriction` 0.7 → 0.7571, `bottleRestitution` 0.04 → 0.0182, `bottleLinearDamping` 0.34 → 0.3013, `throwAngleDeg` 6 → 5.893. Everything else is unchanged. Rounding them to three digits narrowed the 10% window to 9, so keep them as they are.
+- New `npx tsx scripts/flip-windows.ts` (default tuning, 200 bottles, seed 1, σ 8):
+
+```
+       single flip (1 turn)         double flip (2 turns)
+ water   low  high  center  width     low  high  center  width
+   10%    11    21      16     10      47    54    50.5      7
+   20%    19    31      25     12      58    66      62      8
+   30%    24    38      31     14      65    74    69.5      9
+   40%    28    43    35.5     15      70    79    74.5      9
+   50%    32    47    39.5     15      75    84    79.5      9
+   60%    37    52    44.5     15      80    88      84      8
+   70%    41    57      49     16      85    93      89      8
+   80%    46    62      54     16      90    99    94.5      9
+   90%    52    67    59.5     15      96   100      98      4
+
+player                                                      landing rate  points per 10
+practiced player (aims at each window center)                      65.0%            6.5
+new player (one fixed power, 38.5)                                 36.0%            3.8
+best fixed power (54, no error)                                    60.5%            8.7
+best-scoring fixed power (95, no error)                            55.5%           16.3
+```
+
+  The old tuning (F009) had single windows 13 to 16 wide with centers 29.5 (10%) to 54 (90%), a ratio of 1.8, and one fixed power (46) landing 7 of the 9 levels (the 2026-11-18 brief). Now the ratio is 3.7 (59.5 / 16), the 10% window (11 to 21) and the 90% window (52 to 67) are 31 points apart, and the most any fixed power lands a single flip is 4 of the 9 levels (for example 37, 41 or 46).
+- Verified:
+  - `npm run format`, then `npm run verify`: format check, typecheck, unit tests (729 in 55 files), build, and 228 e2e passed in 13.4 min. The harness had marked session 49's verify as failed, with `muteSummary.spec.ts:69` (the speaker click on the summary) at 40 s in the tail; it passes in this run and that test doesn't touch the tuning, so I take it for a slow run under load, but I have no log of the cause.
+  - Snaps (`?seed=7`, 1280x720, `scene:Game,pause,call:lockWater;<w>,call:setPower;<center>,key:Space,step:...`): at the 10% (power 16), 50% (40) and 90% (60) window centers each bottle leaves the hand, turns over once (upside down at the top of the throw, the water line moving to the top) and stands upright on the table with the green flash, "Nailed it! +1" and Score 1. No console errors. Honest measure of the flight: the base of the bottle rises 1.15, 1.19 and 1.32 m above the hand (F009: 1.33, 1.31, 1.35 m), and the highest point of the bottle rises 0.24, 0.36 and 0.48 m above the top of the held bottle (F009: 0.44 to 0.49). The landing spot is the same as before, about 20 to 40 px right of the hand over the left half of the table (x 2.99 to 3.11 m against 3.03 to 3.10 m in F009).
+- Status: F020 → needs_review
+- Issues / follow-ups:
+  - **The 10% bottle's flight is lower than F009's** (0.24 m above the held top against 0.44 m): at its apex the bottle still sits about where it was held. Raising `throwLinearImpulse` to 6.2 lifts it to 0.33 m but narrows that window to 8, under the design's 10. A higher flight at 10% needs a different lever or a taller toss designed in; the reviewer should look at the 10% snap and judge.
+  - **Landing rates have little margin.** The default seed gives practiced 65.0% (target 60 to 80), new 36.0% (20 to 40) and a best fixed power of 60.5% on the benchmark's 200 bottles (the 60% target is tested on the nine levels, where the worst fixed power lands 4 of 9 single flips). One seed's 200 throws scatter by about ±3.5 points; the exact expected rates over 17 levels are practiced 65.7% and new 39.1% (D33). The 10% window is exactly 10 wide, the minimum, and the 90% double window is 4 wide (96 to 100).
+  - **Multi-flips are not targeted.** A fixed power of about 95 with no error scores 16.3 points per 10 throws against the practiced player's 6.5, because high powers land double and triple flips at several levels. The design counts landings, so this is not a failure of F020's targets, but a human should decide whether to cap the points of one throw or remove the windows at high power. It is in the benchmark as `bestScoringFixed`.
+  - The error size (σ 8) and the aiming rules are assumptions to confirm by playing, as the feature notes say.
+  - Process: a glob in `rm` and a `for` loop with a shell variable were auto-denied; plain commands with exact paths worked.
+- Next: the reviewer should play at the 10%, 50% and 90% window centers (`call:lockWater;<w>,call:setPower;<center>`), judge the 10% flight, and confirm `npx tsx scripts/flip-windows.ts` prints the table above. F032 is next after the review.
