@@ -476,7 +476,7 @@
         "F030"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "The simulated players are a proxy for the design targets; the error size and the aiming rules are assumptions for the human to confirm by playing. The targets were raised on 2026-11-18 after an outside review found that one fixed power landed most bottles.",
       "review_feedback": ""
     },

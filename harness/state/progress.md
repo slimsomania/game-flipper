@@ -986,3 +986,6 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Process: a background `npm run verify > file; echo` was auto-denied again. `npm run verify 2>&1 | tail -60` in the background worked.
 
 > [harness] session 48 · reviewer F030 · needs_review → done · ok · 1 commit(s) · 39 tool calls · 19m 10s · ~$1.17 API-equivalent
+
+> [harness] session 49 · builder F020 · todo → todo · timeout · verify FAILED · 1 commit(s) · 226 tool calls · 1h 15m
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
