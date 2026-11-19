@@ -481,6 +481,27 @@
       "review_feedback": ""
     },
     {
+      "id": "F032",
+      "milestone": "M5",
+      "category": "persistence",
+      "title": "Keep the best score and mute for the visit when the save can be read but not written",
+      "description": "Found by the outside review of M3 (2026-11-19, see the progress log). `SaveStore` in src/game/storage.ts falls back to what it last wrote (`lastSaved`) only when the storage is missing or `getItem` throws. When storage is full or write-blocked, `setItem` throws but `getItem` still works, so `load()` keeps returning the stored entry (or the defaults) and ignores `lastSaved`: the best score goes back to the old value between rounds, every later round can show 'New best!' again, and the Title shows the stale best. Fix it in `SaveStore` only: remember that the last write failed and, until a write succeeds again, have `load()` give what the store last wrote (for the best, the higher of that and the stored best, so another tab's progress is not lost). With working storage `load()` must still read the entry afresh each time. Nothing may throw. The rule stays in `updateBest` in core; no change to src/core. Update the storage row and D28 in docs/ARCHITECTURE.md.",
+      "acceptance": [
+        "Unit: with a storage whose getItem works (empty, or holding an older best of 3) and whose setItem throws, `recordRound(8)` reports a new best of 8, then `load().best` is 8 and `recordRound(8)` and `recordRound(5)` are not new bests; `update({ muted: true })` keeps the best of 8 and `load().muted` is true.",
+        "Unit: once setItem works again, the next write stores the in-memory values (best 8 survives), and after that `load()` reads the entry afresh again (a value another tab wrote is seen).",
+        "Unit: the existing saveStore.test.ts cases (missing entry, invalid JSON, a storage that throws on every call, no storage, other version) still pass unchanged, and no SaveStore method throws in any of the new cases.",
+        "E2E: with `Storage.prototype.setItem` made to throw before the page loads, a round scoring 3 shows 'Best: 3' and 'New best!', the next round scoring 2 shows 'Best: 3' without 'New best!', and the Title shows 'Best: 3'; no console errors."
+      ],
+      "depends_on": [
+        "F015",
+        "F017"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
       "id": "F021",
       "milestone": "M5",
       "category": "visuals",

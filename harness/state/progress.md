@@ -989,3 +989,12 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 
 > [harness] session 49 · builder F020 · todo → todo · timeout · verify FAILED · 1 commit(s) · 226 tool calls · 1h 15m
 > [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
+
+## Human session · independent Gemini review of M3 (2026-11-19)
+- What: a second-opinion review of M3 (F013 to F015, commits `9351813..7c2a133`, judged in the current code) by Gemini 3.8 Flash (high) in Google Antigravity, run by hand outside the harness and read-only. It ran 9 unit test files one by one (all green), read the e2e tests and took 4 snaps (HUD at the start, a 1-throw round, the summary with "New best!", Play again by Space). Verdict: pass with issues, all 13 criteria met. Claude then checked each finding against the code.
+- Findings and decisions:
+  1. A save that can be read but not written loses the best score between rounds: **fix, new F032.** `SaveStore.load()` uses `lastSaved` only when there is no storage or `getItem` throws (`src/game/storage.ts:64-71`). With storage that is full or write-blocked, `setItem` throws but `getItem` works, so the next `load()` returns the old entry and ignores what was just recorded: the best falls back, later rounds show "New best!" again and the Title shows the old best. The mute choice itself stays right for the visit (it lives in `Sfx`), but a mute toggle also writes `lastSaved` from the stale best. The unit test's `throwingStorage` throws on both calls, so it never covered this. Rare in practice (a full quota on this origin, or old Safari private mode), but cheap to fix in `SaveStore` alone.
+  2. `updateBest` accepts a fractional score, which `parseSave` would drop on reload: **no fix.** A score is a sum of whole turns (`Math.round` in the landing judge, `pointsForTurns` is `Math.abs`), and `recordRound` is only called with `snapshot.score`, so no fraction can reach it.
+  3. The 10-throw script test in `roundPlay.test.ts` doesn't assert `roundOver` after its last result: **no fix.** The next test in the same file, and the "end of a round" block (`roundOver` after exactly the 10th wait, `outcome` null, no new bottle, every throw refused), already check that ending in detail.
+- Plan: F032 added to M5 after F020 (depends on F015 and F017).
+- Next: F020 attempt 2 (session 49 timed out with verify failing), then F032, F021, F031, F022.
