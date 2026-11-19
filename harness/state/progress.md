@@ -970,3 +970,17 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
 - Next: F020 (difficulty benchmark and tuning) depends on this: its calibration test ranges are the next thing to update. Remember that `calibration.test.ts` still locks the old 1.5 to 2 times power ratio; F020 changes it to 2.5 to 4.
 
 > [harness] session 47 · builder F030 · todo → needs_review · ok · verify passed · 1 commit(s) · 100 tool calls · 22m 52s · ~$1.49 API-equivalent
+
+## Session 48 · reviewer · F030 Quicker result timing
+- Verdict: pass
+- Evidence:
+  - `npm run verify` on the final tree: format check, typecheck, unit tests and build passed, then 228 e2e passed in 13.8 min, including the 3 in `resultTiming.spec.ts` and `outcome.spec.ts:81`, the one the builder fixed after their last full run.
+  - Read the diff (`8ce72d1f..HEAD`). The only source change is the two defaults in `tuning.ts` plus a comment in `tuningReadout.ts`. `LandingJudge` (`holdSteps = stepsFor(uprightHoldSeconds)`) and `Simulation` (the `resultDelaySeconds` check) already read the tuning. Every changed test pins the new design numbers with exact 29/30 and 59/60 edges, or feeds 30 instead of 60 steps, which is stricter. Nothing is removed or skipped. New tests cover rocking past the still limits (just over the limits ends in a timeout, still for 29 steps then moving never succeeds) and the 60-step wait with `skip()`. No debug code is left.
+  - Criteria 1 and 2: `outcome.test.ts` (29 steps null, the 30th a success) and `resultWait.test.ts` (59 steps `result`, the 60th `aiming`, skip after 1 step). Both passed in verify.
+  - Criterion 4: `npx tsx scripts/flip-windows.ts` prints exactly the F009 table in this log (10%: 23-36 / 68-76 … 90%: 46-62 / 95-100). I checked that the script runs the real `Simulation` with the default tuning (through `flipWindow.sweepPowers`), so the match does test the new hold.
+  - Snaps at 1024x576, `?seed=7`, power 30 with a real Space throw: at result step 0, "Nailed it! +1", Score 1, the bottle upright on the table. At step 59 the same screen. At step 60, Throw 2 / 10 and a new bottle (water 0.15) in the hand. Edge cases: two clicks at 640;150 on the outcome step itself skipped at once (the tick did not move) and threw nothing (`throws` stayed 1). A Space throw in real time: 2.2 s after release it was at result step 34, and 1.1 s later throw 3 was aiming. No console errors in any run.
+- Problems: none
+- Notes for later:
+  - Stale comment: `tests/unit/simEvents.test.ts:121` still says "upright for a second". It is harmless and can be fixed whenever that file is next touched.
+  - `docs/ARCHITECTURE.md`'s test table doesn't list `resultTiming.spec.ts` or `resultWait.test.ts` (neither was listed before).
+  - Process: a background `npm run verify > file; echo` was auto-denied again. `npm run verify 2>&1 | tail -60` in the background worked.

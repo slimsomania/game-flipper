@@ -453,9 +453,9 @@
       "depends_on": [
         "F009"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Set uprightHoldSeconds 0.5 and resultDelaySeconds 1 in src/core/tuning.ts (no other source logic changed) and updated D12, D15 and the tuning row in docs/ARCHITECTURE.md. The unit and e2e tests that locked the old 1 s hold and 90-step wait now use 30 and 60 steps, plus new unit tests for the 30-step hold, rocking past the still limits and the 60-step wait, and a new tests/e2e/resultTiming.spec.ts (60-step wait, Space and click skip). Verified by npm run verify (all but one e2e test passed; that one, outcome.spec.ts:81, still stepped 89 frames and was fixed and rerun green), scripts/flip-windows.ts giving the same table as F009, and a snap through an upright landing.",
+      "notes": "Set uprightHoldSeconds 0.5 and resultDelaySeconds 1 in src/core/tuning.ts (no other source logic changed) and updated D12, D15 and the tuning row in docs/ARCHITECTURE.md. The unit and e2e tests that locked the old 1 s hold and 90-step wait now use 30 and 60 steps, plus new unit tests for the 30-step hold, rocking past the still limits and the 60-step wait, and a new tests/e2e/resultTiming.spec.ts (60-step wait, Space and click skip). Verified by npm run verify (all but one e2e test passed; that one, outcome.spec.ts:81, still stepped 89 frames and was fixed and rerun green), scripts/flip-windows.ts giving the same table as F009, and a snap through an upright landing.\nReviewed: npm run verify green on the final tree (228 e2e), the test diff only moves the old design numbers to 30/60 or adds tests, scripts/flip-windows.ts prints the F009 table exactly, and snaps at 1024x576 of a real power-30 throw show the success at result step 0, still up at step 59 and Throw 2 in the hand at step 60, plus a click skip on the outcome step itself and a real-time throw.",
       "review_feedback": ""
     },
     {
