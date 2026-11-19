@@ -968,3 +968,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The result flash is 0.5 s (`FLASH_SECONDS`) of a 1 s result now, so half of the result is flash; F031 changes the flash anyway (at most 0.2 alpha), so I left it.
   - Process: compound shell commands (`&&` chains with `sed -i`, heredocs, a Monitor on `tail -f`) were auto-denied again; separate plain commands, the Edit tool and `node -e "setTimeout(...)"` (a foreground wait of up to 9 min, since `sleep` is blocked) all worked. Verify took 13.7 min for e2e.
 - Next: F020 (difficulty benchmark and tuning) depends on this: its calibration test ranges are the next thing to update. Remember that `calibration.test.ts` still locks the old 1.5 to 2 times power ratio; F020 changes it to 2.5 to 4.
+
+> [harness] session 47 · builder F030 · todo → needs_review · ok · verify passed · 1 commit(s) · 100 tool calls · 22m 52s · ~$1.49 API-equivalent
