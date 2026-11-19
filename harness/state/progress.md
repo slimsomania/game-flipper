@@ -895,3 +895,15 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Process: verify takes about 13 min. Running snaps alongside it pushed my first run past a 15-min background timeout, so give it `timeout` 3600000 and don't run snaps at the same time.
 
 > [harness] session 44 · reviewer F019 · needs_review → done · ok · 1 commit(s) · 24 tool calls · 28m 54s · ~$0.75 API-equivalent
+
+## Human session · independent Gemini review of M4 (2026-11-18)
+- What: a second-opinion review of M4 (F016 to F019, commits `7c2a133..22ecc00`) by Gemini 3.8 Flash (high) in Google Antigravity, run by hand outside the harness and read-only. It ran targeted unit tests (no regressions), checked core purity, file sizes and the test diff, took snaps, and checked every criterion. Verdict: pass with issues, all 18 criteria met. Claude then checked each finding against the code.
+- Findings and decisions:
+  1. Summary screen has no mute control: **fix.** `SummaryScene` never calls `createMuteControl`; with the summary open the paused Game scene's speaker is drawn but deaf and M does nothing. The F017, F018 and F019 notes had flagged it, but no feature owned it. F017 is set back to `todo` with `review_feedback` and a new acceptance criterion (M and the speaker work on the summary).
+  2. A sound that is already playing finishes over the pause overlay or the title after Pause or Quit to title: **no fix.** Every sound is a one-shot under about 1 s, and mute still cuts it at once through the master gain.
+  3. R doesn't restart while paused: **no fix, by design.** F019's description lists R among the inputs ignored while paused, and `pauseFreeze.spec.ts` checks it. Restart while paused is the overlay's Restart button.
+  4. `unlockOnFirstInput` keeps its listeners for one more input because `AudioContext.resume()` is async: **no fix.** The extra call is a harmless no-op, and the listeners then remove themselves.
+- Process notes:
+  - The Gemini CLI can't be used: Google refuses sign-in with a Google account ("no longer supported for Gemini Code Assist for individuals"), and an API key bills per request. Gemini reviews stay manual, through Antigravity at milestone stops, on the Google AI Pro plan.
+  - In Antigravity, `npm run verify` hung in the Playwright step (the second web server never started), so tell it not to run verify or e2e; the harness gate already does.
+- Next: the builder fixes F017 (summary mute control), then the reviewer checks it, then M5 starts with F020.
