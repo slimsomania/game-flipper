@@ -984,3 +984,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - Stale comment: `tests/unit/simEvents.test.ts:121` still says "upright for a second". It is harmless and can be fixed whenever that file is next touched.
   - `docs/ARCHITECTURE.md`'s test table doesn't list `resultTiming.spec.ts` or `resultWait.test.ts` (neither was listed before).
   - Process: a background `npm run verify > file; echo` was auto-denied again. `npm run verify 2>&1 | tail -60` in the background worked.
+
+> [harness] session 48 · reviewer F030 · needs_review → done · ok · 1 commit(s) · 39 tool calls · 19m 10s · ~$1.17 API-equivalent
