@@ -1103,3 +1103,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later:
   - As the builder noted, while writes fail the mute comes from memory, so a mute change made in another tab isn't seen until a write works. The feature only asks to keep the other tab's best, so this is fine.
   - After a failed write, the store only retries at the next `update` (a new best or a mute toggle), not on every round. That fits "until a write succeeds again".
+
+> [harness] session 53 · reviewer F032 · needs_review → done · ok · 1 commit(s) · 30 tool calls · 18m 23s · ~$0.83 API-equivalent
