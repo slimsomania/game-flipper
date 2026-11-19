@@ -53,7 +53,7 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 
 ## 3. The object and its physics
 
-- For now there is one object: a plastic water bottle. Its shape and size are always the same. It must read as a water bottle: at least about twice as tall as it is wide, with a visible shoulder, neck and cap (2026-11-19).
+- For now there is one object: a plastic water bottle. Its shape and size are always the same. It must read as a water bottle: at least about twice as tall as it is wide, with a visible shoulder, neck and cap (2026-11-19). The goal is about 2.5:1, close to a real bottle, once the water sloshes (M6). The difficulty targets below come first: the bottle is never made slimmer at the cost of narrower windows.
 - The only thing that changes between throws is the **amount of water**, chosen at random each throw (from nearly empty to nearly full, in small steps, using the seeded random generator so tests are repeatable).
 - Water is simulated as extra mass that sits low in the bottle. More water means a heavier bottle and a center of mass closer to the bottom. It does not slosh in the first version: the water level is drawn, but the water moves with the bottle as one solid body.
 - A heavier bottle gets less speed and less spin from the same power, so the "right" power is different for every bottle. The player must learn this from the visible water level alone.

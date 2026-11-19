@@ -663,7 +663,27 @@
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Sloshing is what lets a real slim bottle land (the water falls back to the base and damps the bounce). If the recalibration has room, report in the progress entry whether a slimmer bottle than F034's (toward the real 2.5 to 3:1) would also meet every target, so the human can decide on it.",
+      "notes": "Keep F034's bottle shape here; F035 slims it afterwards with sloshing on.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F035",
+      "milestone": "M6",
+      "category": "tuning",
+      "title": "Slim the bottle toward real proportions now that the water sloshes",
+      "description": "Design section 3 (decided 2026-11-19): the bottle should look like a real plastic water bottle, and the goal is about 2.5:1 (total height to body width) once the water sloshes. The difficulty targets always come first. Without sloshing a slim bottle can't keep the targets: the F002 shape (2.64:1) gave single-flip windows only 3 to 4 points wide, because a slim bottle stays upright over a much smaller landing angle (D23). So F034 settled on at least 1.8:1. With sloshing on (F025's default), the water moves back to the base on landing and may let a slimmer bottle land, as it does in real life. Search shapes from F034's ratio up to 2.6:1 in steps of about 0.1. Scale the body height and width and keep a bottle-like shoulder, neck and cap. For each shape, retune with the D33 approach (exact expected rates over several starting points, sloshing tuning included) and record whether every target in section 3 can be met. Adopt the slimmest shape that meets them all; if none is slimmer than F034's, keep F034's shape and change nothing. Physics and drawing stay one shape. Update the comment in bottleShape.ts, D23 and D33 in docs/ARCHITECTURE.md, and the shape test's minimum to the adopted ratio.",
+      "acceptance": [
+        "The progress entry has a table with one row per tried ratio (F034's up to 2.6:1, about 0.1 apart): the best tuning found, the narrowest single-flip window, the full-to-empty ratio, whether every level has a double window, practiced and new landing rates, and pass or fail. The adopted shape is the slimmest that passes.",
+        "Unit: the shape test locks BOTTLE_HEIGHT at least the adopted ratio times BOTTLE_BODY_WIDTH (or F034's 1.8 if no slimmer shape passed), with the neck and cap minimums from F034 kept.",
+        "Every case in tests/unit/calibration.test.ts and tests/unit/difficulty.test.ts passes with sloshing on and no target range changed.",
+        "Snaps (1280x720, ?seed=7) of the bottle held, mid-flight, standing after a success and lying after a fail show the new shape with the moving water inside it. Throws at the 10%, 50% and 90% window centers stay on screen and land upright on the table. No console errors; npm run verify passes."
+      ],
+      "depends_on": [
+        "F025"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Decided 2026-11-19 by Claude at the human's request: about 2:1 now (F034) without trading off difficulty, then as slim as sloshing allows, up to about 2.5:1. Narrower windows for a slimmer bottle were rejected: at 2.64:1 the practiced player lands about 36% against the 60-80% target.",
       "review_feedback": ""
     },
     {
