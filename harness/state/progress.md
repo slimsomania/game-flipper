@@ -932,3 +932,5 @@ Append-only. Each agent session adds an entry at the end, and the harness adds a
   - The speaker sits 240 px right of the card at 1280x720 but stays in the corner, so on a narrower window the canvas is scaled as a whole and the gap scales with it; nothing was needed for that.
   - Process: a Python heredoc used to edit a file was auto-denied, and so was a Monitor on a shell `until` loop that tested the verify output file with `[ -s ]`; I used the Edit tool and waited for the background verify's completion notice instead. Verify took 14.0 min with nothing else running.
 - Next: the reviewer should play the summary with the snap tool (reach it with `scene:Game,call:setTuningValue;throwsPerRound;1,key:Space,wait:6000`), press M and click the speaker, and check the Title shows the same state after the Title button. After F017, M4 is complete: F030 (shorter holds) is next, then F020.
+
+> [harness] session 45 · builder F017 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 22m 31s · ~$1.13 API-equivalent
