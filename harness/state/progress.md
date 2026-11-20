@@ -1142,3 +1142,25 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Plan: F034 added to M5 after F021 (depends on F020 and F021); F031 now also depends on F034, so the shading is drawn for the final shape.
 - Next: review F021, then F034, F031, F033, F022.
 - Decision (later the same day, Claude at the human's request): the bottle gets about 2:1 now (F034), then as slim as sloshing allows, up to about 2.5:1 (new F035 in M6 after F025). Rejected: the original 2.64:1 now with narrower windows (windows 3 to 4 points wide, the practiced player at about 36% against 60 to 80%), and waiting for M6 (the jar look would stay through M5 and F031's shading would be drawn for a shape about to change). GAME_DESIGN section 3 states the goal and that the difficulty targets come first. F035 keeps F034's shape if no slimmer one meets every target, so it can always finish.
+
+## Session 55 · reviewer · F021 Camera shake and small effects
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: format check, typecheck, 806 unit tests (61 files), build and 241 e2e passed in 17.2 min. Neither of the timing-sensitive tests the builder saw fail (`round.spec.ts:161`, `mouse.spec.ts:67`) failed this time.
+  - Read the diff. The effects live in `src/game/effects/` and are pure functions of simulation ticks: no Phaser shake, no `Math.random`, and the particles use a seeded `createRng`. Only `effectsView.ts` touches Phaser (camera scroll and one Graphics). The shake numbers are in `src/core/tuning.ts`. `GameScene` drains the events once per frame for both the sounds and the effects, and calls `effectsView.stop()` before pausing for the pause overlay or the summary. ARCHITECTURE.md is updated (tuning row, effects row, D34). `git diff c141cabe..HEAD -- tests` only adds files; no existing test was changed.
+  - Reran the 6 new unit files plus `architecture.test.ts`: 63/63 passed. Read `tests/e2e/effects.spec.ts`. It covers each criterion with state assertions: hard vs gentle shake against `tuning().shakeMaxPixels`, no shake in the hand or when set down at rest, a burst on a success but not on an upright or side fail, the camera at (0, 0) 30 steps after the hit, every text box at least the cap from each canvas edge across six results and pop frames, and the pop's widths.
+  - Snaps at 1280x720 with `?seed=7`, water locked at 0.5 and power 40 (shake at tick 55, intensity 3.5; success at tick 86):
+    - Tick 59: `cameraOffset()` was (-1.9, 2.2). The HUD and buttons moved about 2 px, with no empty strip at any edge and no text cut off.
+    - 4 and 10 steps after the success: orange and yellow particles fly out from the bottle's base, "Nailed it! +1" is shown, and at step 10 the message is visibly larger (the pop).
+    - 40 steps after the success: the camera is at (0, 0), the flash is gone and a few particles are almost faded out.
+    - No console errors in any snap.
+  - Edge cases at 1024x576, all without console errors:
+    - A power-100 throw logged a shake of exactly 6 (the cap) at the landing, then a 2.58 bounce.
+    - A throw still in the air when `skip()` was called later failed: it logged a pop and no burst.
+    - R pressed 3 steps into a success burst, then twice more: a new round starts at once, the camera stays at (0, 0), and 40 steps later nothing is left on screen.
+- Problems: none
+- Notes for later:
+  - After R (or Pause, then Restart via `restartRound`, which keeps the same scene and ticks), a burst that has started finishes its 0.7 s on the table where the old bottle landed while the new bottle is in the hand. A shake also keeps going, but Pause's `stop()` clears that one. This is harmless polish; a builder could clear the effects when a round restarts.
+  - The success burst is drawn above the bottle (depth 15), so in the first few steps the particles show over the translucent water. They read as coming from the base, which is fine.
+  - The builder's verify flakes did not reproduce in this run. `round.spec.ts:161` is still a known slow test (ten land and skip rounds against a 30 s timeout).
+  - Process: a compound Bash command (`npm run verify > log; echo`) was auto-denied, but running `npm run verify` alone in the background worked. To wait for it, a Monitor running `tail -f | grep` worked; my first filter missed the ✓ lines, so match "[0-9]+ passed" and ✘.
