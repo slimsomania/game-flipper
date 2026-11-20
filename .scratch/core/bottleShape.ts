@@ -42,7 +42,15 @@ export const BOTTLE_PARTS: BottlePart[] = [];
 
 function slab(name: BottlePartName, width: number, bottom: number, top: number): BottlePart {
   const half = width / 2;
-  return { name, vertices: [ { x: -half, y: -bottom }, { x: half, y: -bottom }, { x: half, y: -top }, { x: -half, y: -top } ] };
+  return {
+    name,
+    vertices: [
+      { x: -half, y: -bottom },
+      { x: half, y: -bottom },
+      { x: half, y: -top },
+      { x: -half, y: -top },
+    ],
+  };
 }
 
 export function setShape(S: readonly number[]): void {
@@ -53,14 +61,23 @@ export function setShape(S: readonly number[]): void {
   BOTTLE_NECK_HEIGHT = S[4]!;
   BOTTLE_CAP_WIDTH = S[5]!;
   BOTTLE_CAP_HEIGHT = S[6]!;
-  BOTTLE_HEIGHT = BOTTLE_BODY_HEIGHT + BOTTLE_SHOULDER_HEIGHT + BOTTLE_NECK_HEIGHT + BOTTLE_CAP_HEIGHT;
+  BOTTLE_HEIGHT =
+    BOTTLE_BODY_HEIGHT + BOTTLE_SHOULDER_HEIGHT + BOTTLE_NECK_HEIGHT + BOTTLE_CAP_HEIGHT;
   const SHOULDER_BOTTOM = BOTTLE_BODY_HEIGHT;
   const NECK_BOTTOM = SHOULDER_BOTTOM + BOTTLE_SHOULDER_HEIGHT;
   const CAP_BOTTOM = NECK_BOTTOM + BOTTLE_NECK_HEIGHT;
   BOTTLE_PARTS.length = 0;
   BOTTLE_PARTS.push(
     slab('body', BOTTLE_BODY_WIDTH, 0, BOTTLE_BODY_HEIGHT),
-    { name: 'shoulder', vertices: [ { x: -BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM }, { x: BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM }, { x: BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM }, { x: -BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM } ] },
+    {
+      name: 'shoulder',
+      vertices: [
+        { x: -BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
+        { x: BOTTLE_BODY_WIDTH / 2, y: -SHOULDER_BOTTOM },
+        { x: BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
+        { x: -BOTTLE_NECK_WIDTH / 2, y: -NECK_BOTTOM },
+      ],
+    },
     slab('neck', BOTTLE_NECK_WIDTH, NECK_BOTTOM, CAP_BOTTOM),
     slab('cap', BOTTLE_CAP_WIDTH, CAP_BOTTOM, BOTTLE_HEIGHT),
   );

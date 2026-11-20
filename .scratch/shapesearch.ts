@@ -3,7 +3,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { bands } from './band2';
 
-const [name = 's', itersArg = '100', , , , ] = process.argv.slice(2);
+const [name = 's', itersArg = '100', , , ,] = process.argv.slice(2);
 void name;
 const iters = Number(itersArg);
 const minRatio = Number(process.argv[6] ?? 1.85);
@@ -21,7 +21,15 @@ const start = (process.argv[5] ?? '0.80,0.95,0.28,0.25,0.12,0.30,0.13').split(',
 
 /** Violation of the plausibility rules, 0 when fine. */
 function shapeViolation(s: number[]): number {
-  const [bw, bh, sh, nw, nh, cw, ch] = s as [number, number, number, number, number, number, number];
+  const [bw, bh, sh, nw, nh, cw, ch] = s as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
   const H = bh + sh + nh + ch;
   let v = 0;
   const hi = (x: number, t: number, sc: number): number => Math.max(0, (x - t) / sc);
@@ -46,8 +54,11 @@ function score(s: number[]): { cost: number; text: string } {
   const r = bands(s);
   const mins = Math.min(...r.map((x) => x.band));
   // Prefer a bigger band at the hardest levels, and windows not near 0.
-  const cost = -mins - 0.02 * Math.min(...r.map((x) => x.width)) / 10;
-  return { cost, text: r.map((x) => `${x.water}: w${x.width} band ${x.band.toFixed(3)}`).join(' | ') };
+  const cost = -mins - (0.02 * Math.min(...r.map((x) => x.width))) / 10;
+  return {
+    cost,
+    text: r.map((x) => `${x.water}: w${x.width} band ${x.band.toFixed(3)}`).join(' | '),
+  };
 }
 
 let cur = start;

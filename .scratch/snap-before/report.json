@@ -5,10 +5,7 @@
     "height": 720
   },
   "actions": "pause,scene:Game,pause,call:lockWater;0.5,shot:held",
-  "shots": [
-    ".scratch/snap-before/01-held.png",
-    ".scratch/snap-before/02-final.png"
-  ],
+  "shots": [".scratch/snap-before/01-held.png", ".scratch/snap-before/02-final.png"],
   "states": {},
   "calls": [
     {
@@ -17,9 +14,7 @@
     }
   ],
   "errors": [],
-  "activeScenes": [
-    "Game"
-  ],
+  "activeScenes": ["Game"],
   "finalState": {
     "tick": 0,
     "seed": 7,

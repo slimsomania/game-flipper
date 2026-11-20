@@ -19,7 +19,8 @@ function throwAt(water: number, p: number) {
   for (let i = 0; i < 400 && sim.phase === 'flying'; i++) {
     sim.step();
     const b = sim.snapshot().bottle;
-    if (Number.isNaN(land) && bottleExtent(b.x, b.y, b.angle).maxY >= TABLE_TOP_Y - 0.03) land = b.angle / TURN;
+    if (Number.isNaN(land) && bottleExtent(b.x, b.y, b.angle).maxY >= TABLE_TOP_Y - 0.03)
+      land = b.angle / TURN;
   }
   const o = sim.snapshot().outcome!;
   return { ok: o.result === 'success' && o.turns === 1, land };
@@ -40,16 +41,33 @@ export function bands(shape: number[], levels = [0.1, 0.5, 0.9]) {
         start = -1;
       }
     }
-    if (best.lo < 1 || best.hi > 99) return { water, width: 0, band: 0, lowEdge: NaN, highEdge: NaN, center: 0 };
+    if (best.lo < 1 || best.hi > 99)
+      return { water, width: 0, band: 0, lowEdge: NaN, highEdge: NaN, center: 0 };
     const lowEdge = (rows[best.lo]!.land + rows[best.lo - 1]!.land) / 2;
     const highEdge = (rows[best.hi]!.land + rows[best.hi + 1]!.land) / 2;
-    return { water, width: best.hi - best.lo, band: highEdge - lowEdge, lowEdge, highEdge, center: (best.lo + best.hi) / 2 };
+    return {
+      water,
+      width: best.hi - best.lo,
+      band: highEdge - lowEdge,
+      lowEdge,
+      highEdge,
+      center: (best.lo + best.hi) / 2,
+    };
   });
 }
 
 if (process.argv[1]?.endsWith('band2.ts')) {
   for (const text of process.argv.slice(5)) {
     const r = bands(text.split(',').map(Number));
-    console.log(text, '|', r.map((x) => `${x.water}: w${x.width} c${x.center} band ${x.band.toFixed(3)} [${x.lowEdge.toFixed(2)},${x.highEdge.toFixed(2)}]`).join(' | '));
+    console.log(
+      text,
+      '|',
+      r
+        .map(
+          (x) =>
+            `${x.water}: w${x.width} c${x.center} band ${x.band.toFixed(3)} [${x.lowEdge.toFixed(2)},${x.highEdge.toFixed(2)}]`,
+        )
+        .join(' | '),
+    );
   }
 }

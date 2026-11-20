@@ -1,5 +1,11 @@
 /* SCRATCH (not committed): scores a tuning with exact expected rates, on the 9 levels. */
-import { findWindows, sweepPowers, widestWindow, type FlipWindow, type SweepPoint } from './core/flipWindow';
+import {
+  findWindows,
+  sweepPowers,
+  widestWindow,
+  type FlipWindow,
+  type SweepPoint,
+} from './core/flipWindow';
 import { HAND_Y } from './core/bottle';
 import { bottleExtent } from './core/outcome';
 import { Simulation } from './core/simulation';
@@ -81,8 +87,10 @@ export function evaluate(tuning: Partial<Tuning>): { cost: number; detail: Detai
       notes.push(`${label}:${v.toFixed(2)}`);
     }
   };
-  const lo = (v: number, target: number, scale: number): number => Math.max(0, (target - v) / scale);
-  const hi = (v: number, target: number, scale: number): number => Math.max(0, (v - target) / scale);
+  const lo = (v: number, target: number, scale: number): number =>
+    Math.max(0, (target - v) / scale);
+  const hi = (v: number, target: number, scale: number): number =>
+    Math.max(0, (v - target) / scale);
 
   const sweeps: SweepPoint[][] = LEVELS.map((w) => sweepPowers(w, tuning));
   const windows = sweeps.map((points) => findWindows(points));
@@ -111,7 +119,8 @@ export function evaluate(tuning: Partial<Tuning>): { cost: number; detail: Detai
 
   const centers = singles.map((s) => (s ? s.center : NaN));
   for (let i = 1; i < centers.length; i++) {
-    if (!(centers[i]! - centers[i - 1]! >= 2)) add(2, lo(centers[i]! - centers[i - 1]!, 2, 1) || 1, `centers ${i}`);
+    if (!(centers[i]! - centers[i - 1]! >= 2))
+      add(2, lo(centers[i]! - centers[i - 1]!, 2, 1) || 1, `centers ${i}`);
   }
   const ratio = centers[8]! / centers[0]!;
   add(3, lo(ratio, 2.8, 0.2), 'ratio low');
@@ -121,8 +130,10 @@ export function evaluate(tuning: Partial<Tuning>): { cost: number; detail: Detai
   // Rotation before and after each single window.
   singles.forEach((s, i) => {
     if (!s) return;
-    if (s.low - 10 >= 0 && !(sweeps[i]![s.low - 10]!.rotation < 2 * Math.PI)) add(2, 1, `under-rotate ${i}`);
-    if (s.high + 10 <= 100 && !(sweeps[i]![s.high + 10]!.rotation > 2 * Math.PI)) add(2, 1, `over-rotate ${i}`);
+    if (s.low - 10 >= 0 && !(sweeps[i]![s.low - 10]!.rotation < 2 * Math.PI))
+      add(2, 1, `under-rotate ${i}`);
+    if (s.high + 10 <= 100 && !(sweeps[i]![s.high + 10]!.rotation > 2 * Math.PI))
+      add(2, 1, `over-rotate ${i}`);
   });
 
   // Fixed power: single flips on the 9 levels, and exact expected landings over the draw.
@@ -192,7 +203,19 @@ export function evaluate(tuning: Partial<Tuning>): { cost: number; detail: Detai
 
   return {
     cost,
-    detail: { singles, doubles, practiced, newPlayer, newAim, bestFixed, bestFixedPower, singleShare, ratio, flight, notes },
+    detail: {
+      singles,
+      doubles,
+      practiced,
+      newPlayer,
+      newAim,
+      bestFixed,
+      bestFixedPower,
+      singleShare,
+      ratio,
+      flight,
+      notes,
+    },
   };
 }
 

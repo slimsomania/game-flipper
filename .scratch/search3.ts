@@ -29,9 +29,14 @@ const rand = (): number => {
 };
 const normal = (): number => Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(2 * Math.PI * rand());
 
-let current: Tuning = startFile && existsSync(startFile) ? { ...START, ...JSON.parse(readFileSync(startFile, 'utf8')) } : { ...START };
+let current: Tuning =
+  startFile && existsSync(startFile)
+    ? { ...START, ...JSON.parse(readFileSync(startFile, 'utf8')) }
+    : { ...START };
 let { cost: currentCost, detail } = evaluate(current);
-console.log(`${name} start cost ${currentCost.toFixed(2)} practiced ${(detail.practiced * 100).toFixed(1)} new ${(detail.newPlayer * 100).toFixed(1)} ratio ${detail.ratio.toFixed(2)}`);
+console.log(
+  `${name} start cost ${currentCost.toFixed(2)} practiced ${(detail.practiced * 100).toFixed(1)} new ${(detail.newPlayer * 100).toFixed(1)} ratio ${detail.ratio.toFixed(2)}`,
+);
 let step = 0.06;
 let sinceBetter = 0;
 
@@ -78,8 +83,15 @@ for (let i = 1; i <= iters; i++) {
       `${name} #${i} cost ${currentCost.toFixed(2)} step ${step.toFixed(3)} P ${(detail.practiced * 100).toFixed(1)} N ${(detail.newPlayer * 100).toFixed(1)} fix ${(detail.bestFixed * 100).toFixed(0)}@${detail.bestFixedPower} sh ${detail.singleShare} r ${detail.ratio.toFixed(2)} | S ${s} | D ${d} | ${detail.notes.slice(0, 5).join(' ')}`,
     );
   }
-  
 }
 save();
 console.log(`${name} done cost ${currentCost.toFixed(3)}`);
-console.log(JSON.stringify(detail.flight.map((f) => ({ rise: +f.rise.toFixed(2), x: +f.x.toFixed(2), top: +f.top.toFixed(2) }))));
+console.log(
+  JSON.stringify(
+    detail.flight.map((f) => ({
+      rise: +f.rise.toFixed(2),
+      x: +f.x.toFixed(2),
+      top: +f.top.toFixed(2),
+    })),
+  ),
+);

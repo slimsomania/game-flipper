@@ -1,12 +1,12 @@
 {
- "shellDensity": 0.25797183916161043,
- "throwLinearImpulse": 4.352217296769657,
- "throwAngularImpulse": 4.365259501717568,
- "throwSpinGrowth": 0.013239226260360613,
- "throwSpinExponent": 0.02682263648857377,
- "bottleAngularDamping": 2.72983218047508,
- "bottleFriction": 0.4663991909118652,
- "bottleRestitution": 0.015297423167423583,
- "bottleLinearDamping": 0.2635516447440968,
- "throwAngleDeg": 9.414243061238711
+  "shellDensity": 0.25797183916161043,
+  "throwLinearImpulse": 4.352217296769657,
+  "throwAngularImpulse": 4.365259501717568,
+  "throwSpinGrowth": 0.013239226260360613,
+  "throwSpinExponent": 0.02682263648857377,
+  "bottleAngularDamping": 2.72983218047508,
+  "bottleFriction": 0.4663991909118652,
+  "bottleRestitution": 0.015297423167423583,
+  "bottleLinearDamping": 0.2635516447440968,
+  "throwAngleDeg": 9.414243061238711
 }
