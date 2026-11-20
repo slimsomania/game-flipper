@@ -1164,3 +1164,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The success burst is drawn above the bottle (depth 15), so in the first few steps the particles show over the translucent water. They read as coming from the base, which is fine.
   - The builder's verify flakes did not reproduce in this run. `round.spec.ts:161` is still a known slow test (ten land and skip rounds against a 30 s timeout).
   - Process: a compound Bash command (`npm run verify > log; echo`) was auto-denied, but running `npm run verify` alone in the background worked. To wait for it, a Monitor running `tail -f | grep` worked; my first filter missed the ✓ lines, so match "[0-9]+ passed" and ✘.
+
+> [harness] session 55 · reviewer F021 · needs_review → done · ok · 1 commit(s) · 41 tool calls · 21m 25s · ~$1.40 API-equivalent
