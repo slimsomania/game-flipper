@@ -539,7 +539,7 @@
         "F021"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Added 2026-11-19 after the human noticed the bottle looked squeezed since M1; overrides the 2026-11-18 note 'the bottle's shape stays as calibrated (D23)' in GAME_DESIGN.md section 13. If a real search finds no tuning that meets every target at 1.8:1, say so in the progress entry with the slimmest shape that does meet them and the search done, and don't weaken any target.",
       "review_feedback": ""
     },

@@ -1,5 +1,5 @@
 {
-  "sessions": 55,
+  "sessions": 56,
   "doneAtLastMaintenance": 16,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -24,12 +24,15 @@
     "F030": "8ce72d1f041639cf1cdcc45215567b07ddcac94c",
     "F020": "0ad6aefa0e51dcfebc15d349d38776e69ad64b61",
     "F032": "e20543035b8ef9d43876f2ba582f85a0d0500e1e",
-    "F021": "c141cabefb5237f3c7cd50b93d63a067c4e51c77"
+    "F021": "c141cabefb5237f3c7cd50b93d63a067c4e51c77",
+    "F034": "8002db1db04cc903ab0e400f635ae48be933fe8a"
   },
   "lastGate": {
-    "session": 54,
-    "ok": true,
-    "tail": ""
+    "session": 56,
+    "ok": false,
+    "tail": "\n> flipper@0.1.0 verify\n> npm run format:check && npm run typecheck && npm run test && npm run build && npm run test:e2e\n\n\n> flipper@0.1.0 format:check\n> prettier --check .\n\nChecking formatting...\n[warn] .scratch/out/R1.json\n[warn] .scratch/out/R2.json\n[warn] .scratch/out/R4.json\n[warn] .scratch/out/R6.json\n[warn] .scratch/out/T1.json\n[warn] .scratch/out/T2.json\n[warn] .scratch/out/T3.json\n[warn] .scratch/out/T4.json\n[warn] .scratch/out/T5.json\n[warn] .scratch/out/T6.json\n[warn] .scratch/out/U1.json\n[warn] .scratch/out/U2.json\n[warn] .scratch/out/U3.json\n[warn] .scratch/out/U4.json\n[warn] .scratch/out/U5.json\n[warn] .scratch/out/U7.json\n[warn] Code style issues found in 16 files. Run Prettier with --write to fix."
   },
-  "lastViolations": []
+  "lastViolations": [
+    "ended with uncommitted changes (the harness committed them as WIP)"
+  ]
 }

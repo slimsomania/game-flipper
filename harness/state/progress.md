@@ -1166,3 +1166,6 @@ best-scoring fixed power (95, no error)                            55.5%        
   - Process: a compound Bash command (`npm run verify > log; echo`) was auto-denied, but running `npm run verify` alone in the background worked. To wait for it, a Monitor running `tail -f | grep` worked; my first filter missed the ✓ lines, so match "[0-9]+ passed" and ✘.
 
 > [harness] session 55 · reviewer F021 · needs_review → done · ok · 1 commit(s) · 41 tool calls · 21m 25s · ~$1.40 API-equivalent
+
+> [harness] session 56 · builder F034 · todo → todo · timeout · verify FAILED · 1 commit(s) · 187 tool calls · 1h 15m
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
