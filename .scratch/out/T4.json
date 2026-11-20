@@ -5,7 +5,7 @@
  "throwSpinGrowth": 0.012421627768945438,
  "throwSpinExponent": 0.03316616287030144,
  "bottleAngularDamping": 4.508659085592786,
- "bottleFriction": 0.2989671681886416,
+ "bottleFriction": 0.3012575897941092,
  "bottleRestitution": 0.020199662988981834,
  "bottleLinearDamping": 0.19906380231540122,
  "throwAngleDeg": 16.301169328992973
