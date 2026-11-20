@@ -1,0 +1,12 @@
+{
+ "shellDensity": 0.1926042936181698,
+ "throwLinearImpulse": 4.301789965430101,
+ "throwAngularImpulse": 4.129232655168932,
+ "throwSpinGrowth": 0.011633786300594683,
+ "throwSpinExponent": 0.03336763814351732,
+ "bottleAngularDamping": 2.148405187272649,
+ "bottleFriction": 0.6667048703263924,
+ "bottleRestitution": 0.02073562769006756,
+ "bottleLinearDamping": 0.2629366800593309,
+ "throwAngleDeg": 7.328185209564424
+}

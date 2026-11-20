@@ -1,4 +1,5 @@
-import { SIM_HZ } from '../../core/constants';
+import { BOTTLE_BODY_WIDTH } from '../../core/bottleShape';
+import { PIXELS_PER_METER, SIM_HZ } from '../../core/constants';
 import { createRng } from '../../core/rng';
 import { COLORS } from '../theme';
 
@@ -20,8 +21,11 @@ const SPEED_MAX = 580;
 const GRAVITY = 1100;
 const RADIUS_MIN = 4;
 const RADIUS_MAX = 8;
-/** A particle starts anywhere along the bottle's base, this many pixels either side of its middle. */
-export const BASE_HALF_WIDTH_PX = 40;
+/**
+ * A particle starts anywhere along the bottle's base, this many pixels either side of its middle:
+ * half the body's width, so the burst follows the shape (F034 made the bottle slimmer).
+ */
+export const BASE_HALF_WIDTH_PX = (BOTTLE_BODY_WIDTH * PIXELS_PER_METER) / 2;
 /** A particle is fully opaque for this fraction of its life, then fades out. */
 const SOLID_FRACTION = 0.5;
 

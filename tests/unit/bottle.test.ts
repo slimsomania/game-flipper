@@ -4,8 +4,12 @@ import { Bottle, HAND_X, HAND_Y, isFinitePose } from '../../src/core/bottle';
 import {
   BOTTLE_BODY_HEIGHT,
   BOTTLE_BODY_WIDTH,
+  BOTTLE_CAP_WIDTH,
   BOTTLE_HEIGHT,
+  BOTTLE_NECK_HEIGHT,
+  BOTTLE_NECK_WIDTH,
   BOTTLE_PARTS,
+  BOTTLE_SHOULDER_HEIGHT,
   bottleMassProperties,
   waterRect,
 } from '../../src/core/bottleShape';
@@ -43,6 +47,43 @@ describe('bottle shape', () => {
     });
     expect(widths[0]).toBeGreaterThan(widths[2]!); // body wider than the neck
     expect(widths[3]).toBeGreaterThan(widths[2]!); // cap a little wider than the neck
+  });
+
+  // Design section 3 (2026-11-19, F034): the bottle must read as a plastic water bottle, not a squat
+  // jar. These are the design's minimums, not the exact numbers: a retuning may change the shape as
+  // long as it stays a tall, slim bottle with a neck, a shoulder and a cap.
+  it('is a tall, slim water bottle: at least 1.8 times as tall as it is wide', () => {
+    expect(BOTTLE_HEIGHT / BOTTLE_BODY_WIDTH).toBeGreaterThanOrEqual(1.8);
+  });
+
+  it('has a visible neck: at least 0.10 m tall and narrower than half the body', () => {
+    expect(BOTTLE_NECK_HEIGHT).toBeGreaterThanOrEqual(0.1);
+    expect(BOTTLE_NECK_WIDTH).toBeLessThan(BOTTLE_BODY_WIDTH / 2);
+  });
+
+  it('has a cap wider than the neck and a shoulder that narrows from the body to the neck', () => {
+    expect(BOTTLE_CAP_WIDTH).toBeGreaterThan(BOTTLE_NECK_WIDTH);
+    expect(BOTTLE_SHOULDER_HEIGHT).toBeGreaterThan(0);
+    const shoulder = BOTTLE_PARTS.find((part) => part.name === 'shoulder')!;
+    const widthAt = (y: number): number => {
+      const xs = shoulder.vertices.filter((v) => Math.abs(v.y - y) < 1e-9).map((v) => v.x);
+      return Math.max(...xs) - Math.min(...xs);
+    };
+    expect(widthAt(-BOTTLE_BODY_HEIGHT)).toBeCloseTo(BOTTLE_BODY_WIDTH, 9); // starts as wide as the body
+    expect(widthAt(-BOTTLE_BODY_HEIGHT - BOTTLE_SHOULDER_HEIGHT)).toBeCloseTo(BOTTLE_NECK_WIDTH, 9); // ends as wide as the neck
+  });
+
+  it('stacks its four pieces without gaps: each starts where the one below it ends', () => {
+    const tops = [BOTTLE_BODY_HEIGHT];
+    tops.push(tops[0]! + BOTTLE_SHOULDER_HEIGHT);
+    tops.push(tops[1]! + BOTTLE_NECK_HEIGHT);
+    tops.push(tops[2]! + BOTTLE_CAP_HEIGHT);
+    expect(tops[3]).toBeCloseTo(BOTTLE_HEIGHT, 9);
+    BOTTLE_PARTS.forEach((part, i) => {
+      const ys = part.vertices.map((v) => -v.y);
+      expect(Math.min(...ys), part.name).toBeCloseTo(i === 0 ? 0 : tops[i - 1]!, 9);
+      expect(Math.max(...ys), part.name).toBeCloseTo(tops[i]!, 9);
+    });
   });
 
   it('puts the water surface at the level times the body height, inside the body', () => {
