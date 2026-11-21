@@ -41,8 +41,14 @@ async function pushAndRelease(page: Page, delivery: Delivery): Promise<number> {
   const at = await bottleCenter(page);
   await sendMouse(page, [{ type: 'down', x: at.x, y: at.y, after: 0 }]);
   expect(await draggingNow(page)).toBe(true);
-  await sendFrames(page, { x: at.x, path: mousePath(at, RISE, MS, MOUSE_HZ), ...delivery });
-  await releaseInPage(page, above(at, RISE), 0);
+  // The release goes in the same call as the frames: every time stamp of the push is virtual, so the
+  // power does not depend on how long the calls in between take on this machine.
+  await sendFrames(page, {
+    x: at.x,
+    path: mousePath(at, RISE, MS, MOUSE_HZ),
+    ...delivery,
+    release: above(at, RISE),
+  });
   const thrown = await gameState(page);
   expect(thrown.throws).toBeGreaterThan(0);
   expect(thrown.dragging).toBe(false);

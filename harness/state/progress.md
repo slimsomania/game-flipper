@@ -1326,3 +1326,19 @@ best-scoring fixed power (95, no error)                            55.5%        
   - Process: a Monitor `until grep` with `cd` plus a relative path was auto-denied; a plain Bash `until grep` on an absolute path worked.
 
 > [harness] session 61 · reviewer F033 · needs_review → todo · ok · 1 commit(s) · 37 tool calls · 21m 47s · ~$1.42 API-equivalent
+
+## Session 62 · builder · F033 Measure the mouse push from every pointer sample, not one per frame
+- Did: fixed the flaky timing tests that failed the review of session 61. The game code is unchanged. The cause was in `tests/e2e/mouseCoalesced.spec.ts`: `pushAndRelease` sent the release in a call of its own, `sendMouse` stamps that at `max(__virtualNow, performance.now())`, and real time had run a few milliseconds past the virtual clock, which `Grab.finish` reads as the pointer standing still before the release.
+  - `tests/e2e/mouseHelpers.ts`: `sendFrames` takes an optional `release` (page coordinates) and then makes the `mouseup` in the same `page.evaluate` as the frames, at the last frame's virtual time. `pushAndRelease` in the spec passes it, so no event of a push after the press takes its time from real time. `releaseInPage` and `sendMouse` are unchanged (mouse.spec.ts and the not-grabbed tests still use them).
+  - `docs/ARCHITECTURE.md`: the `mouseHelpers.ts` row now says why the release goes with the frames.
+- Verified:
+  - `npx playwright test tests/e2e/mouseCoalesced.spec.ts --repeat-each 10`: 70 of 70 passed (3.2 min).
+  - A scratch spec (deleted) made the same four pushes with 0, 60 and 250 ms of real `waitForTimeout` between the press, the frames and the read: 30 fps with samples 67.166667, 125 Hz 66.833333, hitch with samples 67.166667, 60 fps 66.708333, identical at all three lags. The earlier failures were 5 to 22 ms of lag, so the cause is gone.
+  - `npm run format`, `npm run verify`: format check, typecheck, 62 unit files (830 passed, 1 todo: the F034 one), build, and 248 e2e passed (14.9 min), mouse.spec.ts and mouseNothing.spec.ts included and unchanged.
+  - Criteria 1 to 4 as in session 60 (30 fps with samples 66.67 against 66.83 at 125 Hz, hitch 66.67 against 66.71, plain events exactly `pushPower` of the page's log, nothing forwarded when not grabbed, no console errors); no game code or screenshot changed since the snaps of sessions 60 and 61.
+- Status: F033 → needs_review
+- Issues / follow-ups:
+  - Running the spec with `--workers 6` (the config says `workers: 1`) made the 30 fps and hitch tests time out in context teardown (30 s), because six software-rendered browsers share one machine. Those were timeouts, not power assertions, and the project never runs that way; I mention it so nobody reads it as the old flakiness. Don't use `--workers` above 1 for these tests.
+  - `mouse.spec.ts` line 177 still releases with `releaseInPage` after the real clock may have passed the virtual one. It passed in every run so far (that test pushes with a 300 ms wait after the last move, so a few ms of lag don't matter), so I left it.
+  - Process: `python3 - <<EOF`, a `&` background job with a redirect, and an `until grep` loop on the task output file were auto-denied; the Edit tool, `node -e "setTimeout(...)"` for waiting, and a Read of the task output file worked.
+- Next: F034 stays blocked for a human decision; of the todo features, pick the next one in `feature_list.json` whose dependencies are done.

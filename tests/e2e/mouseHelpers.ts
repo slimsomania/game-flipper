@@ -195,13 +195,19 @@ export function frameTimes(
  * each event is the newest sample up to its frame, at that sample's own time. With `coalesced` it
  * also lists every sample since the last frame as its `coalescedEvents` (the main event is the
  * last of them, as in Chromium); without it the list is empty, as in a browser that has none to
- * give. Call after the press (`sendMouse`), on the same virtual clock; the button stays down.
+ * give. Call after the press (`sendMouse`), on the same virtual clock. The button stays down, unless
+ * `release` (page coordinates) says where it comes up: the `mouseup` is then made in the same call,
+ * at the time of the last frame. That keeps the whole push on the virtual clock. A release sent in
+ * a call of its own (`releaseInPage`) is stamped at the later of the virtual clock and the real
+ * time, and real time runs ahead of the virtual clock by milliseconds, which the game reads as the
+ * pointer standing still before it let go: another power, and a test that depends on the speed of
+ * the machine.
  */
 export async function sendFrames(
   page: Page,
-  options: { x: number; path: PathPoint[]; frames: number[]; coalesced: boolean },
+  options: { x: number; path: PathPoint[]; frames: number[]; coalesced: boolean; release?: Point },
 ): Promise<void> {
-  const { x, path, frames, coalesced } = options;
+  const { x, path, frames, coalesced, release } = options;
   const events: { t: number; y: number; listed: PathPoint[] }[] = [];
   let from = 0;
   for (const frame of frames) {
@@ -211,7 +217,7 @@ export async function sendFrames(
     events.push({ ...group[group.length - 1], listed: coalesced ? group : [] });
   }
   await page.evaluate(
-    ({ x, events }) => {
+    ({ x, events, release }) => {
       const clock = window as unknown as { __virtualNow?: number };
       const base = clock.__virtualNow ?? performance.now();
       const canvas = document.querySelector('canvas')!;
@@ -241,9 +247,19 @@ export async function sendFrames(
           stamped(new MouseEvent('mousemove', { ...init, clientY: e.y, buttons: 1 }), e.t),
         );
       }
-      clock.__virtualNow = base + events[events.length - 1].t;
+      const last = events[events.length - 1].t;
+      if (release) {
+        const up = new MouseEvent('mouseup', {
+          ...init,
+          clientX: release.x,
+          clientY: release.y,
+          buttons: 0,
+        });
+        canvas.dispatchEvent(stamped(up, last));
+      }
+      clock.__virtualNow = base + last;
     },
-    { x, events },
+    { x, events, release },
   );
 }
 
