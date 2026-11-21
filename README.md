@@ -12,6 +12,28 @@ npm run dev       # play at http://localhost:5173
 npm run verify    # format check, typecheck, unit tests, build, e2e tests
 ```
 
+## Play
+
+Mouse and keyboard, in a desktop browser. Set the power, then throw: the bottle flips in the air and should land upright on its base. A round is 10 throws.
+
+| Action | Mouse | Keyboard |
+| --- | --- | --- |
+| Set power | Hold left button on the bottle and push the mouse upward; or mouse wheel | Up / Down |
+| Throw | Release the left button after a push | Space |
+| Skip the wait after a result | Click | Space |
+| Restart the round | Restart button on the pause overlay | R |
+| Pause | Pause button in the corner | Esc or P |
+| Mute | Speaker button | M |
+
+To play the production build:
+
+```bash
+npm run build     # writes dist/
+npm run preview   # serves dist/ at http://localhost:4173
+```
+
+`dist/` is static, so any static host can serve it.
+
 ## Building the game with agents
 
 1. Describe the game in [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md), then change `status: draft` to `status: ready` at the top. Commit.

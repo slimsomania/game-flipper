@@ -763,9 +763,9 @@
         "F010",
         "F018"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "The second Playwright web server (port 5197) now runs a real `vite build --outDir dist-e2e` plus `vite preview`, instead of a dev server with NODE_ENV=production; tests/e2e/productionBuild.spec.ts (2 tests) checks no hooks, no panel and no console errors without flags, and Title, Play and a Space throw to an outcome with ?testhooks. README.md has a Play section. I ran the new spec and tuningPanelBuild.spec (7 pass) plus format:check and typecheck; the full `npm run verify` was blocked by the session's permission check, so the harness run is the first full pass.",
       "review_feedback": ""
     }
   ]

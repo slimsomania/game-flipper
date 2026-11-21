@@ -29,13 +29,13 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      // The same source served as a production build would be (import.meta.env.DEV is false), for
-      // the tests that check what a player's page does without ?debug or ?testhooks.
-      command: `npx vite --port ${PROD_PORT} --strictPort`,
-      env: { NODE_ENV: 'production' },
+      // The real production build (`vite build` output served by `vite preview`), for the tests
+      // that check what a player's page does without ?debug or ?testhooks. Built into its own
+      // folder so it never clobbers dist/.
+      command: `npx vite build --outDir dist-e2e --emptyOutDir && npx vite preview --outDir dist-e2e --port ${PROD_PORT} --strictPort`,
       url: `http://localhost:${PROD_PORT}`,
       reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
+      timeout: 180_000,
     },
   ],
 });

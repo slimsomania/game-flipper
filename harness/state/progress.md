@@ -1511,3 +1511,10 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The replay clip is still cut short for fast fails (F026 note).
 
 > [harness] session 74 · reviewer F027 · needs_review → done · ok · 1 commit(s) · 26 tool calls · 33m 34s · ~$0.92 API-equivalent
+
+## Session 75 · builder · F029 Check the production build
+- Did: playwright.config.ts second web server now builds into dist-e2e (gitignored) and serves it with `vite preview` on 5197 (was a dev server with NODE_ENV=production). New tests/e2e/productionBuild.spec.ts (2 tests). README.md gets a Play section with controls table and build/preview commands.
+- Verified: `npx playwright test productionBuild tuningPanelBuild` 7 passed against the real build; format:check and typecheck pass. The full `npm run verify` (unit and the whole e2e suite) was NOT run by me: the session denied it, so the reviewer must run it.
+- Status: F029 → needs_review
+- Issues / follow-ups: the e2e run now also does a vite build (a few seconds). tuningPanelBuild.spec now runs against the real build too and still passes.
+- Next: reviewer should run `npm run verify` in full and confirm the production-build tests are in it.
