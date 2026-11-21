@@ -1449,3 +1449,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: give the water a real mid-air offset (joint axis or spin-up impulse in src/core/slosh.ts) or ask the human to relax the criterion, then rerun verify.
 
 > [harness] session 69 · builder F024 · todo → todo · ok · verify passed · 1 commit(s) · 37 tool calls · 21m 31s · ~$0.44 API-equivalent
+
+## Session 70 · builder · F024 Draw the moving water
+- Did: tried a physics lever for a mid-air offset: a throw "jolt" (water starts 1.5 to 3 m/s toward the cap relative to the shell, momentum conserved). Reverted it, no code change kept.
+- Verified: scratch unit probe (deleted): offset stayed 0.000 on all 12 steps after the throw for kick 0, 1.5 and 3. The kick was applied (water got about 1.9 m/s) but the spin pins the water to the base within a step: it sits on the base side of the center of mass, so centrifugal acceleration (omega^2 r, roughly 100+ m/s^2) pushes it away from the cap. Beating it needs 5+ m/s, which is unphysical.
+- Status: F024 -> blocked
+- Issues / follow-ups: drawing (slidWaterVertices, bottleView) is complete and verified; only acceptance criterion 2 (mid-flight shift) fails. Human decision needed: relax criterion 2 to show the shift after landing or tipping (where F023 does move the water), or accept an unphysical effect.
+- Next: if the human relaxes criterion 2, snap a landing on the cap with sloshing on and mark F024 needs_review; no more code should be needed.

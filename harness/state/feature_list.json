@@ -640,9 +640,9 @@
         "F010",
         "F023"
       ],
-      "status": "todo",
-      "attempts": 1,
-      "notes": "Built slidWaterVertices(level, offset) in src/core/bottleShape.ts (offset clamped to the empty space above the water) and bottleView.ts draws with it; unit tests in tests/unit/slidWater.test.ts pass. Snaps: at rest the fill is at the base, sloshing off is unchanged. Not met: mid-flight the physics offset is about 0 (water moves mostly on landing, per F023), so no visibly shifted fill in the air; that needs a physics lever (joint axis or spin-up impulse in slosh.ts), not drawing. Full verify was killed by the time limit during e2e, so e2e is unconfirmed.",
+      "status": "blocked",
+      "attempts": 2,
+      "notes": "Drawing is done (slidWaterVertices in bottleShape.ts, used by bottleView.ts, unit-tested; verify passed after session 69). Criterion 2 (fill shifted toward the cap mid-flight) cannot be met by a small lever: session 70 tried a throw 'jolt' giving the water 1.5 to 3 m/s toward the cap relative to the shell, and the offset still read 0.000 on every step, because the spin's centrifugal pull (about 100+ m/s^2, the water sits on the base side of the center of mass) pins it to the base within one step. Needs a human decision: relax criterion 2 to 'shifted after landing/tipping', or choose an unphysical design (e.g. reverse the effective spin force on the water or spin about the base).",
       "review_feedback": ""
     },
     {
