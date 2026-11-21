@@ -621,7 +621,7 @@
         "F009"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built src/core/slosh.ts: the water is a second dynamic body on a PrismaticJoint along the shell axis (limit 0 to the empty body height above the water), spring and damper as forces each step, behind the numeric tuning switch sloshing (0 default; sloshFrequency, sloshDamping); Bottle launches/places both bodies as one rigid body so mass, center and inertia match the solid model, and the snapshot has bottle.waterOffset. scripts/flip-windows.ts takes --sloshing (or sloshing=1). Verified by tests/unit/slosh.test.ts, a script test, tests/e2e/slosh.spec.ts and a green npm run verify. The windows are not recalibrated for sloshing (see progress).",
       "review_feedback": ""
     },

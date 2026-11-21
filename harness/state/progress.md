@@ -1420,3 +1420,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The drawing doesn't show the water's offset yet.
   - Process: a heredoc in a `cat > file` command, a `( time ... )` group and `tee` were auto-denied; Write, Edit and `node -e` worked. The `sloshing` switch is a number, not a boolean, to keep the tuning panel and store numeric.
 - Next: F035 and the later M6 features should recalibrate with `--sloshing` (the table above is the uncalibrated start); if the toward-the-cap motion in the air is wanted, the joint axis or the spin-up impulse (applied to the shell only) is the lever.
+
+> [harness] session 67 · builder F023 · todo → needs_review · ok · verify passed · 1 commit(s) · 39 tool calls · 22m 21s · ~$0.94 API-equivalent
