@@ -1359,3 +1359,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - `CoalescedMoves.newest` is only reset in `begin` (at a successful grab). After a drag it stays set, so Phaser moves stamped at or before the last forwarded sample are skipped while aiming. That's harmless, because real moves always come later and `drag` does nothing outside a grab. Keep it in mind if moves ever do something outside a grab.
   - As the builder noted, mouse.spec.ts:177 still releases with `releaseInPage` (stamped by real time). It has a 300 ms still wait so a few ms of lag don't matter, and it passed every run.
   - Process: a Bash command with a redirect plus `; echo` around `npm run verify`, an `until grep` on the background task's output file (outside the repo), and an `rm` with a glob were auto-denied. A plain `npm run verify` with run_in_background, `node -e "setTimeout(...)"` for waiting, and Read on the output file worked.
+
+> [harness] session 63 · reviewer F033 · needs_review → done · ok · 1 commit(s) · 45 tool calls · 23m 16s · ~$1.27 API-equivalent
