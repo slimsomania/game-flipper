@@ -1,5 +1,5 @@
 {
-  "sessions": 70,
+  "sessions": 71,
   "doneAtLastMaintenance": 24,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -29,14 +29,13 @@
     "F033": "e15384ca53dc639e00178fae077e64098a857728",
     "F022": "ebb82dadd0c30f1aeaa492cb24335b94815aaa86",
     "F023": "eb1587edf9aa2dee02a5845f60dbf61c69c172ea",
-    "F024": "8372ae4b5dd647ba86b98dfc37d883fed6eefd10"
+    "F024": "8372ae4b5dd647ba86b98dfc37d883fed6eefd10",
+    "F026": "37730ceb78d6689cc084c2590fa8a9893b28664d"
   },
   "lastGate": {
-    "session": 70,
+    "session": 71,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": [
-    "F024.attempts is counted by the harness (reverted)"
-  ]
+  "lastViolations": []
 }

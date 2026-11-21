@@ -701,7 +701,7 @@
         "F023"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "ThrowRecorder in src/core/replay.ts, owned by Simulation: one frame (tick, x, y, angle, waterOffset) per step from release to the outcome step, capped at the timeout's steps, plus the first table contact (SimEvents.stepped() now returns whether a contact began). Simulation.recording / landingClip, hooks recording() / landingClip(); tuning replayLeadSeconds 0.4 and replayTailSeconds 0.8. Cleared in nextBottle (so also on restart). Verified by tests/unit/replay.test.ts (12), tests/e2e/replay.spec.ts and the full unit suite; the harness runs the full verify.",
       "review_feedback": ""
     },

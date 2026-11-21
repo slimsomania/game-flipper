@@ -1466,3 +1466,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F026 -> needs_review
 - Issues / follow-ups: recording stops at the outcome, so the clip tail is cut short when the outcome comes under 0.8 s after the first touch (e.g. a fast fail). The timeout-bound unit test is weak (the judge itself ends a throw at the timeout). A bottle that spawns touching nothing and falls off to the side gives an empty clip.
 - Next: F027 can read `sim.landingClip` (or the hook) to play the slow-motion replay; the frames carry x, y (m), angle and waterOffset, enough to redraw the bottle with `slidWaterVertices`.
+
+> [harness] session 71 · builder F026 · todo → needs_review · ok · verify passed · 1 commit(s) · 44 tool calls · 2m 32s · ~$0.55 API-equivalent
