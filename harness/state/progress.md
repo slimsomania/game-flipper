@@ -1369,3 +1369,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 64 · maintainer · ok · verify passed · 3 commit(s) · 9 tool calls · 19m 6s · ~$0.14 API-equivalent
 > [harness] corrected: F034 was changed, but this session may only change nothing (reverted)
+
+## Session 65 · builder · F022 Harden input and game flow against awkward play
+- Did: added `tests/e2e/awkward.spec.ts`, nine tests, one per scenario: mashing Space and the arrows (also held together), R mid-flight and mid-result, pausing mid-flight and mid-result (tick frozen, resumes), a drag during the result (throws nothing), release outside the canvas (real mouse and a `mouseup` on the page body), a 3 s main-thread stall (next frame advances at most 5 steps, the throw still resolves), resizing the window mid-grab, and three full rounds with real-mouse, Space and placed throws (score at most 10 per round, throwNumber restarts at 1, `throws` reaches 10, 20, 30, no console errors). Game code unchanged.
+- Verified: `npx playwright test tests/e2e/awkward.spec.ts`: 9 of 9 passed; `npm run format`, `npm run verify` passed (all e2e green). No screenshots: no visual change.
+- Status: F022 → needs_review
+- Issues / follow-ups: bugs found: none. The long-gap test stalls the page with a busy loop rather than a hidden tab; the cap is the stepper's 5 steps per advance (`createFixedStepper`). Process: a heredoc and `tail` on the background output file were auto-denied; the Write tool and Read on the output file worked. A background `npm run verify` needs `timeout` above 10 min (it takes about 17).
+- Next: pick the next todo feature whose dependencies are done.

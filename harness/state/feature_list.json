@@ -600,9 +600,9 @@
         "F012",
         "F019"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "Added tests/e2e/awkward.spec.ts with nine tests, one per listed scenario (key mashing, R and pause mid-flight and mid-result, a drag in the result, release outside the canvas, a 3 s stall with the step cap, resizing mid-grab, three full rounds with mixed keyboard and mouse throws). All pass and none found a bug, so no game code changed. npm run verify passed.",
       "review_feedback": ""
     },
     {
