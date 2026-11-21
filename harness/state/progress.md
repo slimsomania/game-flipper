@@ -1344,3 +1344,18 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F034 stays blocked for a human decision; of the todo features, pick the next one in `feature_list.json` whose dependencies are done.
 
 > [harness] session 62 · builder F033 · todo → needs_review · ok · verify passed · 1 commit(s) · 38 tool calls · 29m 35s · ~$0.62 API-equivalent
+
+## Session 63 · reviewer · F033 Measure the mouse push from every pointer sample, not one per frame
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: format check, typecheck, 62 unit files (830 passed, 1 todo: F034's), build, and 248 of 248 e2e passed (15.7 min), mouse.spec.ts, mouseNothing.spec.ts and all 7 mouseCoalesced.spec.ts tests included.
+  - `npx playwright test tests/e2e/mouseCoalesced.spec.ts --repeat-each 10`: 70 of 70 passed (3.7 min). The flakiness found in session 61 is gone: `sendFrames` now sends the `mouseup` in the same `page.evaluate` as the frames, at the last frame's virtual time.
+  - Criteria: 1 and 2 are covered by the 30 fps and hitch tests, each with a check that the coalesced samples reach the game (the same push without them throws more than 5 and 8 points higher). 3 is covered by the plain-events test (`toBeCloseTo` the page log's `expectedPower`, 6 digits) and by the unchanged mouse.spec.ts / mouseNothing.spec.ts. 4 is covered by the not-grabbed tests (aiming with and without a press off the bottle, in flight, during a result: the whole snapshot is unchanged), and every test asserts no console errors.
+  - Edge case the builder didn't try (scratch spec, deleted): at 1024x576, 8 pushes in a row on one page, alternating 125 Hz plain, 30 fps coalesced, 60 fps with a 50 ms hitch coalesced, and 20 fps coalesced. Powers: 67.08 / 66.67 / 66.67 / 66.67, the same on the second pass. Even at 20 fps the coalesced push matches.
+  - Snap at 1024x576 with the real mouse (scene:Game, pause, mousedown, mousemove, shot, state, mousemove, mouseup, step 25): mid-push the live bar showed 15% (power 14.67, dragging true) with the bottle in the hand. After the release: a mouse throw at 22.2, flying, the bottle tilting out of the hand. No console errors.
+  - Code: `git diff e15384ca..HEAD -- tests` only adds (nothing deleted, skipped or weakened). The game code (`coalescedMoves.ts`, `gameInput.ts`) hasn't changed since the session 61 review, and push.ts is untouched. Phaser 3.90's MouseManager listens to `mousemove` on the canvas, the same target as the new native `pointermove` listener, so the `covers` skip pairs the right events. The listener is gated on `sim.mouse.dragging` and removed at shutdown. D21, D25, the `gameInput.ts`, `coalescedMoves.ts` and `mouseHelpers.ts` rows are updated.
+- Problems: none
+- Notes for later:
+  - `CoalescedMoves.newest` is only reset in `begin` (at a successful grab). After a drag it stays set, so Phaser moves stamped at or before the last forwarded sample are skipped while aiming. That's harmless, because real moves always come later and `drag` does nothing outside a grab. Keep it in mind if moves ever do something outside a grab.
+  - As the builder noted, mouse.spec.ts:177 still releases with `releaseInPage` (stamped by real time). It has a 300 ms still wait so a few ms of lag don't matter, and it passed every run.
+  - Process: a Bash command with a redirect plus `; echo` around `npm run verify`, an `until grep` on the background task's output file (outside the repo), and an `rm` with a glob were auto-denied. A plain `npm run verify` with run_in_background, `node -e "setTimeout(...)"` for waiting, and Read on the output file worked.
