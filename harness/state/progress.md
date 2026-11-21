@@ -1283,3 +1283,6 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The default seed's 37.5% is still the luckiest of 20; the todo is the guard.
   - Process: `sleep`, env-prefixed commands (`VAR=x cmd | head`), `for` loops with variables, a glob in `rm` and a `Monitor` with a variable were auto-denied; a foreground `until grep -q done file; do sleep 5; done` worked (it moves to the background at 590 s) and `TaskStop` ended searches.
 - Next: decide per the first issue. To continue the search, rebuild the scorer from D33's paragraph: sweep the 17 levels with `sweepPowers`, take the widest single and double windows per level, integrate the error with `powerChances`, and start from A or B.
+
+> [harness] session 59 · builder F034 · todo → blocked · ok · verify passed · 2 commit(s) · 207 tool calls · 55m 4s · ~$4.00 API-equivalent
+> [harness] corrected: feature_list.json was left invalid (not valid JSON: Expected ',' or '}' after property value in JSON at position 76648 (line 544 column 7))

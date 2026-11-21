@@ -1,5 +1,5 @@
 {
-  "sessions": 58,
+  "sessions": 59,
   "doneAtLastMaintenance": 16,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -28,9 +28,11 @@
     "F034": "8002db1db04cc903ab0e400f635ae48be933fe8a"
   },
   "lastGate": {
-    "session": 57,
+    "session": 59,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "feature_list.json was left invalid (not valid JSON: Expected ',' or '}' after property value in JSON at position 76648 (line 544 column 7))"
+  ]
 }
