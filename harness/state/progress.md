@@ -1468,3 +1468,18 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F027 can read `sim.landingClip` (or the hook) to play the slow-motion replay; the frames carry x, y (m), angle and waterOffset, enough to redraw the bottle with `slidWaterVertices`.
 
 > [harness] session 71 · builder F026 · todo → needs_review · ok · verify passed · 1 commit(s) · 44 tool calls · 2m 32s · ~$0.55 API-equivalent
+
+## Session 72 · reviewer · F026 Record each throw for replay
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, unit, build, and 260 e2e tests including tests/e2e/replay.spec.ts.
+  - Criterion 1: replay.test.ts compares the whole recording to the snapshot pose (tick, x, y, angle, waterOffset) after every step, with sloshing off and on. The snap matches: seed 7, power 90 gave 190 frames ending at the outcome tick (205). At tick 215, during the result, there were still 190 frames, so the result phase adds none.
+  - Criterion 2: a scratch probe (deleted) ran 5 seeds x 6 powers and compared the clip with the first `impact` event. The clip always started exactly 24 steps (0.4 s) before the first impact, or at the release when the impact came sooner. It ended 48 steps (0.8 s) after the impact, or at the last frame when the outcome came first (e.g. seed 2, power 90). The unit tests also cover the exact length lead+1+tail, overriding the lengths in tuning, and an empty clip for a bottle placed off the table.
+  - Criterion 3: the ThrowRecorder unit test caps 100 steps at 60 when the timeout is 1 s. The recording is cleared by skip and by restartRound, and replaced (not appended to) by the next throw.
+  - Edge cases, snapped at 1024x576 with seed 7: a real mouse throw (22 frames in flight, empty clip before touching the table), R mid-flight (cleared), a hook throw then R (cleared), a result left to auto-advance (cleared), then Space for a new throw. No console errors, and the result screenshot looks normal.
+  - CLAUDE.md: the logic is in src/core (replay.ts, 83 lines) with unit tests. Tunables are in tuning.ts, the hooks are thin, the test diff only adds files, no debug code is left over, and ARCHITECTURE.md already has the replay.ts row.
+- Problems: none
+- Notes for later:
+  - The first contact comes from begin-contact. A bottle released while already touching the table (e.g. `placeBottle` resting on it) gets no begin event, so its clip would be empty. Normal throws start in the air, so this doesn't happen in play.
+  - The recording stops at the outcome, so a fast fail cuts the clip's tail short (the criterion allows this). If F027 wants the full 0.8 s tail, it needs to keep recording a little into the result.
+  - The timeout-cap test on Simulation is weak because the judge ends the throw at the timeout anyway. The direct ThrowRecorder test covers the cap.
