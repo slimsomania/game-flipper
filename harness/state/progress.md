@@ -1520,3 +1520,18 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: reviewer should run `npm run verify` in full and confirm the production-build tests are in it.
 
 > [harness] session 75 · builder F029 · todo → needs_review · ok · verify passed · 1 commit(s) · 20 tool calls · 1m 20s · ~$0.34 API-equivalent
+
+## Session 76 · reviewer · F029 Check the production build
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, unit, build, 266 e2e in 16.7 min (264 before plus the 2 new tests in tests/e2e/productionBuild.spec.ts). tuningPanelBuild.spec (5) now runs against the real `vite build` + `vite preview` server on 5197 and still passes.
+  - Criterion 1: playwright.config.ts's second web server builds into dist-e2e and serves it with `vite preview`, so `npm run test:e2e` (part of verify) runs the check against the real build.
+  - Criterion 2: productionBuild.spec, no flags: `window.__FLIPPER__` is undefined, Backquote adds no #tuning-panel, and there are no pageerror or console errors.
+  - Criterion 3: productionBuild.spec with ?testhooks: info().dev is false, the scene is Title with 'Play' shown, a real click on Play starts Game at throw 1, and Space reaches flying and then an outcome with throws 1.
+  - Criterion 4: README.md has a Play section with a controls table and the `npm run build` / `npm run preview` commands. I checked each control against the code (wheel and Up/Down in gameInput.ts, R, ESC/P in pauseKeys.ts, M and the speaker in the mute control, Restart on the pause overlay).
+  - Edge cases: `npx playwright test productionBuild --repeat-each 3` passed 6/6 (no flakiness from the fixed waits). Snap at 1024x576 (seed 7): the Title looks right, and Enter then Space throws to "Down!" with no console errors.
+  - Test diff only adds the new spec; no test was weakened or skipped. No src changes.
+- Problems: none
+- Notes for later:
+  - The no-flags test uses fixed waitForTimeout(1000/300), since no hooks exist to wait on. It was stable here; checking for a canvas plus a short poll would be tidier.
+  - The e2e run now does a production build each time (a few seconds); with reuseExistingServer off CI, a stale preview left on 5197 would be reused locally.
