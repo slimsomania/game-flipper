@@ -539,7 +539,7 @@
         "F021"
       ],
       "status": "needs_review",
-      "attempts": 1,
+      "attempts": 2,
       "notes": "Added 2026-11-19 after the human noticed the bottle looked squeezed since M1; overrides the 2026-11-18 note 'the bottle's shape stays as calibrated (D23)' in GAME_DESIGN.md section 13. If a real search finds no tuning that meets every target at 1.8:1, say so in the progress entry with the slimmest shape that does meet them and the search done, and don't weaken any target. Built in session 57: the bottle is 0.80 x 1.48 m (1.85:1, 12 cm neck) in src/core/bottleShape.ts and the ten throw levers in src/core/tuning.ts are retuned, so every calibration and difficulty test passes with no range changed (practiced 63.0%, new 37.5% on the default seed); verify passed (810 unit, 241 e2e). Known limits, in the progress entry: the new player's expected rate is about 43% (the default seed is lucky), and the flight is low (the base rises 1.0 to 1.2 m but the bottle's highest point stays near the held top), since a higher throw narrows the 10% window below 10.",
       "review_feedback": ""
     },

@@ -1233,3 +1233,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The lying bottle is long enough to reach the power bar's "20%" label when it falls at the table's left end (see Verified). Moving the bar left or shrinking its label is a presentation change I left alone.
   - Process: `git rm -r -f .scratch` and `rm -r .scratch` (exact paths) worked; `tail` of a file outside the repository was denied (use the Read tool on the task output); background `npx tsx` searches printed nothing for many minutes with five at a time.
 - Next: the reviewer should check the new-player margin and the flight height (see Issues) and decide whether they block; then F031 (shading) is next and must keep the overscan and draw the final shape.
+
+> [harness] session 57 · builder F034 · todo → needs_review · ok · verify passed · 3 commit(s) · 209 tool calls · 53m 20s · ~$4.01 API-equivalent
