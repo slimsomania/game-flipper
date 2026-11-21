@@ -1306,3 +1306,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - A touch is left to Phaser's own touch events on purpose (`pointerType === 'touch'`); the game is desktop-only. An event with an empty `pointerType` (script-made) counts as a mouse.
   - Process: a `python3 - <<EOF || node -e` compound Bash command was auto-denied; the Edit tool did the same job. The Monitor tool (`until grep -q ...; do sleep 30; done`) worked for waiting on the 14-minute `npm run verify`, but each watch expires after 10 minutes, so re-arm it.
 - Next: F034 stays blocked for a human decision; of the todo features, pick the next one in `feature_list.json` whose dependencies are done (F031 shading must keep the bottle overscan and draw the final shape).
+
+> [harness] session 60 · builder F033 · todo → needs_review · ok · verify passed · 2 commit(s) · 74 tool calls · 23m 35s · ~$1.62 API-equivalent

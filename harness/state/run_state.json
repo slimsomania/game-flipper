@@ -1,5 +1,5 @@
 {
-  "sessions": 59,
+  "sessions": 60,
   "doneAtLastMaintenance": 16,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -25,14 +25,13 @@
     "F020": "0ad6aefa0e51dcfebc15d349d38776e69ad64b61",
     "F032": "e20543035b8ef9d43876f2ba582f85a0d0500e1e",
     "F021": "c141cabefb5237f3c7cd50b93d63a067c4e51c77",
-    "F034": "8002db1db04cc903ab0e400f635ae48be933fe8a"
+    "F034": "8002db1db04cc903ab0e400f635ae48be933fe8a",
+    "F033": "e15384ca53dc639e00178fae077e64098a857728"
   },
   "lastGate": {
-    "session": 59,
+    "session": 60,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": [
-    "feature_list.json was left invalid (not valid JSON: Expected ',' or '}' after property value in JSON at position 76648 (line 544 column 7))"
-  ]
+  "lastViolations": []
 }
