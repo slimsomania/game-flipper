@@ -112,11 +112,17 @@ export interface BenchmarkResult {
  * every water level from the tuning's lowest to its highest counts equally (the game draws them
  * evenly), and each player's error is integrated over every power instead of sampled. The new
  * player's aim is the average of those levels' window centers.
+ *
+ * The points are computed the same way: `practicedPointsPer10` is what the practiced player scores
+ * per 10 throws, and `bestFixedAim` is the one power that scores the most when thrown at every
+ * bottle with the same error. It shows whether ignoring the water and going for doubles pays.
  */
 export interface ExpectedRates {
   practiced: number;
   newPlayer: number;
   newPlayerAim: number;
+  practicedPointsPer10: number;
+  bestFixedAim: { aim: number; pointsPer10: number };
 }
 
 /** A number from the normal distribution (mean 0, standard deviation 1), by Box-Muller. */
@@ -259,6 +265,26 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
     }
     return total;
   };
+  // Expected points of one throw at `water` aimed at `aim`, with the same error.
+  const pointsChance = (water: number, aim: number): number => {
+    const chances = powerChances(aim, errorSigma);
+    let total = 0;
+    for (let power = MIN_POWER; power <= MAX_POWER; power++) {
+      const outcome = outcomeAt(water, power);
+      if (outcome.result === 'success') total += chances[power]! * outcome.points;
+    }
+    return total;
+  };
+  const per10 = (aimOf: (water: number) => number): number =>
+    (everyLevel.reduce((sum, water) => sum + pointsChance(water, aimOf(water)), 0) /
+      everyLevel.length) *
+    10;
+  // The lowest of several equally good aims wins a tie, as for the fixed powers above.
+  let bestFixedAim = { aim: MIN_POWER, pointsPer10: -1 };
+  for (let aim = MIN_POWER; aim <= MAX_POWER; aim++) {
+    const pointsPer10 = per10(() => aim);
+    if (pointsPer10 > bestFixedAim.pointsPer10) bestFixedAim = { aim, pointsPer10 };
+  }
   const expected: ExpectedRates = {
     practiced:
       everyLevel.reduce((sum, water) => sum + landChance(water, centerOf(water)), 0) /
@@ -267,6 +293,8 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
       everyLevel.reduce((sum, water) => sum + landChance(water, expectedAim), 0) /
       everyLevel.length,
     newPlayerAim: expectedAim,
+    practicedPointsPer10: per10(centerOf),
+    bestFixedAim,
   };
 
   return {
