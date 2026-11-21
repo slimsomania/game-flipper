@@ -4,7 +4,7 @@ import { Simulation, type SimSnapshot } from '../../src/core/simulation';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
 import { FLIPPED } from '../shared';
 import { RESULT_STEPS, expectHeld, run, runToOutcome } from './helpers';
-import { ON_BOTTLE, T0, mousePush, playDrag, pushPath } from './mouseHelpers';
+import { BOTTLE_HALF_WIDTH_PX, ON_BOTTLE, T0, mousePush, playDrag, pushPath } from './mouseHelpers';
 
 const sim = (seed = 7): Simulation => new Simulation({ seed });
 
@@ -73,12 +73,14 @@ describe('grabbing the held bottle', () => {
   });
 
   it('canGrab follows the padding in the tuning', () => {
-    const edge = ON_BOTTLE.x + 50 + 30;
+    // 30 px past the bottle's side: inside a padding of 40, outside a padding of 0 (the half width
+    // follows the bottle's shape, so a new shape needs no change here).
+    const edge = ON_BOTTLE.x + BOTTLE_HALF_WIDTH_PX + 30;
     const wide = new Simulation({ seed: 1, tuning: { grabPadding: 40 } });
     const none = new Simulation({ seed: 1, tuning: { grabPadding: 0 } });
     expect(wide.mouse.canGrab(edge, ON_BOTTLE.y)).toBe(true);
     expect(none.mouse.canGrab(edge, ON_BOTTLE.y)).toBe(false);
-    expect(none.mouse.canGrab(ON_BOTTLE.x + 49, ON_BOTTLE.y)).toBe(true);
+    expect(none.mouse.canGrab(ON_BOTTLE.x + BOTTLE_HALF_WIDTH_PX - 1, ON_BOTTLE.y)).toBe(true);
   });
 });
 

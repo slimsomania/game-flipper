@@ -16,22 +16,27 @@ export interface Point {
 }
 
 /*
- * The proportions are a calibration lever (F009): a wide, low bottle tips back onto its base from a
- * much larger landing angle than a tall thin one (about 0.27 of a turn instead of 0.1), and that is
- * what lets a single flip have a window of 12 or more powers. Change them only together with a
- * look at the flip-windows table (`npx tsx scripts/flip-windows.ts`) and `calibration.test.ts`.
+ * The proportions are a calibration lever, and a look: the bottle has to read as a plastic water
+ * bottle (design section 3), so it is at least 1.8 times as tall as it is wide (`bottle.test.ts`
+ * locks that, and a visible neck, shoulder and cap, as minimums). F009 made it squat on purpose
+ * (1.0 m wide, 1.13 m tall, a 6 cm neck: 1.13:1) because a wide, low bottle tips back onto its
+ * base from a much larger landing angle than a tall thin one, which is what gives a single flip a
+ * window of powers; it looked like a jar. F034 (D23) made it 0.80 m wide and 1.48 m tall (1.85:1)
+ * with a real neck and retuned the throw to the same targets. The F002 shape (0.66 by 1.74 m,
+ * 2.6:1) gives single windows only 3 to 4 powers wide. Change the proportions only together with
+ * a look at the flip-windows table (`npx tsx scripts/flip-windows.ts`) and `calibration.test.ts`.
  */
 
 /** Straight-sided body, from the flat base up to where the shoulder starts. */
-export const BOTTLE_BODY_WIDTH = 1.0;
-export const BOTTLE_BODY_HEIGHT = 0.71;
+export const BOTTLE_BODY_WIDTH = 0.8;
+export const BOTTLE_BODY_HEIGHT = 0.95;
 /** The shoulder narrows from the body width to the neck width. */
-export const BOTTLE_SHOULDER_HEIGHT = 0.24;
-export const BOTTLE_NECK_WIDTH = 0.23;
-export const BOTTLE_NECK_HEIGHT = 0.06;
+export const BOTTLE_SHOULDER_HEIGHT = 0.28;
+export const BOTTLE_NECK_WIDTH = 0.25;
+export const BOTTLE_NECK_HEIGHT = 0.12;
 /** The cap is a little wider than the neck. */
-export const BOTTLE_CAP_WIDTH = 0.26;
-export const BOTTLE_CAP_HEIGHT = 0.12;
+export const BOTTLE_CAP_WIDTH = 0.3;
+export const BOTTLE_CAP_HEIGHT = 0.13;
 /** Thickness of the plastic wall: the water sits inside it. */
 export const BOTTLE_WALL = 0.03;
 

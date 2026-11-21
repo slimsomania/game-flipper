@@ -4,6 +4,7 @@ import { Bottle, HAND_X, HAND_Y, isFinitePose } from '../../src/core/bottle';
 import {
   BOTTLE_BODY_HEIGHT,
   BOTTLE_BODY_WIDTH,
+  BOTTLE_CAP_HEIGHT,
   BOTTLE_CAP_WIDTH,
   BOTTLE_HEIGHT,
   BOTTLE_NECK_HEIGHT,
