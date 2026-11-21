@@ -1,5 +1,5 @@
 {
-  "sessions": 69,
+  "sessions": 70,
   "doneAtLastMaintenance": 24,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -32,9 +32,11 @@
     "F024": "8372ae4b5dd647ba86b98dfc37d883fed6eefd10"
   },
   "lastGate": {
-    "session": 69,
+    "session": 70,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "F024.attempts is counted by the harness (reverted)"
+  ]
 }

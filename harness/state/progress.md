@@ -1456,3 +1456,6 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 -> blocked
 - Issues / follow-ups: drawing (slidWaterVertices, bottleView) is complete and verified; only acceptance criterion 2 (mid-flight shift) fails. Human decision needed: relax criterion 2 to show the shift after landing or tipping (where F023 does move the water), or accept an unphysical effect.
 - Next: if the human relaxes criterion 2, snap a landing on the cap with sloshing on and mark F024 needs_review; no more code should be needed.
+
+> [harness] session 70 · builder F024 · todo → blocked · ok · verify passed · 1 commit(s) · 26 tool calls · 1m 40s · ~$0.36 API-equivalent
+> [harness] corrected: F024.attempts is counted by the harness (reverted)
