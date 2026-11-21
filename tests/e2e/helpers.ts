@@ -22,7 +22,9 @@ export async function openTitle(page: Page, query = ''): Promise<string[]> {
  * click, no key) and wait until its simulation runs. A page that is already in the Game scene is
  * started afresh.
  */
-export async function startGame(page: Page): Promise<void> {
+export async function startGame(page: Page, replayOff = true): Promise<void> {
+  // The slow-motion replay (F027) stretches the result; only the tests of it switch it on.
+  if (replayOff) await page.evaluate(() => window.__FLIPPER__!.setTuningValue('replaySpeed', 0));
   await page.evaluate(() => window.__FLIPPER__!.startScene('Game'));
   await page.waitForFunction(
     () =>
@@ -35,17 +37,17 @@ export async function startGame(page: Page): Promise<void> {
  * started through `startGame`, so a test of play doesn't depend on the title's own input. Returns
  * a live list of console and page errors; assert it is empty at the end of the test.
  */
-export async function openGame(page: Page, query = ''): Promise<string[]> {
+export async function openGame(page: Page, query = '', replayOff = true): Promise<string[]> {
   const errors = await openTitle(page, query);
-  await startGame(page);
+  await startGame(page, replayOff);
   return errors;
 }
 
 /** Visit the page again, in the Game scene: a new game in the same browser, with the same localStorage. */
-export async function reloadGame(page: Page): Promise<void> {
+export async function reloadGame(page: Page, replayOff = true): Promise<void> {
   await page.reload();
   await page.waitForFunction(() => window.__FLIPPER__?.ready === true);
-  await startGame(page);
+  await startGame(page, replayOff);
 }
 
 /** Current simulation snapshot. Throws if no game scene is running. */

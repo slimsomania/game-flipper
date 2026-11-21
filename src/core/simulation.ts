@@ -5,7 +5,7 @@ import { SimEvents, type SimEvent } from './events';
 import { MouseControl } from './mouseControl';
 import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
-import { ThrowRecorder, type ReplayFrame } from './replay';
+import { ThrowRecorder, replayFrameAt, replayStepCount, type ReplayFrame } from './replay';
 import { Round } from './round';
 import { createRng } from './rng';
 import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
@@ -61,6 +61,8 @@ export class Simulation {
   private throwCount = 0;
   /** Steps since the outcome was decided, counted during `result`. */
   private resultSteps = 0;
+  /** The landing clip taken when the outcome was decided; it is replayed after the result delay. */
+  private replayClip: ReplayFrame[] = [];
   private ticks = 0;
 
   constructor(options: SimulationOptions = {}) {
@@ -199,6 +201,7 @@ export class Simulation {
     this.judge = null;
     this.result = null;
     this.recorder.clear();
+    this.replayClip = [];
     this.currentPhase = 'aiming';
   }
 
@@ -254,12 +257,21 @@ export class Simulation {
       if (this.result) this.showResult(this.result);
     } else if (this.currentPhase === 'result') {
       this.resultSteps++;
-      if (this.resultSteps >= stepsFor(this.currentTuning.resultDelaySeconds)) this.endResult();
+      if (this.resultSteps >= this.resultLength()) this.endResult();
     }
+  }
+
+  /** Steps the result phase lasts: the result delay, plus the replay when there is a clip. */
+  private resultLength(): number {
+    return (
+      stepsFor(this.currentTuning.resultDelaySeconds) +
+      replayStepCount(this.replayClip.length, this.currentTuning.replaySpeed)
+    );
   }
 
   private showResult(outcome: Outcome): void {
     this.recorder.end();
+    this.replayClip = this.recorder.clip();
     this.round.judged(outcome);
     this.events.judged(outcome);
     this.resultSteps = 0;
@@ -309,6 +321,14 @@ export class Simulation {
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
       resultSteps: this.currentPhase === 'result' ? this.resultSteps : null,
+      replay:
+        this.currentPhase === 'result'
+          ? replayFrameAt(
+              this.replayClip,
+              this.resultSteps - stepsFor(this.currentTuning.resultDelaySeconds),
+              this.currentTuning.replaySpeed,
+            )
+          : null,
       score: this.round.score,
       throws: this.throwCount,
       throwNumber: this.round.throwNumber(this.currentPhase === 'aiming'),

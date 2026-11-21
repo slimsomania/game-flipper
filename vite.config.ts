@@ -12,6 +12,7 @@ export default defineConfig({
   test: {
     include: ['tests/unit/**/*.test.ts', 'tests/harness/**/*.test.ts'],
     environment: 'node',
+    setupFiles: ['tests/unit/noReplaySetup.ts'],
     allowOnly: false,
   },
 });

@@ -18,6 +18,7 @@ import { createHudView, type HudView } from '../view/hudView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createPauseButton } from '../view/pauseButtonView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
+import { createReplayLabelView, type ReplayLabelView } from '../view/replayLabelView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createTableView } from '../view/tableView';
 import type { PauseData } from './PauseScene';
@@ -38,6 +39,7 @@ export class GameScene extends Phaser.Scene {
   private bottleView!: BottleView;
   private powerBarView!: PowerBarView;
   private resultView!: ResultView;
+  private replayLabelView!: ReplayLabelView;
   private hudView!: HudView;
   private cursorView!: CursorView;
   private effectsView!: EffectsView;
@@ -70,6 +72,7 @@ export class GameScene extends Phaser.Scene {
     this.bottleView = createBottleView(this);
     this.powerBarView = createPowerBarView(this);
     this.resultView = createResultView(this);
+    this.replayLabelView = createReplayLabelView(this);
     this.hudView = createHudView(this);
     this.cursorView = createCursorView(this);
     this.effectsView = createEffectsView(this);
@@ -132,7 +135,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private draw(snapshot: SimSnapshot): void {
-    this.bottleView.update(snapshot.bottle);
+    // During the replay the bottle view draws the recorded pose instead of the live bottle.
+    const { replay } = snapshot;
+    this.bottleView.update(
+      replay
+        ? {
+            ...snapshot.bottle,
+            x: replay.x,
+            y: replay.y,
+            angle: replay.angle,
+            waterOffset: replay.waterOffset,
+          }
+        : snapshot.bottle,
+    );
+    this.replayLabelView.update(replay !== null);
     this.powerBarView.update(snapshot.power);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);
     this.hudView.update(snapshot);

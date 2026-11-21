@@ -170,7 +170,7 @@ Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/fe
 | `src/core/powerMeter.ts`, `push.ts` | power bar (taps, hold acceleration, wheel); mouse push → power | F006, F011 |
 | `src/core/round.ts` | round counters, streak, `updateBest` | F013, F015 |
 | `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, simulated-player benchmark | F008, F020 |
-| `src/core/replay.ts` | per-step recording and the landing clip | F026 |
+| `src/core/replay.ts` | per-step recording, the landing clip, and the replay timing (`replayStepCount`, `replayFrameAt`; the result phase lasts the delay plus clip / `replaySpeed`, `snapshot.replay` is the frame to draw, `replaySpeed` 0 turns it off; unit tests default it to 0 via `tests/unit/noReplaySetup.ts`, e2e `startGame` sets it to 0) | F026, F027 |
 | `src/game/scenes/` | Boot → Title (since F018) → Game; Summary since F014; the Pause overlay since F019 | F001, F014, F018, F019 |
 | `src/game/view/` | bottle, table, power bar, HUD, result flash, effects | F002–F007, F021 |
 | `src/game/audio/` (`soundPlan.ts`, `synth.ts`, `sfx.ts`), `src/game/storage.ts` | Web Audio effects (built in F016); versioned localStorage save (best score since F015, mute since F017) | F015–F017 |

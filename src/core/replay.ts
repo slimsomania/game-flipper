@@ -1,6 +1,25 @@
 import { SIM_DT, stepsFor } from './constants';
 import type { Tuning } from './tuning';
 
+/** How many simulation steps a replay of `clipLength` frames lasts at `speed` (0 for no clip). */
+export function replayStepCount(clipLength: number, speed: number): number {
+  if (clipLength <= 0 || !(speed > 0)) return 0;
+  return Math.ceil(clipLength / speed);
+}
+
+/**
+ * The clip frame shown `replayStep` steps into a replay (0 = the first step) at `speed`, or null
+ * outside the replay.
+ */
+export function replayFrameAt(
+  clip: readonly ReplayFrame[],
+  replayStep: number,
+  speed: number,
+): ReplayFrame | null {
+  if (replayStep < 0 || replayStep >= replayStepCount(clip.length, speed)) return null;
+  return clip[Math.min(clip.length - 1, Math.floor(replayStep * speed))];
+}
+
 /** The bottle's pose after one simulation step, for replaying the throw. */
 export interface ReplayFrame {
   /** The simulation tick (fixed steps simulated so far) this frame was taken at. */

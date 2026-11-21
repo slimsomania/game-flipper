@@ -38,7 +38,7 @@ async function launchSpeed(page: Page, water: number, power: number): Promise<nu
 test('the panel is hidden at start; Backquote shows it with every tuning key and its value, and hides it again', async ({
   page,
 }) => {
-  const errors = await openGame(page);
+  const errors = await openGame(page, '', false);
   await expect(page.locator(PANEL)).toBeHidden();
 
   await showPanel(page);
@@ -58,7 +58,7 @@ test('the panel is hidden at start; Backquote shows it with every tuning key and
 test('the panel is a side overlay: it does not cover the bottle or the power bar', async ({
   page,
 }) => {
-  await openGame(page);
+  await openGame(page, '', false);
   await showPanel(page);
   const panel = (await page.locator(PANEL).boundingBox())!;
   const canvas = (await page.locator('canvas').boundingBox())!;
@@ -72,7 +72,7 @@ test('the panel is a side overlay: it does not cover the bottle or the power bar
 test('changing a value in the panel updates tuning() and the next throw: a stronger impulse launches faster', async ({
   page,
 }) => {
-  const errors = await openGame(page, '?seed=7');
+  const errors = await openGame(page, '?seed=7', false);
   const before = await launchSpeed(page, 0.5, 60);
   await stepUntilOutcome(page);
   await page.evaluate(() => window.__FLIPPER__!.skip());
@@ -94,7 +94,7 @@ test('changing a value in the panel updates tuning() and the next throw: a stron
 test('typing digits, Space, letters or arrow keys into a field changes neither the power nor the phase', async ({
   page,
 }) => {
-  const errors = await openGame(page, '?seed=7');
+  const errors = await openGame(page, '?seed=7', false);
   await page.evaluate(() => window.__FLIPPER__!.pause());
   // One landing first, so a restart of the round (R) would show: it would put the score, the throw
   // number and the landings back to the start (F013: R restarts the round, not the whole game).
@@ -124,7 +124,7 @@ test('typing digits, Space, letters or arrow keys into a field changes neither t
 test('Backquote works from inside a field, and gives the keys back to the game', async ({
   page,
 }) => {
-  await openGame(page, '?seed=7');
+  await openGame(page, '?seed=7', false);
   await page.evaluate(() => window.__FLIPPER__!.pause());
   const start = (await gameState(page)).power;
   await showPanel(page);
@@ -144,7 +144,7 @@ test('Backquote works from inside a field, and gives the keys back to the game',
 test('clicking and scrolling inside the panel does not reach the game (no skip, no power change)', async ({
   page,
 }) => {
-  await openGame(page, '?seed=7');
+  await openGame(page, '?seed=7', false);
   await page.evaluate(() => {
     window.__FLIPPER__!.pause();
     window.__FLIPPER__!.throwBottle(50);
@@ -172,13 +172,13 @@ test('clicking and scrolling inside the panel does not reach the game (no skip, 
 test('an edited value is still applied after a reload, and is marked as changed', async ({
   page,
 }) => {
-  const errors = await openGame(page, '?seed=7');
+  const errors = await openGame(page, '?seed=7', false);
   await showPanel(page);
   await page.locator(field('throwLinearImpulse')).fill('12');
   await page.locator(field('bottleFriction')).fill('0.3');
   await expect.poll(async () => (await tuningOf(page)).bottleFriction).toBe(0.3);
 
-  await reloadGame(page);
+  await reloadGame(page, false);
   // In effect from the very first bottle, with the panel still closed.
   expect(await tuningOf(page)).toEqual({
     ...DEFAULT_TUNING,
@@ -196,7 +196,7 @@ test('an edited value is still applied after a reload, and is marked as changed'
 test('Reset restores the defaults, in the fields, in tuning() and after a reload', async ({
   page,
 }) => {
-  await openGame(page);
+  await openGame(page, '', false);
   await showPanel(page);
   await page.locator(field('throwLinearImpulse')).fill('12');
   await expect.poll(async () => (await tuningOf(page)).throwLinearImpulse).toBe(12);
@@ -208,7 +208,7 @@ test('Reset restores the defaults, in the fields, in tuning() and after a reload
   );
   await expect(page.locator('.tp-row.changed')).toHaveCount(0);
 
-  await reloadGame(page);
+  await reloadGame(page, false);
   expect(await tuningOf(page)).toEqual(DEFAULT_TUNING);
 });
 
@@ -218,7 +218,7 @@ test.describe('Copy', () => {
   test('gives the full current tuning as JSON, in the box and on the clipboard', async ({
     page,
   }) => {
-    await openGame(page);
+    await openGame(page, '', false);
     await showPanel(page);
     await page.locator(field('throwLinearImpulse')).fill('12');
     await page.locator(field('throwSpinGrowth')).fill('0.02');
@@ -240,7 +240,7 @@ test.describe('Copy', () => {
 test('the hooks edit the tuning like the panel: setTuningValue shows in the fields, and bad input is refused', async ({
   page,
 }) => {
-  await openGame(page);
+  await openGame(page, '', false);
   await showPanel(page);
   const result = await page.evaluate(() => window.__FLIPPER__!.setTuningValue('shellDensity', 1.2));
   expect(result).toEqual({ ...DEFAULT_TUNING, shellDensity: 1.2 });
@@ -258,7 +258,7 @@ test('the hooks edit the tuning like the panel: setTuningValue shows in the fiel
 test('an empty or half-typed field is not applied, and shows the value in effect when left', async ({
   page,
 }) => {
-  await openGame(page);
+  await openGame(page, '', false);
   await showPanel(page);
   const input = page.locator(field('throwLinearImpulse'));
   await input.fill('');

@@ -149,7 +149,12 @@ export interface Tuning {
   replayLeadSeconds: number;
   /** ...and ends this many seconds after it (or where the recording ends). */
   replayTailSeconds: number;
+  /** The replay of the landing clip (F027) plays at this fraction of real speed (0.4 = slow motion). */
+  replaySpeed: number;
 }
+
+/** The default replay speed (F027); unit tests switch the replay off by default, see tests/unit/noReplaySetup.ts. */
+export const REPLAY_SPEED = 0.4;
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
   // Design open question 2: 10% to 90% in 5% steps.
@@ -239,6 +244,8 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // F026: the approach, then the tip or bounce, around the first touch of the table.
   replayLeadSeconds: 0.4,
   replayTailSeconds: 0.8,
+  // F027: slow enough to see the tip or bounce, short enough not to hold up the next throw.
+  replaySpeed: REPLAY_SPEED,
 };
 
 /** The defaults with `overrides` applied on top. */

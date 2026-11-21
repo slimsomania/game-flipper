@@ -1,5 +1,6 @@
 import type { Body } from 'planck';
 import type { Outcome } from './outcome';
+import type { ReplayFrame } from './replay';
 import type { ThrowSource } from './throw';
 
 /*
@@ -77,6 +78,11 @@ export interface SimSnapshot {
    * long as the `result` phase lasts. Null in every other phase. The result flash fades by it.
    */
   resultSteps: number | null;
+  /**
+   * The landing replay (F027): the clip frame to draw while the slow-motion replay plays (after
+   * the result delay, until the next bottle), null at every other time and for a throw with no clip.
+   */
+  replay: ReplayFrame | null;
   /**
    * Points so far this round: each upright landing adds its number of turns (`outcome.points`: 1
    * for a single flip, 2 for a double, ...). A fail, "no flip" included, adds nothing. Back to 0

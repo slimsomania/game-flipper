@@ -85,7 +85,7 @@ test('the browser flight is the same as the core simulation for the same seed an
   });
   const inBrowser = await stepFrames(page, 300);
 
-  const sim = new Simulation({ seed: 11 });
+  const sim = new Simulation({ seed: 11, tuning: { replaySpeed: 0 } });
   for (let i = 0; i < heldSteps; i++) sim.step();
   sim.throwBottle(64);
   for (let i = 0; i < 300; i++) sim.step();
