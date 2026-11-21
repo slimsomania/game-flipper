@@ -102,6 +102,21 @@ export interface BenchmarkResult {
   bestScoringFixed: FixedPowerResult;
   /** Window centers of the distinct water levels in the draw, rising with the water, by level. */
   centers: { water: number; center: number }[];
+  /** What the two players land in the long run, with no luck of the draw (see `ExpectedRates`). */
+  expected: ExpectedRates;
+}
+
+/**
+ * The exact expected landing rates of the two players, 0 to 1. A benchmark of 200 throws is one
+ * lucky or unlucky draw (the rate of a seed swings by 5 to 10 points), so tuning is judged on these:
+ * every water level from the tuning's lowest to its highest counts equally (the game draws them
+ * evenly), and each player's error is integrated over every power instead of sampled. The new
+ * player's aim is the average of those levels' window centers.
+ */
+export interface ExpectedRates {
+  practiced: number;
+  newPlayer: number;
+  newPlayerAim: number;
 }
 
 /** A number from the normal distribution (mean 0, standard deviation 1), by Box-Muller. */
@@ -115,6 +130,34 @@ export function normalSample(rng: Rng): number {
 /** Round a power to a whole number and keep it on the bar. */
 const toPower = (power: number): number =>
   Math.min(MAX_POWER, Math.max(MIN_POWER, Math.round(power)));
+
+/** The standard normal distribution function Φ(x) (error below 1e-7: Abramowitz and Stegun 7.1.26). */
+export function normalCdf(x: number): number {
+  const t = 1 / (1 + (0.3275911 * Math.abs(x)) / Math.SQRT2);
+  const poly =
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+  const erf = 1 - poly * Math.exp(-(x * x) / 2);
+  return 0.5 * (1 + (x >= 0 ? erf : -erf));
+}
+
+/**
+ * The chance of each whole power from 0 to 100 being thrown by a player who aims at `aim` and
+ * misses by a normal error of `sigma` points: the aim plus the error, rounded, kept on the bar (so
+ * the tails pile up on 0 and on 100). The chances add up to 1.
+ */
+export function powerChances(aim: number, sigma: number): number[] {
+  const chances: number[] = [];
+  for (let power = MIN_POWER; power <= MAX_POWER; power++) {
+    if (sigma <= 0) {
+      chances.push(power === toPower(aim) ? 1 : 0);
+      continue;
+    }
+    const below = power === MIN_POWER ? 0 : normalCdf((power - 0.5 - aim) / sigma);
+    const above = power === MAX_POWER ? 1 : normalCdf((power + 0.5 - aim) / sigma);
+    chances.push(above - below);
+  }
+  return chances;
+}
 
 /**
  * Run the benchmark: draw `bottles` random bottles with the tuning's water levels, sweep each
@@ -134,7 +177,8 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
   const sweep = options.sweep ?? ((water: number) => sweepPowers(water, tuning));
   const sweeps = new Map<number, BenchmarkThrow[]>();
   const centers = new Map<number, number>();
-  for (const water of new Set(levels)) {
+  const sweepLevel = (water: number): void => {
+    if (sweeps.has(water)) return;
     const points = sweep(water);
     const byPower: BenchmarkThrow[] = [];
     for (const point of points) byPower[point.power] = point;
@@ -142,7 +186,9 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
     const single = widestWindow(findWindows(points), 1);
     // A level with no single window has no power to aim at: the practiced player guesses the middle.
     centers.set(water, single ? single.center : MAX_POWER / 2);
-  }
+  };
+  const drawn = new Set(levels);
+  for (const water of drawn) sweepLevel(water);
 
   const centerOf = (water: number): number => centers.get(water)!;
   const outcomeAt = (water: number, power: number): BenchmarkThrow => sweeps.get(water)![power]!;
@@ -195,16 +241,46 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
     }
   }
 
+  // The exact expected rates: every level the game can draw, equally likely, and each player's
+  // error integrated over every power (`powerChances`) instead of sampled.
+  const steps = Math.max(0, Math.round((tuning.waterMax - tuning.waterMin) / tuning.waterStep));
+  const everyLevel = Array.from(
+    { length: steps + 1 },
+    (_, i) => Math.round((tuning.waterMin + i * tuning.waterStep) * 1e6) / 1e6,
+  );
+  for (const water of everyLevel) sweepLevel(water);
+  const expectedAim =
+    everyLevel.reduce((sum, water) => sum + centerOf(water), 0) / everyLevel.length;
+  const landChance = (water: number, aim: number): number => {
+    const chances = powerChances(aim, errorSigma);
+    let total = 0;
+    for (let power = MIN_POWER; power <= MAX_POWER; power++) {
+      if (outcomeAt(water, power).result === 'success') total += chances[power]!;
+    }
+    return total;
+  };
+  const expected: ExpectedRates = {
+    practiced:
+      everyLevel.reduce((sum, water) => sum + landChance(water, centerOf(water)), 0) /
+      everyLevel.length,
+    newPlayer:
+      everyLevel.reduce((sum, water) => sum + landChance(water, expectedAim), 0) /
+      everyLevel.length,
+    newPlayerAim: expectedAim,
+  };
+
   return {
     seed,
     bottles,
     errorSigma,
+    expected,
     newPlayerAim,
     practiced,
     newPlayer,
     bestFixed: bestFixed!,
     bestScoringFixed: bestScoringFixed!,
     centers: [...centers]
+      .filter(([water]) => drawn.has(water))
       .map(([water, center]) => ({ water, center }))
       .sort((a, b) => a.water - b.water),
   };

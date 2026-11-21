@@ -102,4 +102,11 @@ console.log(`${'player'.padEnd(58)}${pad('landing rate', 14)}${pad('points per 1
 for (const [player, rate, points] of rows) {
   console.log(`${player.padEnd(58)}${pad(rate, 14)}${pad(points, 15)}`);
 }
+// The rates above are one draw of 200 bottles; the expected rates are free of that luck (every water
+// level equally likely, the error integrated over every power), and are what a tuning is judged on.
+const { expected } = result;
+console.log('');
+console.log(
+  `expected landing rates, any seed (aim ${expected.newPlayerAim.toFixed(1)}): practiced ${percent(expected.practiced)}, new player ${percent(expected.newPlayer)}`,
+);
 console.log(`(power 0 to 100 in steps of 1; ${((Date.now() - started) / 1000).toFixed(1)} s)`);

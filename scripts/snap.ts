@@ -38,7 +38,8 @@ Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} lo
                                     before it: after a shot, do a short mousemove right before
                                     mouseup. With "pause" first, the power bar holds the live
                                     value of the last mouse move while you take the shot. The
-                                    held bottle is at about 280;350 to 280;460 on the canvas.
+                                    held bottle fills about x 240 to 320 and y 312 to 460 on the
+                                    canvas (its middle is at about 280;386).
   scene:<Key>                       jump to a scene (window.__FLIPPER__.startScene)
   pause / resume                    freeze / unfreeze the real-time simulation clock
   step:<frames>                     advance the simulation by exactly <frames> fixed steps

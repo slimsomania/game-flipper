@@ -2,7 +2,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { drawWaterLevel } from '../../src/core/bottle';
 import {
   BENCHMARK_BOTTLES,
+  normalCdf,
   normalSample,
+  powerChances,
   runBenchmark,
   type BenchmarkResult,
   type BenchmarkThrow,
@@ -66,6 +68,41 @@ describe('normalSample', () => {
       expect(x).toBe(normalSample(b));
       expect(Number.isFinite(x)).toBe(true);
     }
+  });
+});
+
+describe('normalCdf and powerChances', () => {
+  it('normalCdf is Φ: 0.5 at 0, 0.8413 at 1, 0.9772 at 2, symmetric, and 0 and 1 far out', () => {
+    expect(normalCdf(0)).toBeCloseTo(0.5, 7);
+    expect(normalCdf(1)).toBeCloseTo(0.8413447, 6);
+    expect(normalCdf(2)).toBeCloseTo(0.9772499, 6);
+    expect(normalCdf(-1.3) + normalCdf(1.3)).toBeCloseTo(1, 7);
+    expect(normalCdf(-9)).toBeLessThan(1e-9);
+    expect(normalCdf(9)).toBeGreaterThan(1 - 1e-9);
+  });
+
+  it('the chances of the 101 powers add up to 1, and the middle one is the most likely', () => {
+    for (const aim of [0, 3.4, 50, 77.5, 100]) {
+      const chances = powerChances(aim, 8);
+      expect(chances).toHaveLength(101);
+      expect(chances.reduce((sum, c) => sum + c, 0)).toBeCloseTo(1, 9);
+      expect(chances.every((c) => c >= 0)).toBe(true);
+    }
+    const centered = powerChances(50, 8);
+    expect(Math.max(...centered)).toBe(centered[50]);
+    // Within ±6.5 of the aim lands in a window ±6 wide: 2Φ(6.5/8) - 1 = 0.583.
+    const inside = centered.slice(44, 57).reduce((sum, c) => sum + c, 0);
+    expect(inside).toBeCloseTo(2 * normalCdf(6.5 / 8) - 1, 9);
+  });
+
+  it('the tails pile up on the ends of the bar, and a zero error is the aim itself', () => {
+    const low = powerChances(2, 8);
+    expect(low[0]).toBeCloseTo(normalCdf((0.5 - 2) / 8), 9); // everything at or below 0.5
+    const high = powerChances(98, 8);
+    expect(high[100]).toBeCloseTo(1 - normalCdf((99.5 - 98) / 8), 9);
+    const exact = powerChances(41.6, 0);
+    expect(exact[42]).toBe(1);
+    expect(exact.reduce((sum, c) => sum + c, 0)).toBe(1);
   });
 });
 
@@ -174,6 +211,32 @@ describe('the player models on a made-up world', () => {
     expect(rate).toBeLessThan(0.62);
   });
 
+  it('the expected rates are exact: no seed, every level counted once', () => {
+    // The 17 levels have centers 24, 26, ... 56, so the new player's aim is 40, their mean.
+    const { expected } = run();
+    expect(expected.newPlayerAim).toBeCloseTo(40, 9);
+    // A practiced throw lands within ±6.5 of the center: 2Φ(6.5/8) - 1 = 0.5833 (the double flips
+    // from power 90 are 4 deviations away from every aim).
+    expect(expected.practiced).toBeCloseTo(0.5833, 3);
+    // The new player lands the levels whose window holds the throw: for each center c, the chance
+    // that a throw aimed at 40 is within 6 of c, averaged over the levels.
+    let total = 0;
+    for (let c = 24; c <= 56; c += 2) {
+      total += normalCdf((c + 6.5 - 40) / 8) - normalCdf((c - 6.5 - 40) / 8);
+    }
+    expect(expected.newPlayer).toBeCloseTo(total / 17, 3);
+    // With no error the expectation is a count: everyone lands their own window, and the new
+    // player lands the 7 levels (of 17) whose window holds 40, that is the centers 34 to 46.
+    const exact = run({ errorSigma: 0 }).expected;
+    expect(exact.practiced).toBe(1);
+    expect(exact.newPlayer).toBeCloseTo(7 / 17, 9);
+  });
+
+  it('the expected rates do not depend on the seed', () => {
+    expect(run({ seed: 5 }).expected).toEqual(run({ seed: 9 }).expected);
+    expect(run({ bottles: 40 }).expected).toEqual(run().expected);
+  });
+
   it('a double flip scores 2 points and counts as one landing', () => {
     // Every throw at a power of 50 or more is a double in this world.
     const result = runBenchmark({
@@ -242,6 +305,32 @@ describe('the benchmark of the default tuning', () => {
   it('a new player lands 20 to 40% of 200 throws', () => {
     expect(result.newPlayer.landingRate).toBeGreaterThanOrEqual(0.2);
     expect(result.newPlayer.landingRate).toBeLessThanOrEqual(0.4);
+  });
+
+  // The 200 throws of the default seed are one draw, and a lucky one can pass a tuning that misses
+  // in the long run (F034's first try: 37.5% on the seed, 43.8% expected, and the seed was the
+  // luckiest of 20). The exact expected rates integrate the error over every power at every level,
+  // so these hold for any seed, and they hold the same design ranges.
+  it('the expected practiced rate, free of the luck of the draw, is 60 to 80%', () => {
+    expect(result.expected.practiced).toBeGreaterThanOrEqual(0.6);
+    expect(result.expected.practiced).toBeLessThanOrEqual(0.8);
+  });
+
+  it('the expected new-player rate is at least 20%', () => {
+    expect(result.expected.newPlayer).toBeGreaterThanOrEqual(0.2);
+  });
+
+  // OPEN (F034, session 59): the design's upper limit of 40% is NOT met in expectation by the
+  // 1.85:1 bottle's tuning (43.8%; the default seed's 37.5% is the luckiest of 20 seeds), and no
+  // tuning found at 1.8:1 or slimmer meets every other target too (see the F034 progress entries
+  // and D33). This is the test that closes it; turn it into a real `it` with
+  // `expect(result.expected.newPlayer).toBeLessThanOrEqual(0.4)` when a tuning meets it.
+  it.todo('the expected new-player rate is at most 40%');
+
+  it('the expected rates are near what the 200 throws of a seed land (the draw is only luck)', () => {
+    // 200 throws at about 50% land with a standard deviation of 3.5 points: 12 points is 3.4 σ.
+    expect(Math.abs(result.practiced.landingRate - result.expected.practiced)).toBeLessThan(0.12);
+    expect(Math.abs(result.newPlayer.landingRate - result.expected.newPlayer)).toBeLessThan(0.12);
   });
 
   it('reading the water pays: the practiced player lands clearly more than the new one', () => {
