@@ -1494,3 +1494,18 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F028 onward can rely on `snapshot.replay`; remember e2e and unit defaults switch the replay off.
 
 > [harness] session 73 · builder F027 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 23m 27s · ~$1.05 API-equivalent
+
+## Session 74 · reviewer · F027 Slow-motion replay of the landing
+- Verdict: pass
+- Evidence:
+  - `npm run verify` passed: format, typecheck, 866 unit (66 files), build, 264 e2e in 17.0 min, including tests/e2e/replayPlay.spec.ts (4) and tests/unit/replayPhase.test.ts (7). A first verify run was cut off by my own 15 min background limit; the rerun is the one counted.
+  - Criterion 1: replayPlay.spec checks no replay frame at delay-1, a frame and 'Replay' in texts() just after the delay, and the next bottle exactly at decided tick + 60 + ceil(clip / 0.4).
+  - Criterion 2: replayPlay.spec covers real Space and a real click during the replay, and the 10th throw's replay leading to Summary. My real-time snap (1280x720, seed 7, power 90, unpaused) reached the replay (resultSteps 140, frame from tick 136), and a real click at 900;100 brought the next bottle.
+  - Criterion 3: replayPhase.test checks delay + ceil(clip / speed), and just the delay with replaySpeed 0. The empty-clip case (a real throw with no clip) is only covered by reading the code: replayStepCount(0, s) = 0 and replayFrameAt returns null. My scratch probe for it was blocked by the session's permission check.
+  - Criterion 4: a paused snap at 1024x576 (seed 7, power 90, 90 steps into the result) shows the bottle at its tick-128 pose in the air, the 'Replay' label, "Triple! +3", and score 3. R mid-replay restarts the round cleanly (aiming, score 0). Pressing Space several times works as before (skip, then throw). No console errors.
+  - CLAUDE.md: timing logic is in src/core with unit tests, replaySpeed is in tuning.ts, the hooks are unchanged, ARCHITECTURE.md is updated, and no debug code is left over. The test diff changes no assertion; it only adds the replay-off default and the opt-out parameter.
+- Problems: none
+- Notes for later:
+  - tests/unit/noReplaySetup.ts mutates the shared DEFAULT_TUNING for every unit test (tests/harness too), and e2e startGame sets replaySpeed 0. So most tests run with a setting the game doesn't ship with. Explicit per-test tuning, or a RESULT_STEPS helper that includes the replay, would be cleaner.
+  - At high landing poses the replayed bottle overlaps the 'Replay' label (seen in the 1024x576 snap). Polish only.
+  - The replay clip is still cut short for fast fails (F026 note).

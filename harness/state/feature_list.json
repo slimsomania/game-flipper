@@ -721,9 +721,9 @@
         "F014",
         "F026"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Assumption: the replay plays after the result flash and message, and skipping it goes straight to the next bottle. Built: tuning replaySpeed 0.4 (0 = off), replayStepCount/replayFrameAt in src/core/replay.ts, result phase = delay + ceil(clip/speed) in Simulation, snapshot.replay frame, GameScene draws it with the normal bottle view plus replayLabelView ('Replay'). Existing unit tests run with replaySpeed 0 via tests/unit/noReplaySetup.ts and e2e startGame sets it to 0, so they keep testing the 60-step result; new tests: replayPhase.test.ts and replayPlay.spec.ts (replay on). Snap mid-replay checked.",
+      "notes": "Assumption: the replay plays after the result flash and message, and skipping it goes straight to the next bottle. Built: tuning replaySpeed 0.4 (0 = off), replayStepCount/replayFrameAt in src/core/replay.ts, result phase = delay + ceil(clip/speed) in Simulation, snapshot.replay frame, GameScene draws it with the normal bottle view plus replayLabelView ('Replay'). Existing unit tests run with replaySpeed 0 via tests/unit/noReplaySetup.ts and e2e startGame sets it to 0, so they keep testing the 60-step result; new tests: replayPhase.test.ts and replayPlay.spec.ts (replay on). Snap mid-replay checked. Reviewed: verify green (866 unit, 264 e2e incl. replayPlay.spec 4 and replayPhase.test 7); snaps at 1024x576 (seed 7, power 90, paused) and 1280x720 (real time) show an earlier landing pose with 'Replay', message and score; real click skips, R mid-replay restarts cleanly, no console errors.",
       "review_feedback": ""
     },
     {
