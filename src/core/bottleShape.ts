@@ -117,6 +117,20 @@ export function waterVertices(level: number): Point[] | null {
   ];
 }
 
+/**
+ * The water fill when it has slid `offset` meters from the base toward the cap (sloshing). The
+ * offset is clamped to [0, the empty height above the water], so the fill always stays inside the
+ * body. With offset 0 this is exactly `waterVertices(level)`.
+ */
+export function slidWaterVertices(level: number, offset: number): Point[] | null {
+  const vertices = waterVertices(level);
+  if (!vertices) return null;
+  const clampedLevel = Math.min(1, Math.max(0, level));
+  const limit = Math.max(0, (1 - clampedLevel) * BOTTLE_BODY_HEIGHT - BOTTLE_WALL);
+  const dy = -Math.min(limit, Math.max(0, Number.isFinite(offset) ? offset : 0));
+  return vertices.map((p) => ({ x: p.x, y: p.y + dy }));
+}
+
 /** Area and centroid of a simple polygon (shoelace formula). */
 function polygonAreaAndCentroid(vertices: readonly Point[]): {
   area: number;

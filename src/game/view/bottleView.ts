@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { BOTTLE_PARTS, waterVertices, type Point } from '../../core/bottleShape';
+import { BOTTLE_PARTS, slidWaterVertices, type Point } from '../../core/bottleShape';
 import { PIXELS_PER_METER } from '../../core/constants';
 import type { BottleSnapshot } from '../../core/simulation';
 import { COLORS } from '../theme';
@@ -34,16 +34,18 @@ export function createBottleView(scene: Phaser.Scene): BottleView {
   // The container carries the pose; both graphics are drawn in the bottle's local coordinates.
   const container = scene.add.container(0, 0, [shell, water]);
   let drawnLevel = Number.NaN;
+  let drawnOffset = Number.NaN;
 
   return {
     update(bottle) {
       container
         .setPosition(bottle.x * PIXELS_PER_METER, bottle.y * PIXELS_PER_METER)
         .setRotation(bottle.angle);
-      if (bottle.water === drawnLevel) return;
+      if (bottle.water === drawnLevel && bottle.waterOffset === drawnOffset) return;
       drawnLevel = bottle.water;
+      drawnOffset = bottle.waterOffset;
       water.clear();
-      const vertices = waterVertices(bottle.water);
+      const vertices = slidWaterVertices(bottle.water, bottle.waterOffset);
       if (!vertices) return;
       water.fillStyle(COLORS.water, WATER_ALPHA).fillPoints(toPixels(vertices), true);
     },

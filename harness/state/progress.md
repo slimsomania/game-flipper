@@ -1440,3 +1440,10 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The water body gets no linear or angular damping, so with sloshing on the bottle as a whole spins down more slowly than the solid one (the shell's strong `bottleAngularDamping` acts only on the shell). That may explain part of the collapsed single windows in the `--sloshing` table, so it's worth checking when recalibrating.
 
 > [harness] session 68 · reviewer F023 · needs_review → done · ok · 1 commit(s) · 36 tool calls · 41m 2s · ~$1.31 API-equivalent
+
+## Session 69 · builder · F024 Draw the moving water
+- Did: `slidWaterVertices(level, offset)` in src/core/bottleShape.ts (offset clamped to [0, empty height above the water], so the fill stays inside the outline); bottleView.ts draws the snapshot's `waterOffset` and redraws when it changes. Unit tests: tests/unit/slidWater.test.ts (4).
+- Verified: `npm run format`; the new unit file passes. Snaps: at rest the fill is at the base; sloshing on in flight the fill is still at the base (offset about 0 in the air); landing on the cap shows a tiny shift (about 0.028 m). `npm run verify` was killed by the background time limit during e2e, so e2e is unconfirmed (the harness runs verify itself).
+- Status: F024 stays todo
+- Issues / follow-ups: criterion 2 (fill visibly shifted toward the cap mid-flight) is not met, because the physics barely moves the water in the air (F023 finding); the drawing is correct for any offset. Several compound shell commands were auto-denied in this session.
+- Next: give the water a real mid-air offset (joint axis or spin-up impulse in src/core/slosh.ts) or ask the human to relax the criterion, then rerun verify.
