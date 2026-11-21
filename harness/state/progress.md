@@ -1422,3 +1422,19 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F035 and the later M6 features should recalibrate with `--sloshing` (the table above is the uncalibrated start); if the toward-the-cap motion in the air is wanted, the joint axis or the spin-up impulse (applied to the shell only) is the lever.
 
 > [harness] session 67 · builder F023 · todo → needs_review · ok · verify passed · 1 commit(s) · 39 tool calls · 22m 21s · ~$0.94 API-equivalent
+
+## Session 68 · reviewer · F023 Simulate sloshing water as a moving mass, behind a switch
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: format check, typecheck, 63 unit files (843 passed, 1 todo), build, and 259 of 259 e2e passed (15.9 min) on a clean run. An earlier run had 1 failure: awkward.spec.ts "three full rounds" exceeded the 30 s timeout while tearing down its context. That run overlapped with my snap and probe, which loaded the machine. Alone, with `--repeat-each 2`, awkward.spec.ts and slosh.spec.ts passed 22 of 22 (the three-rounds test takes about 41 s), and then the full verify run was clean.
+  - Criterion 1: `slosh.test.ts` covers it. A scratch probe (5 levels x 5 powers, deleted afterwards) showed the released sloshing bottle has the same mass, center of mass and inertia about the center as the solid bottle, equal to 6 decimals at levels 0.2 and 0.6. The water slides toward the cap by up to 0.168 m and is back at 0 at rest.
+  - Criterion 2: the same-seed test compares the full snapshot JSON and the offsets. With the switch off, snapshots equal the defaults. `git diff eb1587ed..HEAD -- tests` only adds tests: slosh.test.ts, one script test and slosh.spec.ts. No existing test changed.
+  - Criterion 3: the 5x21 sweep finds outcomes that differ and checks every reported offset is within [0, limit].
+  - Criterion 4: `--sloshing` and `sloshing=1` are tested in flipWindowsScript.test.ts, and session 67's entry has the table.
+  - Snap at 1024x576: Game scene, `setTuningValue sloshing 1` on the held bottle, a real-mouse throw, R mid-flight, a placed throw, then sloshing turned back to 0 mid-flight and two more bottles. No console errors, phases and throw numbers as expected, screenshots checked. The game looks unchanged, since the drawing doesn't use the offset yet.
+  - CLAUDE.md: the physics is in `src/core` (slosh.ts, 143 lines). Tunables are in tuning.ts, the game never imports planck, there is no leftover debug code, and ARCHITECTURE.md has the new row.
+- Problems: none
+- Notes for later:
+  - Flinging toward the cap happens in the landing, not in the air. In the probe, the most the water moved before first touching the table was 0 to 0.012 m. The 0.02 to 0.17 m slides all came at contact. The builder reported this, and the tests satisfy the criterion's wording ("during a spinning throw" includes the landing). If the design wants the water flung toward the cap mid-air (the description's "spinning flings it toward the cap"), a later feature needs a different lever.
+  - The joint's raw translation leaves its limits for 0 to 11 steps on a hard stop: down to -0.081 m below the base, and +0.081 m against a 0.065 m limit at 90% water. Upright at rest it sits at -0.005 (linear slop). `WaterSlosh.offset` clamps these values, so the reported offset is always within limits, but the physical water is briefly outside them. A stiffer limit (more position iterations, or a speed cap on the water) would fix the real cause if it matters for calibration.
+  - The water body gets no linear or angular damping, so with sloshing on the bottle as a whole spins down more slowly than the solid one (the shell's strong `bottleAngularDamping` acts only on the shell). That may explain part of the collapsed single windows in the `--sloshing` table, so it's worth checking when recalibrating.
