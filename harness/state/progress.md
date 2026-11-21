@@ -1509,3 +1509,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - tests/unit/noReplaySetup.ts mutates the shared DEFAULT_TUNING for every unit test (tests/harness too), and e2e startGame sets replaySpeed 0. So most tests run with a setting the game doesn't ship with. Explicit per-test tuning, or a RESULT_STEPS helper that includes the replay, would be cleaner.
   - At high landing poses the replayed bottle overlaps the 'Replay' label (seen in the 1024x576 snap). Polish only.
   - The replay clip is still cut short for fast fails (F026 note).
+
+> [harness] session 74 · reviewer F027 · needs_review → done · ok · 1 commit(s) · 26 tool calls · 33m 34s · ~$0.92 API-equivalent
