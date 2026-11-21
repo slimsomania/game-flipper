@@ -31,9 +31,9 @@ const isLeftButton = (pointer: Phaser.Input.Pointer): boolean => pointer.button 
  *   result wait, like any click. Moving while the button is down is the push; letting go throws
  *   (see `MouseControl.release`). A browser delivers one move per frame, so while the bottle is
  *   grabbed the moves the mouse made between frames (the move event's coalesced events) are
- *   forwarded too, each with its own time (`CoalescedMoves`). A release outside the canvas, which the game sees only as the
- *   button coming up, ends the grab the same way but without a position, and a window that loses
- *   focus drops the grab.
+ *   forwarded too, each with its own time (`CoalescedMoves`). A release outside the canvas, which
+ *   the game sees only as the button coming up, ends the grab the same way but without a position,
+ *   and a window that loses focus drops the grab.
  */
 export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
   const keyboard = scene.input.keyboard;

@@ -579,9 +579,9 @@
       "depends_on": [
         "F012"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "While the bottle is grabbed, gameInput.ts also reads the canvas's native pointermove and forwards each coalesced event to sim.mouse.drag with its own timeStamp and y from scale.transformY(pageY); the bookkeeping (newer than the press and the last forwarded sample, none for touch or a missing/empty getCoalescedEvents, and covers() so Phaser's move for the same moment is skipped) is CoalescedMoves in src/game/coalescedMoves.ts. push.ts and the D25 timing rules are unchanged. Verified by tests/unit/coalescedMoves.test.ts and tests/e2e/mouseCoalesced.spec.ts (30 fps push 66.67 vs 66.83 at 125 Hz, 50 ms hitch 66.67 vs 66.71, plain events exactly pushPower of the page's log, nothing forwarded when not grabbed), the unchanged mouse.spec.ts and mouseNothing.spec.ts, and npm run verify (830 unit, 248 e2e).",
       "review_feedback": ""
     },
     {
