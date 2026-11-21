@@ -1235,3 +1235,26 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: the reviewer should check the new-player margin and the flight height (see Issues) and decide whether they block; then F031 (shading) is next and must keep the overscan and draw the final shape.
 
 > [harness] session 57 · builder F034 · todo → needs_review · ok · verify passed · 3 commit(s) · 209 tool calls · 53m 20s · ~$4.01 API-equivalent
+
+## Session 58 · reviewer · F034 Make the bottle look like a water bottle again: taller and slimmer, retuned to the same targets
+- Verdict: fail
+- Evidence:
+  - `npm run verify` passed: format check, typecheck, 810 unit tests (61 files), build, and 241 e2e in 14.8 min.
+  - Read the diff. The shape is 0.80 x 1.48 m, and one shape is used for the physics and the drawing. The new minimums in `bottle.test.ts` are design minimums, not exact numbers. The `mouseThrow.test.ts` change takes the half width from the shape instead of a literal, so it was not weakened. `git diff 8002db1d..HEAD -- tests` changes no target range and removes or skips nothing. The particle base derives from `BOTTLE_BODY_WIDTH`. D23 and D33 are updated.
+  - Exact expected rates: I wrote a gitignored scratch script (deleted afterwards). It integrates the normal error (σ 8) over the powers for all 17 water levels with today's `DEFAULT_TUNING`. Result: practiced 62.5% and new 43.8% (aim 34.74). The centers run from 15 (10%) to 51 (90%). `runBenchmark` over seeds 1 to 20 gave:
+    - New player: average 43.7% (37.5 to 52.5), above 40% on 17 of the 20 seeds. The default seed 1 gave 37.5%, the lowest of all 20.
+    - Practiced player: average 61.5% (55.5 to 67.0), below 60% on 4 of the 20 seeds.
+  - Snaps at 1280x720 with `?seed=7`, water locked at 0.1, 0.5 and 0.9, at the window centers 15, 35 and 51, with states read from the report:
+    - Held, mid-flight and after the success ("Nailed it! +1", burst along the base), the bottle reads as a plastic bottle with a cap, neck and shoulder.
+    - Every throw lands upright, but the bottle tumbles beside the hand. The base peaks only about 0.75 to 1.1 m above the hand, and the bottle's highest point stays at the held bottle's top (y about 312 px).
+    - At 90% water, 16 steps after the throw, the cap is about 25 px from the power bar.
+    - The bottles land at x 3.09 to 3.28 m, only 0.3 to 0.5 m in front of the hand and about 130 px from the table's left end.
+    - No console errors.
+- Problems:
+  1. The difficulty targets are met only on the default seed, which is the luckiest of 20. In expectation the new player lands 43.8% against the 20 to 40% target (F020's tuning met it at 39.1%), and the practiced player's margin is about 2 points. The feature asks for the exact expected rates, and the design puts the targets before slimness. The notes say what to do if 1.8:1 can't meet them: find the slimmest shape that does, and record the search.
+  2. Criterion 3 fails: at the 10%, 50% and 90% centers the throw does not "rise clearly above the hand" or "land upright well out on the table" (numbers above). The builder's entry says the same.
+- Notes for later:
+  - The bottle's look itself passes. It still reads a little stout, because the body is 0.95 of the 1.48 m, so F035 has room to go slimmer.
+  - Minor: the `snap --help` text still gives the old held-bottle position (280;350 to 280;460). Untracked, gitignored search logs `scripts/_*.log` from the builder sessions are still in `scripts/`.
+  - A unit test of the integrated expected rates, or a check over several seeds, would stop a lucky seed from passing the difficulty targets again.
+  - Process: these commands were auto-denied: a compound `cd && …` Bash command, `git check-ignore`, and writing a file outside the repository. Plain single commands and a scratch file under the gitignored `coverage/` worked.
