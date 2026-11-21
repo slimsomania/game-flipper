@@ -1378,3 +1378,17 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: pick the next todo feature whose dependencies are done.
 
 > [harness] session 65 · builder F022 · todo → needs_review · ok · verify passed · 1 commit(s) · 22 tool calls · 40m 34s · ~$0.49 API-equivalent
+
+## Session 66 · reviewer · F022 Harden input and game flow against awkward play
+- Verdict: pass
+- Evidence:
+  - `npm run verify`: format check, typecheck, 62 unit files (832 passed, 1 todo), build, and 257 of 257 e2e passed (15.4 min), including all 9 tests in `awkward.spec.ts`.
+  - Criteria: 1, one test per listed scenario, all passing (resizing is tested mid-grab, the hardest part of a throw for a resize). 2, the three-rounds test checks score at most 10, throwNumber 1..10 restarting each round, `throws` reaching 10/20/30, and an empty console error list. 3, a 3 s main-thread stall advances at most 5 ticks on the next frame (`createFixedStepper` cap 5), then the throw resolves. 4, the progress entry says no bugs were found and no game code changed.
+  - Edge cases the builder didn't try (scratch spec at 1024x576, deleted afterwards): resizing twice mid-flight and then faking a hidden tab with `visibilitychange` (the throw resolved); pausing mid-result and mashing Space/Up/R/Down/P (the throw count didn't change and the Pause scene stayed open); R during a grab, then a push and release (restarted to aiming, no throw, dragging false). Both passed with no console errors.
+  - Snap at 1024x576 (Space/Up mashing, R, a grab dragged out to the canvas corner and released there): the bottle flew after the mash, R reset to throw 1, and the out-of-canvas release ended the grab as a mouse throw (dragging false, phase flying). No console errors. Screenshots checked.
+  - `git diff ebb82dad..HEAD -- tests` only adds `awkward.spec.ts`; no src changes and no debug code.
+- Problems: none
+- Notes for later:
+  - The long-gap test stalls with a busy loop, not a real hidden tab. Headless Chromium keeps rAF running after a synthetic `visibilitychange` (93 ticks in 1.5 s), so a real hidden tab can't easily be simulated there. The stepper cap covers both cases the same way.
+  - The mashing test doesn't check that it actually reached flight and result phases. With the real clock it does in practice (the first Space throws, a later Space skips the result).
+  - Process: `npm run verify` needs a background timeout above 15 min (the first run was killed at 900 s); `; echo $?` after it was auto-denied.

@@ -600,9 +600,9 @@
         "F012",
         "F019"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added tests/e2e/awkward.spec.ts with nine tests, one per listed scenario (key mashing, R and pause mid-flight and mid-result, a drag in the result, release outside the canvas, a 3 s stall with the step cap, resizing mid-grab, three full rounds with mixed keyboard and mouse throws). All pass and none found a bug, so no game code changed. npm run verify passed.",
+      "notes": "Added tests/e2e/awkward.spec.ts with nine tests, one per listed scenario (key mashing, R and pause mid-flight and mid-result, a drag in the result, release outside the canvas, a 3 s stall with the step cap, resizing mid-grab, three full rounds with mixed keyboard and mouse throws). All pass and none found a bug, so no game code changed. npm run verify passed.\nReviewed: session 66, npm run verify passed (832 unit, 257/257 e2e incl. all 9 awkward tests); scratch spec at 1024x576 (resize mid-flight, fake hidden tab, mashing keys while paused mid-result, R during a grab) all valid with no console errors; snap at 1024x576 of mashing, R and a release outside the canvas showed valid states and no console errors.",
       "review_feedback": ""
     },
     {
