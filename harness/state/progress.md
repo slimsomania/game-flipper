@@ -1392,3 +1392,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The long-gap test stalls with a busy loop, not a real hidden tab. Headless Chromium keeps rAF running after a synthetic `visibilitychange` (93 ticks in 1.5 s), so a real hidden tab can't easily be simulated there. The stepper cap covers both cases the same way.
   - The mashing test doesn't check that it actually reached flight and result phases. With the real clock it does in practice (the first Space throws, a later Space skips the result).
   - Process: `npm run verify` needs a background timeout above 15 min (the first run was killed at 900 s); `; echo $?` after it was auto-denied.
+
+> [harness] session 66 · reviewer F022 · needs_review → done · ok · 1 commit(s) · 28 tool calls · 39m 35s · ~$0.71 API-equivalent
