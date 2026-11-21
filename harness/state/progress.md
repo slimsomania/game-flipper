@@ -1308,3 +1308,19 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F034 stays blocked for a human decision; of the todo features, pick the next one in `feature_list.json` whose dependencies are done (F031 shading must keep the bottle overscan and draw the final shape).
 
 > [harness] session 60 · builder F033 · todo → needs_review · ok · verify passed · 2 commit(s) · 74 tool calls · 23m 35s · ~$1.62 API-equivalent
+
+## Session 61 · reviewer · F033 Measure the mouse push from every pointer sample, not one per frame
+- Verdict: fail
+- Evidence:
+  - `npm run verify`: format, typecheck, unit (830 passed, 1 todo) and build passed; e2e had 1 failure in 248 (15.3 min): mouseCoalesced.spec.ts:62, the 30 fps test, where the plain 125 Hz push threw 48.70 against an expected more than 50.
+  - `npx playwright test tests/e2e/mouseCoalesced.spec.ts --repeat-each 4`: 2 of 28 failed, both the 50 ms hitch test (powers 2.14 and 4.10 apart, limit 2). Repeating the two timing tests 4 more times gave one more failure (2.39).
+  - Cause, measured with a scratch spec: when the release is sent in its own `page.evaluate`, real time has run 5 to 22 ms past the virtual clock, `sendMouse` stamps the release at `max(__virtualNow, performance.now())`, and the same 60 fps push threw 54.1, 53.7, 53.1 and 49.2 at lags of 5, 8, 11 and 22 ms.
+  - The game code itself is right. With `__virtualNow` pinned far ahead of real time, so every time stamp is virtual: 30 fps with samples 66.67 against 66.83 at 125 Hz, without samples 75.83; a 50 ms hitch with samples 67.17 against 66.71 without the hitch, without samples 83.33; identical to 1e-9 on repeats and on a second run. The same held at 1024x576 (67.08 / 66.67) and at a letterboxed 1100x800 with the canvas 90 px down (66.81 / 66.69), so `scale.transformY` converts like Phaser does.
+  - Edge cases: R pressed mid-drag after coalesced moves drops the grab (aiming, not dragging, 0 throws, bar back to 50), later coalesced moves forward nothing, and the next push throws 66.67 as normal. Rapid coalesced and plain pushes in a row are repeatable.
+  - Snap at 1024x576 (pause, mousedown, mousemove, shot, mousemove, mouseup, step 20): live bar 21% mid-push with the bottle in the hand, then a mouse throw at 17.5 tumbling out of the hand; no console errors.
+  - Code: `CoalescedMoves` is small and unit-tested (12 cases); the listener is gated on `sim.mouse.dragging` and removed at shutdown; push.ts is unchanged; the tests diff only adds (none deleted, skipped or weakened). The D21, D25 and `mouseHelpers.ts` rows are updated.
+- Problems:
+  1. `npm run verify` fails, and the criteria 1 and 2 tests are flaky: they depend on real time between `page.evaluate` calls, because the release is stamped at `max(virtual, performance.now())`. Fix the tests so that every event of a push, the release included, takes its time from the virtual clock only (dispatch the mouseup in the same evaluate as the frames, or push `__virtualNow` ahead of real time before the press), then prove it with `--repeat-each 10`. The game code needs no change.
+- Notes for later:
+  - At scaled windows a real-mouse push differs from `log.expectedPower` by about 0.04 points (15.79 vs 15.83 at 1024x576), because coalesced pointer events carry fractional coordinates while the logged `mousemove` has whole pixels. It's harmless, and the existing real-mouse test at 1280x720 still matches to 6 digits. Any future test at a scaled window should allow for it.
+  - Process: a Monitor `until grep` with `cd` plus a relative path was auto-denied; a plain Bash `until grep` on an absolute path worked.
