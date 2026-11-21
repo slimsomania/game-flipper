@@ -1258,3 +1258,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - Minor: the `snap --help` text still gives the old held-bottle position (280;350 to 280;460). Untracked, gitignored search logs `scripts/_*.log` from the builder sessions are still in `scripts/`.
   - A unit test of the integrated expected rates, or a check over several seeds, would stop a lucky seed from passing the difficulty targets again.
   - Process: these commands were auto-denied: a compound `cd && …` Bash command, `git check-ignore`, and writing a file outside the repository. Plain single commands and a scratch file under the gitignored `coverage/` worked.
+
+> [harness] session 58 · reviewer F034 · needs_review → todo · ok · 1 commit(s) · 55 tool calls · 17m 52s · ~$1.83 API-equivalent
