@@ -1,6 +1,6 @@
 {
-  "sessions": 63,
-  "doneAtLastMaintenance": 16,
+  "sessions": 64,
+  "doneAtLastMaintenance": 24,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
     "F002": "73e5252a10e7bcc26df25d55e3cd3c0d1314e8f4",
@@ -29,9 +29,11 @@
     "F033": "e15384ca53dc639e00178fae077e64098a857728"
   },
   "lastGate": {
-    "session": 62,
+    "session": 64,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "F034 was changed, but this session may only change nothing (reverted)"
+  ]
 }
