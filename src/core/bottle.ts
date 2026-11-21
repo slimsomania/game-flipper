@@ -2,6 +2,7 @@ import { Polygon, type Body, type Fixture, type World } from 'planck';
 import { BOTTLE_PARTS, waterVertices, type Point } from './bottleShape';
 import type { LandingSample } from './outcome';
 import type { Rng } from './rng';
+import { WaterSlosh, isSloshing, setRigidVelocity, summarize } from './slosh';
 import { TABLE_LEFT_X, TABLE_TOP_Y } from './table';
 import type { ThrowImpulse } from './throw';
 import type { Tuning } from './tuning';
@@ -64,6 +65,8 @@ export class Bottle {
   private shellFixtures: Fixture[] = [];
   private waterFixture: Fixture | null = null;
   private level = 0;
+  /** The water as a body of its own, when the tuning's sloshing switch is on (and there is water). */
+  private slosh: WaterSlosh | null = null;
 
   /**
    * Creates the bottle held in the hand: upright, still and unaffected by gravity (a kinematic
@@ -119,8 +122,14 @@ export class Bottle {
     this.level = Math.min(1, Math.max(0, level));
     if (this.waterFixture) this.body.destroyFixture(this.waterFixture);
     this.waterFixture = null;
+    this.slosh?.destroy(this.world);
+    this.slosh = null;
     const vertices = waterVertices(this.level);
     if (!vertices) return;
+    if (isSloshing(this.tuning)) {
+      this.slosh = new WaterSlosh(this.world, this.body, this.level, this.tuning);
+      return;
+    }
     this.waterFixture = this.body.createFixture({
       shape: new Polygon(toVec(vertices)),
       density: this.tuning.waterDensity,
@@ -132,6 +141,7 @@ export class Bottle {
 
   /** Remove the bottle from the world, for good. The Simulation does this when the next one comes. */
   destroy(): void {
+    this.slosh?.destroy(this.world);
     this.world.destroyBody(this.body);
   }
 
@@ -146,10 +156,36 @@ export class Bottle {
    */
   place(pose: BottlePose): void {
     this.body.setTransform({ x: pose.x, y: pose.y }, pose.angle);
+    this.slosh?.follow();
     this.release();
-    this.body.setLinearVelocity({ x: pose.vx ?? 0, y: pose.vy ?? 0 });
-    this.body.setAngularVelocity(pose.omega ?? 0);
+    this.setRigidMotion({ x: pose.vx ?? 0, y: pose.vy ?? 0 }, pose.omega ?? 0);
     this.body.setAwake(true);
+  }
+
+  /** Start the whole bottle (shell and any sloshing water) moving as one rigid body: its center of mass moving at `v` and spinning at `omega`. */
+  private setRigidMotion(v: { x: number; y: number }, omega: number): void {
+    if (!this.slosh) {
+      this.body.setLinearVelocity(v);
+      this.body.setAngularVelocity(omega);
+      return;
+    }
+    const bodies = [this.body, this.slosh.body];
+    setRigidVelocity(bodies, summarize(bodies).center, v, omega);
+  }
+
+  /** Meters the sloshing water has slid from the base toward the cap: 0 for solid water and at rest. */
+  get waterOffset(): number {
+    return this.slosh?.offset ?? 0;
+  }
+
+  /** Mass of the shell plus the water, however the water is modelled. Only meaningful once released. */
+  get totalMass(): number {
+    return this.body.getMass() + (this.slosh?.body.getMass() ?? 0);
+  }
+
+  /** Call before each world step: the water's spring and damper act. */
+  beforeStep(): void {
+    this.slosh?.applyForces();
   }
 
   /** True while the bottle's shell is touching `other`. */
@@ -181,6 +217,18 @@ export class Bottle {
    */
   launch(impulse: ThrowImpulse): void {
     this.release(); // a kinematic body reports no mass, so it must be dynamic first
+    if (this.slosh) {
+      // The same launch as the solid bottle (same total mass, center and inertia), shared by both bodies.
+      const bodies = [this.body, this.slosh.body];
+      const { mass, center, inertia } = summarize(bodies);
+      setRigidVelocity(
+        bodies,
+        center,
+        { x: impulse.linear.x / mass, y: impulse.linear.y / mass },
+        impulse.angular / inertia,
+      );
+      return;
+    }
     this.body.applyLinearImpulse(impulse.linear, this.body.getWorldCenter(), true);
     this.body.applyAngularImpulse(impulse.angular, true);
   }

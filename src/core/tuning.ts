@@ -20,6 +20,17 @@ export interface Tuning {
   shellDensity: number;
   /** Density of the water. Water is the reference: 1 unit of mass per square meter of fill. */
   waterDensity: number;
+  /**
+   * The sloshing switch (F023): 0 (the default) keeps the water solid, one body with the bottle;
+   * 1 makes it a separate mass that slides along the bottle's axis (see `slosh.ts`). It is a number
+   * like every tuning field, so the panel can edit it; any value of 0.5 or more counts as on. It
+   * applies from the next bottle.
+   */
+  sloshing: number;
+  /** Sloshing: how fast the water's spring pulls it back to the base, in cycles per second. */
+  sloshFrequency: number;
+  /** Sloshing: damping of that spring as a fraction of critical (1 = no overshoot, 0 = rings forever). */
+  sloshDamping: number;
   /** Friction of the bottle's shell against the table. */
   bottleFriction: number;
   /** Bounciness of the bottle's shell (0 = none). */
@@ -147,6 +158,11 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // 90%, and no single power lands most bottles.
   shellDensity: 0.3268478954186093,
   waterDensity: 1,
+  // F023: off, so every existing behavior is unchanged. When on, the water springs back to the
+  // base about 3 times a second and settles within half a second.
+  sloshing: 0,
+  sloshFrequency: 3,
+  sloshDamping: 0.5,
   // A lower friction, almost no bounce and a very strong spin damping make the rotation settle
   // early in the flight, so the angle at landing changes slowly with the power: that is what gives
   // a single flip a window of power instead of one lucky value (F020 had friction 0.76 and damping

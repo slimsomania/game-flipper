@@ -16,9 +16,14 @@
  * Arguments of the form `name=value` override a tuning number (for example
  * `npx tsx scripts/flip-windows.ts shellDensity=0.4 throwLinearImpulse=2.5`), to try a tuning
  * before changing the defaults in `src/core/tuning.ts`.
+ *
+ * `--sloshing` (or `sloshing=1`) turns the sloshing water on (F023): the water is a moving mass in
+ * the bottle (`src/core/slosh.ts`) instead of one solid body, and the output starts with a line
+ * saying so. Without it the output is exactly the solid-water tables.
  */
 import { runBenchmark } from '../src/core/difficulty';
 import { findWindows, sweepPowers, widestWindow, type FlipWindow } from '../src/core/flipWindow';
+import { isSloshing } from '../src/core/slosh';
 import { DEFAULT_TUNING, type Tuning } from '../src/core/tuning';
 
 const LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
@@ -31,6 +36,10 @@ const percent = (rate: number): string => `${(rate * 100).toFixed(1)}%`;
 function overridesFromArgs(args: readonly string[]): Partial<Tuning> {
   const overrides: Record<string, number> = {};
   for (const arg of args) {
+    if (arg === '--sloshing') {
+      overrides.sloshing = 1;
+      continue;
+    }
     const [name, text] = arg.split('=');
     const value = Number(text);
     if (!name || !(name in DEFAULT_TUNING) || text === undefined || !Number.isFinite(value)) {
@@ -57,6 +66,9 @@ const started = Date.now();
 const tuning = overridesFromArgs(process.argv.slice(2));
 const columns = `${pad('low', 5)} ${pad('high', 5)} ${pad('center', 7)} ${pad('width', 6)}`;
 const lines = [
+  ...(isSloshing({ sloshing: tuning.sloshing ?? DEFAULT_TUNING.sloshing })
+    ? ['sloshing: on (the water is a moving mass; see src/core/slosh.ts)']
+    : []),
   `${pad('', 6)} ${'single flip (1 turn)'.padEnd(columns.length)}   double flip (2 turns)`,
   `${pad('water', 6)} ${columns}   ${columns}`,
 ];

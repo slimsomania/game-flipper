@@ -231,6 +231,7 @@ export class Simulation {
    * power key moves the bar in every phase.
    */
   step(): void {
+    this.bottle.beforeStep();
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
     this.events.stepped();
@@ -277,7 +278,11 @@ export class Simulation {
       phase: this.currentPhase,
       power: this.powerMeter.value,
       dragging: this.mouse.dragging,
-      bottle: { ...snapshotBody(this.bottle.body), water: this.bottle.water },
+      bottle: {
+        ...snapshotBody(this.bottle.body),
+        water: this.bottle.water,
+        waterOffset: this.bottle.waterOffset,
+      },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
       resultSteps: this.currentPhase === 'result' ? this.resultSteps : null,

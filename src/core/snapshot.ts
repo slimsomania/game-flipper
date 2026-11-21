@@ -25,6 +25,11 @@ export interface BodySnapshot {
 export interface BottleSnapshot extends BodySnapshot {
   /** Water level: the filled fraction of the bottle body, 0 to 1. */
   water: number;
+  /**
+   * With the `sloshing` tuning switch on: how far the water has slid from the base toward the cap,
+   * in meters (0 at rest, never more than the empty space above the water). Always 0 with solid water.
+   */
+  waterOffset: number;
 }
 
 /**

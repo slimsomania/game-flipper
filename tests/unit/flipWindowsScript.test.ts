@@ -110,6 +110,20 @@ describe('scripts/flip-windows.ts', () => {
     expect(lines[lines.length - 1]).toMatch(/^\(power 0 to 100 in steps of 1; [\d.]+ s\)$/);
   }, 70_000);
 
+  it('accepts --sloshing (and sloshing=1): it says so first and the table changes', () => {
+    const normal = runScript().run.stdout.split(/\r?\n/);
+    for (const arg of ['--sloshing', 'sloshing=1']) {
+      const { run } = runScript([arg]);
+      expect(run.stderr).toBe('');
+      expect(run.status).toBe(0);
+      const lines = run.stdout.split(/\r?\n/);
+      expect(lines[0]).toContain('sloshing: on');
+      expect(lines[1]).toContain('single flip');
+      expect(lines.slice(3, 12)).not.toEqual(normal.slice(2, 11)); // the windows move
+    }
+    expect(normal[0]).not.toContain('sloshing');
+  }, 70_000);
+
   it('takes tuning overrides as name=value, and refuses an unknown name', () => {
     // A heavier throw changes the table (a 10% bottle thrown 3 times as hard needs far less power).
     const normal = runScript().run.stdout.split(/\r?\n/)[2]!;

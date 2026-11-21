@@ -1394,3 +1394,29 @@ best-scoring fixed power (95, no error)                            55.5%        
   - Process: `npm run verify` needs a background timeout above 15 min (the first run was killed at 900 s); `; echo $?` after it was auto-denied.
 
 > [harness] session 66 · reviewer F022 · needs_review → done · ok · 1 commit(s) · 28 tool calls · 39m 35s · ~$0.71 API-equivalent
+
+## Session 67 · builder · F023 Simulate sloshing water as a moving mass, behind a switch
+- Did: new `src/core/slosh.ts` (`WaterSlosh`: the water as a second dynamic body, a mass-only sensor, on a `PrismaticJoint` along the shell's axis toward the cap, limited to 0 and `sloshLimit(level)` = the empty body height above the water; a spring and damper applied as forces before each world step; `summarize` and `setRigidVelocity` so the launch and `placeBottle` move both bodies as one rigid body with the solid model's mass, center and inertia). `bottle.ts` builds it instead of the water fixture when the switch is on, `simulation.ts` calls `beforeStep()`, `BottleSnapshot` gains `waterOffset` (always 0 when solid). Tuning gets `sloshing` (a number, 0 off by default, so the panel and every `Tuning` consumer stay numeric), `sloshFrequency` 3 and `sloshDamping` 0.5. `scripts/flip-windows.ts` takes `--sloshing` (or `sloshing=1`) and prints a first line saying so. Tests: `tests/unit/slosh.test.ts` (10), one more in `flipWindowsScript.test.ts`, `tests/e2e/slosh.spec.ts` (2). ARCHITECTURE.md has a row for slosh.ts.
+- Verified: `npm run format`, `npm run verify` passed (63 unit files, 843 passed, 1 todo; 259 e2e). Criteria: 1, "moves toward the cap" (level 0.1, power 40: offset up to 0.168 m), "back to the base within 1 s at rest" (level 0.3, power 80 lands upright, offset under 0.001 after 55 steps) and total mass equal to the solid model at every level 0 to 1 in 5% steps; 2, same-seed determinism and off = default snapshots; 3, over 5 levels x 21 powers some outcomes differ and the offset stays within [0, limit]; 4, the script accepts the option. No screenshots: with the default off nothing visible changes, and the drawing doesn't use the offset yet.
+- Table with sloshing on (`npx tsx scripts/flip-windows.ts --sloshing`, 3.3 s):
+  ```
+  water   single low high center width   double low high center width
+    10%         6   15   10.5     9           64   69   66.5     5
+    20%         9   20   14.5    11           76   88   82      12
+    30%        10   23   16.5    13           79  100   89.5    21
+    40%        11   24   17.5    13           78   94   86      16
+    50%        11   24   17.5    13           67   81   74      14
+    60%        12   24   18      12           64   75   69.5    11
+    70%        12   24   18      12           61   70   65.5     9
+    80%        13   24   18.5    11           59   67   63       8
+    90%        15   26   20.5    11           59   65   62       6
+  practiced 58.5% (expected 57.2%), new player 50.5% (expected 55.5%), best fixed power 15 lands 100% of the bottles
+  ```
+  So with the current throw numbers sloshing breaks the difficulty targets: the single windows collapse to power 6 to 26 for every level (one fixed power lands everything). Retuning is for a later feature.
+- Status: F023 → needs_review
+- Issues / follow-ups:
+  - Physics finding: the water is always below the bottle's center of mass (the light shell's mass is high up), so a spin pins it onto the base. It slides toward the cap mostly in the landing (a stop, a tip, a bounce), where it changes the balance, not in the air. In the air it moves little.
+  - The joint solver overshoots a limit by up to a step of travel on a hard stop (offset about -0.08 on a fast landing), so `WaterSlosh.offset` clamps to [0, limit]; the spring uses the raw value. A bottle resting on its cap keeps the water at about 0.028 m (gravity against the spring), not 0.
+  - The drawing doesn't show the water's offset yet.
+  - Process: a heredoc in a `cat > file` command, a `( time ... )` group and `tee` were auto-denied; Write, Edit and `node -e` worked. The `sloshing` switch is a number, not a boolean, to keep the tuning panel and store numeric.
+- Next: F035 and the later M6 features should recalibrate with `--sloshing` (the table above is the uncalibrated start); if the toward-the-cap motion in the air is wanted, the joint axis or the spin-up impulse (applied to the shell only) is the lever.
