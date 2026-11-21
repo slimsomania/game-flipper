@@ -159,6 +159,9 @@ test('after the 10th throw the round is over: no new bottle, throws and clicks d
 });
 
 test('the 10th result can be skipped straight to the end of the round', async ({ page }) => {
+  // Ten full land-and-skip throws take 7 to 24 s depending on the machine's load, and the default
+  // 30 s timeout failed it once in a loaded full run (session 54). The assertions are unchanged.
+  test.setTimeout(60_000);
   const errors = await openGame(page, '?seed=7');
   for (let i = 0; i < 10; i++) {
     await land(page, FLIPPED);

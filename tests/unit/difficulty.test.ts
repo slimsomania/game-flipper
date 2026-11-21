@@ -232,6 +232,20 @@ describe('the player models on a made-up world', () => {
     expect(exact.newPlayer).toBeCloseTo(7 / 17, 9);
   });
 
+  it('the expected points show when going for doubles beats reading the water', () => {
+    // With no error the practiced player lands a single every time (10 per 10), and any fixed
+    // power from 90 is a double at every level (20 per 10); the lowest such aim wins the tie.
+    const exact = run({ errorSigma: 0 }).expected;
+    expect(exact.practicedPointsPer10).toBeCloseTo(10, 9);
+    expect(exact.bestFixedAim).toEqual({ aim: 90, pointsPer10: 20 });
+    // With σ 8, aiming at 100 lands a double whenever the throw is at least 89.5, that is when
+    // the error is above -10.5 (the bar keeps the rest on 100): 2 points times Φ(10.5/8).
+    const { expected } = run();
+    expect(expected.bestFixedAim.aim).toBe(100);
+    expect(expected.bestFixedAim.pointsPer10).toBeCloseTo(20 * normalCdf(10.5 / 8), 3);
+    expect(expected.bestFixedAim.pointsPer10).toBeGreaterThan(expected.practicedPointsPer10);
+  });
+
   it('the expected rates do not depend on the seed', () => {
     expect(run({ seed: 5 }).expected).toEqual(run({ seed: 9 }).expected);
     expect(run({ bottles: 40 }).expected).toEqual(run().expected);
@@ -326,6 +340,15 @@ describe('the benchmark of the default tuning', () => {
   // and D33). This is the test that closes it; turn it into a real `it` with
   // `expect(result.expected.newPlayer).toBeLessThanOrEqual(0.4)` when a tuning meets it.
   it.todo('the expected new-player rate is at most 40%');
+
+  // Design section 3 (2026-11-20): with the same aiming error, reading the water must score more
+  // points than throwing one power at every bottle to go for doubles. A player with no error at
+  // all can still do better with one high power; nobody throws without error.
+  it('reading the water scores more points than any one fixed power with the same error', () => {
+    expect(result.expected.practicedPointsPer10).toBeGreaterThan(
+      result.expected.bestFixedAim.pointsPer10,
+    );
+  });
 
   it('the expected rates are near what the 200 throws of a seed land (the draw is only luck)', () => {
     // 200 throws at about 50% land with a standard deviation of 3.5 points: 12 points is 3.4 σ.

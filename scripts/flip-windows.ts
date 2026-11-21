@@ -109,4 +109,7 @@ console.log('');
 console.log(
   `expected landing rates, any seed (aim ${expected.newPlayerAim.toFixed(1)}): practiced ${percent(expected.practiced)}, new player ${percent(expected.newPlayer)}`,
 );
+console.log(
+  `expected points per 10, same error: practiced ${expected.practicedPointsPer10.toFixed(2)}, best fixed power (${expected.bestFixedAim.aim}) ${expected.bestFixedAim.pointsPer10.toFixed(2)}`,
+);
 console.log(`(power 0 to 100 in steps of 1; ${((Date.now() - started) / 1000).toFixed(1)} s)`);
