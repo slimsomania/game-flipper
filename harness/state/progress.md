@@ -1483,3 +1483,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The first contact comes from begin-contact. A bottle released while already touching the table (e.g. `placeBottle` resting on it) gets no begin event, so its clip would be empty. Normal throws start in the air, so this doesn't happen in play.
   - The recording stops at the outcome, so a fast fail cuts the clip's tail short (the criterion allows this). If F027 wants the full 0.8 s tail, it needs to keep recording a little into the result.
   - The timeout-cap test on Simulation is weak because the judge ends the throw at the timeout anyway. The direct ThrowRecorder test covers the cap.
+
+> [harness] session 72 · reviewer F026 · needs_review → done · ok · 1 commit(s) · 29 tool calls · 19m 33s · ~$0.88 API-equivalent
