@@ -145,6 +145,10 @@ export interface Tuning {
   shakeMaxPixels: number;
   /** A shake dies away in a straight line over this many seconds. */
   shakeSeconds: number;
+  /** The landing clip (F026) starts this many seconds before the first table contact... */
+  replayLeadSeconds: number;
+  /** ...and ends this many seconds after it (or where the recording ends). */
+  replayTailSeconds: number;
 }
 
 export const DEFAULT_TUNING: Readonly<Tuning> = {
@@ -232,6 +236,9 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   shakeFullSpeed: 8,
   shakeMaxPixels: 6,
   shakeSeconds: 0.25,
+  // F026: the approach, then the tip or bounce, around the first touch of the table.
+  replayLeadSeconds: 0.4,
+  replayTailSeconds: 0.8,
 };
 
 /** The defaults with `overrides` applied on top. */

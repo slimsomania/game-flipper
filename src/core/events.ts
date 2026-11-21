@@ -46,6 +46,8 @@ export class SimEvents {
   private pending: SimEvent[] = [];
   /** The hardest hit seen since the last `stepped()`, 0 for none. */
   private hardestHit = 0;
+  /** The bottle began touching the table since the last `stepped()`, however softly. */
+  private touched = false;
 
   constructor(
     world: World,
@@ -66,13 +68,16 @@ export class SimEvents {
 
   /**
    * Call once after each physics step. A bottle lying on its side touches the table with more than
-   * one shape at once, so all the hits of one step become a single event: the hardest.
+   * one shape at once, so all the hits of one step become a single event: the hardest. Returns whether the bottle began touching the table.
    */
-  stepped(): void {
+  stepped(): boolean {
+    const touched = this.touched;
+    this.touched = false;
     if (this.hardestHit > 0) {
       this.pending.push({ type: 'impact', tick: this.now(), speed: this.hardestHit });
     }
     this.hardestHit = 0;
+    return touched;
   }
 
   /** Hand over everything queued since the last call, oldest first, and start an empty queue. */
@@ -86,6 +91,7 @@ export class SimEvents {
     const bodyA = contact.getFixtureA().getBody();
     const bodyB = contact.getFixtureB().getBody();
     if (bodyA !== this.table && bodyB !== this.table) return;
+    this.touched = true;
     const bottle = bodyA === this.table ? bodyB : bodyA;
     const manifold = contact.getWorldManifold(null);
     if (!manifold) return;

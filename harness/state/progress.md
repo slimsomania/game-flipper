@@ -1459,3 +1459,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 70 · builder F024 · todo → blocked · ok · verify passed · 1 commit(s) · 26 tool calls · 1m 40s · ~$0.36 API-equivalent
 > [harness] corrected: F024.attempts is counted by the harness (reverted)
+
+## Session 71 · builder · F026 Record each throw for replay
+- Did: `ThrowRecorder` (src/core/replay.ts) owned by `Simulation`: a frame (tick, x, y, angle, waterOffset) after every step from release to the outcome step, capped at the timeout steps, and the index of the first table contact (`SimEvents.stepped()` now returns whether a contact began, even a soft one). `Simulation.recording` and `landingClip`; hooks `recording()` and `landingClip()`; tuning `replayLeadSeconds` 0.4 and `replayTailSeconds` 0.8. Cleared in `nextBottle` (so on skip, auto-advance and restart); kept through `roundOver`.
+- Verified: `npm run format`, `npm run typecheck`, `npm test` (65 files, 859 passed), new tests/unit/replay.test.ts (12) and tests/e2e/replay.spec.ts. Did not run the full `npm run verify` or a snap (a compound background command was auto-denied, and nothing is drawn yet); the harness runs verify after the session.
+- Status: F026 -> needs_review
+- Issues / follow-ups: recording stops at the outcome, so the clip tail is cut short when the outcome comes under 0.8 s after the first touch (e.g. a fast fail). The timeout-bound unit test is weak (the judge itself ends a throw at the timeout). A bottle that spawns touching nothing and falls off to the side gives an empty clip.
+- Next: F027 can read `sim.landingClip` (or the hook) to play the slow-motion replay; the frames carry x, y (m), angle and waterOffset, enough to redraw the bottle with `slidWaterVertices`.

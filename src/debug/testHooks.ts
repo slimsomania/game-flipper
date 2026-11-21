@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { BottlePose } from '../core/bottle';
+import type { ReplayFrame } from '../core/replay';
 import type { SimSnapshot, Simulation } from '../core/simulation';
 import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
@@ -155,6 +156,10 @@ export interface FlipperTestApi {
    * water lock now in effect.
    */
   lockWater(level: number | null): number | null;
+  /** Every step of the current throw, release to outcome (see `Simulation.recording`); [] with none. */
+  recording(): ReplayFrame[];
+  /** The landing clip of the current throw (see `Simulation.landingClip`); [] with none. */
+  landingClip(): ReplayFrame[];
   /** Stop all running and paused scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -230,6 +235,8 @@ export function installTestHooks(game: Phaser.Game): void {
       tuningControl().setWaterLock(level);
       return tuningControl().waterLock();
     },
+    recording: () => currentSimulation()?.recording ?? [],
+    landingClip: () => currentSimulation()?.landingClip ?? [],
     startScene: (key, data) => {
       // Paused scenes too: the Game scene is paused while the round summary is open.
       for (const scene of game.scene.getScenes(false)) {

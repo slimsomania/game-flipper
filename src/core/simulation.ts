@@ -5,6 +5,7 @@ import { SimEvents, type SimEvent } from './events';
 import { MouseControl } from './mouseControl';
 import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
+import { ThrowRecorder, type ReplayFrame } from './replay';
 import { Round } from './round';
 import { createRng } from './rng';
 import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
@@ -47,6 +48,8 @@ export class Simulation {
    * power bar shows the live push; a release throws through `throwBottle` with source `mouse`.
    */
   readonly mouse: MouseControl;
+  /** The current throw, frame by frame, and its landing clip (F026). */
+  private readonly recorder = new ThrowRecorder(() => this.currentTuning);
   private bottle: Bottle;
   private judge: LandingJudge | null = null;
   private result: Outcome | null = null;
@@ -160,6 +163,7 @@ export class Simulation {
     this.judge = new LandingJudge(this.currentTuning, angle, turns);
     this.throwCount++;
     this.round.released();
+    this.recorder.begin();
     this.currentPhase = 'flying';
   }
 
@@ -194,6 +198,7 @@ export class Simulation {
     this.bottle = new Bottle(this.world, this.currentTuning, this.water.next());
     this.judge = null;
     this.result = null;
+    this.recorder.clear();
     this.currentPhase = 'aiming';
   }
 
@@ -234,10 +239,17 @@ export class Simulation {
     this.bottle.beforeStep();
     this.world.step(SIM_DT, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
     this.ticks++;
-    this.events.stepped();
+    const touched = this.events.stepped();
     this.powerMeter.step();
     this.mouse.step(); // a pointer that stops is still: the live push (and the bar) fades
     if (this.currentPhase === 'flying' && this.judge) {
+      const { x, y } = this.bottle.body.getPosition();
+      const angle = this.bottle.body.getAngle();
+      this.recorder.record(
+        this.ticks,
+        { x, y, angle, waterOffset: this.bottle.waterOffset },
+        touched,
+      );
       this.result = this.judge.observe(this.bottle.landingSample(this.table));
       if (this.result) this.showResult(this.result);
     } else if (this.currentPhase === 'result') {
@@ -247,6 +259,7 @@ export class Simulation {
   }
 
   private showResult(outcome: Outcome): void {
+    this.recorder.end();
     this.round.judged(outcome);
     this.events.judged(outcome);
     this.resultSteps = 0;
@@ -269,6 +282,16 @@ export class Simulation {
    */
   drainEvents(): SimEvent[] {
     return this.events.drain();
+  }
+
+  /** Every step of the current throw from the release to the outcome; empty before a throw and once the next bottle appears. */
+  get recording(): ReplayFrame[] {
+    return this.recorder.allFrames();
+  }
+
+  /** The landing clip of the current throw (see `replayLeadSeconds`); empty if the bottle never touched the table. */
+  get landingClip(): ReplayFrame[] {
+    return this.recorder.clip();
   }
 
   snapshot(): SimSnapshot {
