@@ -1535,3 +1535,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later:
   - The no-flags test uses fixed waitForTimeout(1000/300), since no hooks exist to wait on. It was stable here; checking for a canvas plus a short poll would be tidier.
   - The e2e run now does a production build each time (a few seconds); with reuseExistingServer off CI, a stale preview left on 5197 would be reused locally.
+
+> [harness] session 76 · reviewer F029 · needs_review → done · ok · 1 commit(s) · 23 tool calls · 19m 4s · ~$0.75 API-equivalent
