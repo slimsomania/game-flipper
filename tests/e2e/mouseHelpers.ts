@@ -152,6 +152,101 @@ export async function dragInPage(
   await sendMouse(page, steps);
 }
 
+/** One place the pointer passed through: `t` ms after the press, at page height `y`. */
+export interface PathPoint {
+  t: number;
+  y: number;
+}
+
+/**
+ * The raw samples of a straight push of `rise` px up over `ms`, as a mouse that reports `hz` times a
+ * second makes them: one every `1000 / hz` ms, and the last exactly at `ms`.
+ */
+export function mousePath(at: Point, rise: number, ms: number, hz: number): PathPoint[] {
+  const path: PathPoint[] = [];
+  for (let t = 1000 / hz; t < ms - 1e-9; t += 1000 / hz)
+    path.push({ t, y: at.y - (rise * t) / ms });
+  path.push({ t: ms, y: at.y - rise });
+  return path;
+}
+
+/**
+ * When a browser draws its frames over a push of `ms`: every `period` ms, except that the interval
+ * after the first `hitch.afterFrames` frames is `hitch.ms` instead (a frame that took too long). The
+ * last time is always `ms`: the browser hands over the pending move just before the button comes up.
+ */
+export function frameTimes(
+  period: number,
+  ms: number,
+  hitch?: { afterFrames: number; ms: number },
+): number[] {
+  const times: number[] = [];
+  for (let t = period; t < ms - 1e-9;) {
+    times.push(t);
+    t += hitch && times.length === hitch.afterFrames ? hitch.ms : period;
+  }
+  times.push(ms);
+  return times;
+}
+
+/**
+ * Deliver the pointer's `path` to the page the way a browser does it, one `pointermove` and the
+ * `mousemove` after it at each of `frames` (ms after the press, the last one the final sample's):
+ * each event is the newest sample up to its frame, at that sample's own time. With `coalesced` it
+ * also lists every sample since the last frame as its `coalescedEvents` (the main event is the
+ * last of them, as in Chromium); without it the list is empty, as in a browser that has none to
+ * give. Call after the press (`sendMouse`), on the same virtual clock; the button stays down.
+ */
+export async function sendFrames(
+  page: Page,
+  options: { x: number; path: PathPoint[]; frames: number[]; coalesced: boolean },
+): Promise<void> {
+  const { x, path, frames, coalesced } = options;
+  const events: { t: number; y: number; listed: PathPoint[] }[] = [];
+  let from = 0;
+  for (const frame of frames) {
+    const group = path.filter((p) => p.t > from && p.t <= frame + 1e-9);
+    if (group.length === 0) continue;
+    from = group[group.length - 1].t;
+    events.push({ ...group[group.length - 1], listed: coalesced ? group : [] });
+  }
+  await page.evaluate(
+    ({ x, events }) => {
+      const clock = window as unknown as { __virtualNow?: number };
+      const base = clock.__virtualNow ?? performance.now();
+      const canvas = document.querySelector('canvas')!;
+      const stamped = <E extends Event>(event: E, t: number): E => {
+        Object.defineProperty(event, 'timeStamp', { value: base + t }); // shadows the real time stamp
+        return event;
+      };
+      const init = { bubbles: true, cancelable: true, view: window, clientX: x, button: 0 };
+      const pointer = (y: number, t: number, coalescedEvents: PointerEvent[] = []) =>
+        stamped(
+          new PointerEvent('pointermove', {
+            ...init,
+            clientY: y,
+            buttons: 1,
+            pointerType: 'mouse',
+            pointerId: 1,
+            isPrimary: true,
+            coalescedEvents,
+          }),
+          t,
+        );
+      for (const e of events) {
+        const listed = e.listed.map((s) => pointer(s.y, s.t));
+        canvas.dispatchEvent(pointer(e.y, e.t, listed));
+        // The compatibility mouse event that follows a pointer event, with the same time.
+        canvas.dispatchEvent(
+          stamped(new MouseEvent('mousemove', { ...init, clientY: e.y, buttons: 1 }), e.t),
+        );
+      }
+      clock.__virtualNow = base + events[events.length - 1].t;
+    },
+    { x, events },
+  );
+}
+
 /** Let go (on the canvas, at `at`) `after` ms of virtual time after the last event `sendMouse` made. */
 export async function releaseInPage(page: Page, at: Point, after: number): Promise<void> {
   await sendMouse(page, [{ type: 'up', x: at.x, y: at.y, after }]);
