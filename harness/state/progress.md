@@ -1324,3 +1324,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later:
   - At scaled windows a real-mouse push differs from `log.expectedPower` by about 0.04 points (15.79 vs 15.83 at 1024x576), because coalesced pointer events carry fractional coordinates while the logged `mousemove` has whole pixels. It's harmless, and the existing real-mouse test at 1280x720 still matches to 6 digits. Any future test at a scaled window should allow for it.
   - Process: a Monitor `until grep` with `cd` plus a relative path was auto-denied; a plain Bash `until grep` on an absolute path worked.
+
+> [harness] session 61 · reviewer F033 · needs_review → todo · ok · 1 commit(s) · 37 tool calls · 21m 47s · ~$1.42 API-equivalent
