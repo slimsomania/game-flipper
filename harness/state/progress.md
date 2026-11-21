@@ -1492,3 +1492,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F027 → needs_review
 - Issues / follow-ups: the longer result phase broke 40 existing unit tests that count exactly 60 steps, so unit tests now run with the replay off by default (tests/unit/noReplaySetup.ts sets DEFAULT_TUNING.replaySpeed to 0; `REPLAY_SPEED` is the real default) and e2e `startGame` sets replaySpeed to 0; no assertion was changed. A reviewer may prefer explicit per-test tuning. The replayed bottle can overlap the result message for a high landing pose. The replay clip is cut short when the outcome comes under 0.8 s after the first touch (F026 note).
 - Next: F028 onward can rely on `snapshot.replay`; remember e2e and unit defaults switch the replay off.
+
+> [harness] session 73 · builder F027 · todo → needs_review · ok · verify passed · 1 commit(s) · 71 tool calls · 23m 27s · ~$1.05 API-equivalent
