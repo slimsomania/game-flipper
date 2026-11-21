@@ -1518,3 +1518,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F029 → needs_review
 - Issues / follow-ups: the e2e run now also does a vite build (a few seconds). tuningPanelBuild.spec now runs against the real build too and still passes.
 - Next: reviewer should run `npm run verify` in full and confirm the production-build tests are in it.
+
+> [harness] session 75 · builder F029 · todo → needs_review · ok · verify passed · 1 commit(s) · 20 tool calls · 1m 20s · ~$0.34 API-equivalent
