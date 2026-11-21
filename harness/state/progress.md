@@ -1447,3 +1447,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 stays todo
 - Issues / follow-ups: criterion 2 (fill visibly shifted toward the cap mid-flight) is not met, because the physics barely moves the water in the air (F023 finding); the drawing is correct for any offset. Several compound shell commands were auto-denied in this session.
 - Next: give the water a real mid-air offset (joint axis or spin-up impulse in src/core/slosh.ts) or ask the human to relax the criterion, then rerun verify.
+
+> [harness] session 69 · builder F024 · todo → todo · ok · verify passed · 1 commit(s) · 37 tool calls · 21m 31s · ~$0.44 API-equivalent

@@ -641,7 +641,7 @@
         "F023"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built slidWaterVertices(level, offset) in src/core/bottleShape.ts (offset clamped to the empty space above the water) and bottleView.ts draws with it; unit tests in tests/unit/slidWater.test.ts pass. Snaps: at rest the fill is at the base, sloshing off is unchanged. Not met: mid-flight the physics offset is about 0 (water moves mostly on landing, per F023), so no visibly shifted fill in the air; that needs a physics lever (joint axis or spin-up impulse in slosh.ts), not drawing. Full verify was killed by the time limit during e2e, so e2e is unconfirmed.",
       "review_feedback": ""
     },
