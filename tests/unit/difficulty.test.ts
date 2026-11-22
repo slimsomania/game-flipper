@@ -334,12 +334,13 @@ describe('the benchmark of the default tuning', () => {
     expect(result.expected.newPlayer).toBeGreaterThanOrEqual(0.2);
   });
 
-  // OPEN (F034, session 59): the design's upper limit of 40% is NOT met in expectation by the
-  // 1.85:1 bottle's tuning (43.8%; the default seed's 37.5% is the luckiest of 20 seeds), and no
-  // tuning found at 1.8:1 or slimmer meets every other target too (see the F034 progress entries
-  // and D33). This is the test that closes it; turn it into a real `it` with
-  // `expect(result.expected.newPlayer).toBeLessThanOrEqual(0.4)` when a tuning meets it.
-  it.todo('the expected new-player rate is at most 40%');
+  // F034 (human decision, 2026-11-22): no tuning of a 1.8:1 or slimmer bottle met the design's 40%
+  // in expectation and also gave a throw that rises above the hand and lands out on the table
+  // (sessions 56 to 59 and a human session searched it). The human chose the bottle-like look and
+  // the real throw, at a slightly easier game for new players: the expected rate may be up to 45%.
+  it('the expected new-player rate is at most 45%', () => {
+    expect(result.expected.newPlayer).toBeLessThanOrEqual(0.45);
+  });
 
   // Design section 3 (2026-11-20): with the same aiming error, reading the water must score more
   // points than throwing one power at every bottle to go for doubles. A player with no error at

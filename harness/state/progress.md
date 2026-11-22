@@ -1537,3 +1537,15 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The e2e run now does a production build each time (a few seconds); with reuseExistingServer off CI, a stale preview left on 5197 would be reused locally.
 
 > [harness] session 76 · reviewer F029 · needs_review → done · ok · 1 commit(s) · 23 tool calls · 19m 4s · ~$0.75 API-equivalent
+
+## Human session · 2026-11-22 · F034 Make the bottle look like a water bottle again (human decision)
+- Decision (the human's): when no tuning meets every target at 1.8:1, prefer the bottle-like look and a real throw over the 40% new-player limit. The expected new-player rate may now be up to 45%; `difficulty.test.ts` turns the `it.todo` into that real test. No other range changed.
+- Tried first: a higher launch point (hand 1.5, 2.0 and 2.5 m above the table instead of 1.0, the current tuning): no help. The rise above the held top stayed about 0 m and the expected new-player rate rose to 44.9 to 46.3%. Reverted.
+- Shape: unchanged, 0.80 x 1.48 m (1.85:1, 12 cm neck).
+- Tuning, old → new: shellDensity 0.3268 → 0.3354, throwLinearImpulse 3.728 → 6.703, throwAngularImpulse 8.302 → 8.587, throwSpinGrowth 0.01338 → 0.01425, throwSpinExponent 0.0312 → 0.03421, bottleAngularDamping 5.005 → 5.012, bottleFriction 0.2349 → 0.1412, bottleRestitution 0.0227 → 0.0240, bottleLinearDamping 0.1876 → 0.2487, throwAngleDeg 13.4 → 13.9 (tan 13.9° = 0.247, under throw.test.ts's 0.25 drift limit).
+- Flip windows (single low-high/width, double low-high/width): 10% 12-22/10, 59-64/5; 20% 20-32/12, 69-75/6; 30% 24-37/13, 74-81/7; 40% 27-40/13, 76-83/7; 50% 29-43/14, 79-86/7; 60% 32-45/13, 81-88/7; 70% 35-48/13, 84-91/7; 80% 39-52/13, 89-95/6; 90% 44-57/13, 94-100/6. Ratio 50.5/17 = 2.97.
+- Benchmark: seed 1 practiced 63.0%, new 38.0%, best fixed power 56.5% (37); expected practiced 60.9%, new 44.1% (aim 35.6); expected points 6.09 against the best fixed aim's 5.41 (84).
+- Flight (headless, at the 10/50/90% centers 17/36/51): the whole bottle rises 0.13/0.35/0.36 m above the held top and lands 0.88/1.02/0.96 m out from the hand, upright, one turn. Snaps (seed 7, 1280x720) show it flipping above the hand and standing on the table at x ≈ 3.8 m; no console errors.
+- Tests whose fixed power had to come from a sweep: none needed; `npm test` 867 passed on the first run.
+- Status: F034 → needs_review (a reviewer should check criteria against the updated acceptance text).
+- Known limits: the practiced player's expected margin is thin (60.9% against 60%); the 10% bottle rises only 0.13 m above the hand. F035 (slimmer once sloshing is on) should start from this entry.

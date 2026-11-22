@@ -163,9 +163,9 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   waterStep: 0.05,
   // F009 calibration (see D23 in docs/ARCHITECTURE.md), retuned in F020 against the simulated
   // players (D33) and again in F034 for the taller, slimmer bottle: a light shell lets the water
-  // dominate the mass, so the power a bottle needs rises by a factor of about 3.4 from 10% to
+  // dominate the mass, so the power a bottle needs rises by a factor of about 3 from 10% to
   // 90%, and no single power lands most bottles.
-  shellDensity: 0.3268478954186093,
+  shellDensity: 0.3353956282208528,
   waterDensity: 1,
   // F023: off, so every existing behavior is unchanged. When on, the water springs back to the
   // base about 3 times a second and settles within half a second.
@@ -176,22 +176,23 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // early in the flight, so the angle at landing changes slowly with the power: that is what gives
   // a single flip a window of power instead of one lucky value (F020 had friction 0.76 and damping
   // 2.5 for the squat bottle; the slim one tips back from a smaller angle and needs the damping).
-  bottleFriction: 0.23490219007083654,
-  bottleRestitution: 0.0226873223414377,
-  bottleAngularDamping: 5.004912089506547,
-  bottleLinearDamping: 0.18758690776533696,
+  bottleFriction: 0.14117870587580358,
+  bottleRestitution: 0.023977954722645436,
+  bottleAngularDamping: 5.011521786038433,
+  bottleLinearDamping: 0.24870375384908674,
   // Forward of straight up: a wider angle (F020: 5.9°) sends the throw farther out over the table.
-  // It stays under 14° (a drift under 0.25 of the upward speed: "a small drift") and below 13.9°,
-  // where the 10% bottle's double window shrinks to 2 powers.
-  throwAngleDeg: 13.4,
-  // The linear impulse sets the height of the flight: at a window's center the base of the bottle
-  // rises about 1.0 to 1.2 m above the hand (F009's tuning: about 1.3 m).
-  throwLinearImpulse: 3.7283682692213382,
-  throwAngularImpulse: 8.301740223186194,
+  // It stays just under 14° (a drift under 0.25 of the upward speed: "a small drift").
+  throwAngleDeg: 13.9,
+  // The linear impulse sets the height of the flight. F034 (2026-11-22, the human's choice) trades
+  // a little difficulty for a real throw: at the 10%, 50% and 90% window centers the whole bottle
+  // rises about 0.13 to 0.36 m above the held bottle's top and lands about 0.9 to 1.0 m out from
+  // the hand. The price is a new player's expected rate of about 44% (design aim: about 30%).
+  throwLinearImpulse: 6.703306846248563,
+  throwAngularImpulse: 8.586822226380386,
   // A spin that is almost the same at every power but climbs steadily toward 100, so a double flip
   // is still within reach of a full bottle.
-  throwSpinExponent: 0.03120075970280566,
-  throwSpinGrowth: 0.013383134518153433,
+  throwSpinExponent: 0.034213030895336206,
+  throwSpinGrowth: 0.014249104481199459,
   // Design section 2: upright within 15° for 0.5 s (an upright, still bottle cannot fall any
   // more, so a longer hold was only waiting); a throw with no outcome after 5 s fails.
   uprightToleranceDeg: 15,
