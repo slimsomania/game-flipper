@@ -1579,3 +1579,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 78 · builder F031 · todo → todo · timeout · verify passed · 1 commit(s) · 85 tool calls · 1h 15m · ~$1.01 API-equivalent
 > [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
+
+## Session 79 · builder · F031 Soft shading: bottle shadow, readable water, table edge, gradient, gentler flash
+- Did: session 78 had built everything but timed out before logging it; this session reviewed it, ran verify and snaps, and recorded it. Shadow: src/game/view/bottleShadow.ts (pure) + bottleShadowView.ts, hook `shadow()`; water line and shell highlight in bottleView.ts; table edge and shadow in tableView.ts; gradient texture in BootScene (CSS canvas background); FLASH_PEAK_ALPHA 0.2; violet accent and buttons in theme.ts.
+- Verified: `npm run verify` (result in the harness line below); snaps (seed 7) at rest and after a throw show the shadow, the water line, the table edge and the gradient, with readable text and no console errors. Tests: tests/unit/softShading.test.ts, tests/e2e/shadow.spec.ts.
+- Status: F031 → needs_review
+- Issues / follow-ups: I did not snap a success flash (my throw ended "Down!"); the flash peak is only unit-tested at 0.2.
+- Next: the reviewer should snap a success with a light flash and confirm the bottle and table stay visible.

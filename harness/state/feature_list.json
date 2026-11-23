@@ -559,9 +559,9 @@
         "F021",
         "F034"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 1,
-      "notes": "From the outside review of 2026-11-18. Keep the style flat: soft shapes and gradients, no outlines or textures. Depends on F034 so the shadow and the shell highlight are drawn for the final bottle shape.",
+      "notes": "Shadow function in src/game/view/bottleShadow.ts (drawn by bottleShadowView.ts, exposed as __FLIPPER__.shadow()), water surface line and shell highlight in bottleView.ts, table edge strip and under-slab shadow in tableView.ts, gradient texture made in BootScene and shown as the canvas background, flash peak 0.2, violet accent and buttons in theme.ts. Verified with tests/unit/softShading.test.ts, tests/e2e/shadow.spec.ts, the full verify and snaps (rest, flight, after) with no console errors.",
       "review_feedback": ""
     },
     {
