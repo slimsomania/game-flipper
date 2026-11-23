@@ -1780,3 +1780,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Did: `npm run verify` was green on the current tree (the session-91 e2e failure was the dev server restarting under a human edit, per the human-session note). Added the replay-on unit test the F036 reviewer asked for (tests/unit/replayPhase.test.ts: changing resultDelaySeconds and replaySpeed at result step 5 keeps the total length and every replay frame). Test-only; no behavior change.
 - Verified: `npm run verify` (before the test was added; exit 0), then `npm test -- tests/unit/replayPhase.test.ts`, `npm run format`, `npm run typecheck` after.
 - Debt left: slosh e2e contact detector starts with prevVy = 0 so "after first contact" is weak (F024 review note 1); mouse.spec.ts:47 is wall-clock and fragile under load; vitest testTimeout 60 s and calibration bound 60 s are loosened and could be tightened on an idle machine; full e2e takes ~20 min.
+
+> [harness] session 94 · maintainer · ok · verify passed · 1 commit(s) · 12 tool calls · 19m 12s · ~$0.22 API-equivalent
