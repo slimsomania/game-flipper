@@ -1704,3 +1704,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   1. F028's position and dependency (above).
   2. Design section 13 says to revisit Playwright's Firefox at M7. The plan adds none; Firefox and Safari stay manual checks at milestone stops. Should a WebKit project emulating an iPhone run the phone specs too? It would catch some Safari touch differences, but it needs `npx playwright install webkit` and adds gate time.
   3. Are F045's finger-travel ranges (full power at 30 to 60 mm) about right? The human judges them on real phones at the M7 stop, with the tuning panel that F044 makes reachable by touch.
+
+> [harness] session 87 · planner · ok · 1 commit(s) · 34 tool calls · 8m 43s · ~$2.80 API-equivalent
