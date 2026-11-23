@@ -43,6 +43,52 @@ describe('the result delay', () => {
   });
 });
 
+describe('a result keeps its length (F036)', () => {
+  const stepsToNext = (change: Parameters<Simulation['setTuning']>[0] | null): number => {
+    const sim = judged(FLIPPED);
+    run(sim, 5);
+    if (change) sim.setTuning(change);
+    let steps = 5;
+    while (sim.phase === 'result') {
+      sim.step();
+      steps++;
+    }
+    return steps;
+  };
+
+  it('is not cut short or stretched by setTuning during the result', () => {
+    const base = stepsToNext(null);
+    expect(base).toBeGreaterThanOrEqual(RESULT_STEPS);
+    expect(stepsToNext({ resultDelaySeconds: 0.1 })).toBe(base);
+    expect(stepsToNext({ resultDelaySeconds: 3 })).toBe(base);
+    expect(stepsToNext({ replaySpeed: 0.25 })).toBe(base);
+  });
+
+  it('uses the new delay for the result after the next throw', () => {
+    const sim = judged(FLIPPED);
+    run(sim, 5);
+    sim.setTuning({ resultDelaySeconds: 0.5 });
+    run(sim, 200);
+    expect(sim.phase).toBe('aiming');
+    sim.placeBottle(FLIPPED);
+    runToOutcome(sim);
+    let steps = 0;
+    while (sim.phase === 'result') {
+      sim.step();
+      steps++;
+    }
+    expect(steps).toBeLessThan(RESULT_STEPS);
+    expect(steps).toBeGreaterThanOrEqual(30);
+  });
+
+  it('still lets skip() end it at once after a tuning change', () => {
+    const sim = judged(FLIPPED);
+    sim.setTuning({ resultDelaySeconds: 3 });
+    expect(sim.skip()).toBe(true);
+    expect(sim.phase).toBe('aiming');
+  });
+});
+
 describe('skip()', () => {
   it('brings the next bottle at once during the result', () => {
     const sim = judged(FLIPPED);

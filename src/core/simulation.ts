@@ -61,6 +61,10 @@ export class Simulation {
   private throwCount = 0;
   /** Steps since the outcome was decided, counted during `result`. */
   private resultSteps = 0;
+  /** The result's delay (steps), replay speed and total length, fixed when the outcome is set (D15). */
+  private resultDelaySteps = 0;
+  private resultReplaySpeed = 1;
+  private resultTotalSteps = 0;
   /** The landing clip taken when the outcome was decided; it is replayed after the result delay. */
   private replayClip: ReplayFrame[] = [];
   private ticks = 0;
@@ -257,16 +261,8 @@ export class Simulation {
       if (this.result) this.showResult(this.result);
     } else if (this.currentPhase === 'result') {
       this.resultSteps++;
-      if (this.resultSteps >= this.resultLength()) this.endResult();
+      if (this.resultSteps >= this.resultTotalSteps) this.endResult();
     }
-  }
-
-  /** Steps the result phase lasts: the result delay, plus the replay when there is a clip. */
-  private resultLength(): number {
-    return (
-      stepsFor(this.currentTuning.resultDelaySeconds) +
-      replayStepCount(this.replayClip.length, this.currentTuning.replaySpeed)
-    );
   }
 
   private showResult(outcome: Outcome): void {
@@ -275,6 +271,10 @@ export class Simulation {
     this.round.judged(outcome);
     this.events.judged(outcome);
     this.resultSteps = 0;
+    this.resultDelaySteps = stepsFor(this.currentTuning.resultDelaySeconds);
+    this.resultReplaySpeed = this.currentTuning.replaySpeed;
+    this.resultTotalSteps =
+      this.resultDelaySteps + replayStepCount(this.replayClip.length, this.resultReplaySpeed);
     this.currentPhase = 'result';
   }
 
@@ -325,8 +325,8 @@ export class Simulation {
         this.currentPhase === 'result'
           ? replayFrameAt(
               this.replayClip,
-              this.resultSteps - stepsFor(this.currentTuning.resultDelaySeconds),
-              this.currentTuning.replaySpeed,
+              this.resultSteps - this.resultDelaySteps,
+              this.resultReplaySpeed,
             )
           : null,
       score: this.round.score,

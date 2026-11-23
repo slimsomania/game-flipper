@@ -1720,3 +1720,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: none for F024.
 
 > [harness] session 88 · builder F024 · todo → blocked · ok · verify FAILED · 1 commit(s) · 28 tool calls · 10m 19s · ~$0.33 API-equivalent
+
+## Session 89 · builder · F036 Keep the length of a result fixed once it starts
+- Did: src/core/simulation.ts computes the result's delay, replay speed and total length once in showResult() (fields resultDelaySteps, resultReplaySpeed, resultTotalSteps); step() and the snapshot's replay frame use them; resultLength() removed. Tests in tests/unit/resultWait.test.ts (setTuning at step 5 with 0.1 s, 3 s and a different replaySpeed gives the same wait; the next throw uses the new delay; skip() still immediate). D15 in docs/ARCHITECTURE.md says so.
+- Verified: typecheck, format, full `npm test` (only the slosh timeout below failed before the fix; passes alone after). Full verify with e2e not run; no player-visible change, so no snap.
+- Status: F036 → needs_review
+- Issues / follow-ups: the red build from session 88 was tests/unit/slosh.test.ts "changes some outcomes..." timing out at 5 s (210 full throws, slow machine); I gave it a 60 s timeout, no assertion changed.
+- Next: F024 was marked blocked only because of that timeout; the planner/human may reopen it.

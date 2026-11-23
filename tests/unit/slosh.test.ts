@@ -104,7 +104,7 @@ describe('sloshing water', () => {
       }
     }
     expect(different).toBeGreaterThan(0);
-  });
+  }, 60_000); // 210 full throws: over the 5 s default on a loaded machine
 
   it('limits the travel to the empty space above the water', () => {
     expect(sloshLimit(0.1)).toBeGreaterThan(sloshLimit(0.5));

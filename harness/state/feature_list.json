@@ -747,9 +747,9 @@
         "F030",
         "F027"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "Simulation now fixes the result delay, replay speed and total length in showResult() and uses them for the end check and the snapshot replay frame. New unit tests in tests/unit/resultWait.test.ts cover all three criteria; D15 updated. Also gave the slosh 210-throw test a 60 s timeout (it timed out at 5 s and broke verify).",
       "review_feedback": ""
     },
     {
