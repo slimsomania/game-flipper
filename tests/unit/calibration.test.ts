@@ -27,7 +27,8 @@ const STARTED = Date.now();
 const LEVELS = Array.from(
   {
     length:
-      Math.round((DEFAULT_TUNING.waterMax - DEFAULT_TUNING.waterMin) / DEFAULT_TUNING.waterStep) + 1,
+      Math.round((DEFAULT_TUNING.waterMax - DEFAULT_TUNING.waterMin) / DEFAULT_TUNING.waterStep) +
+      1,
   },
   (_, i) => Math.round((DEFAULT_TUNING.waterMin + i * DEFAULT_TUNING.waterStep) * 1e6) / 1e6,
 );
