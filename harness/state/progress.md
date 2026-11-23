@@ -1792,3 +1792,6 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: do the retune first with exact expected rates (coverage/ scratch scorers, one process per candidate), starting from sloshFrequency and sloshDamping, then the test and the default switch together in one commit.
 
 > [harness] session 95 · builder F025 · todo → todo · ok · verify FAILED · 1 commit(s) · 43 tool calls · 10m 18s · ~$0.69 API-equivalent
+
+> [harness] session 96 · builder F025 · todo → todo · transient · verify FAILED · 1 commit(s) · 50 tool calls · 1h 1m · ~$0.72 API-equivalent
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
