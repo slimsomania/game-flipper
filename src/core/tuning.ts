@@ -165,21 +165,21 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // players (D33) and again in F034 for the taller, slimmer bottle: a light shell lets the water
   // dominate the mass, so the power a bottle needs rises by a factor of about 3 from 10% to
   // 90%, and no single power lands most bottles.
-  shellDensity: 0.3278092185059026,
+  shellDensity: 0.3353956282208528,
   waterDensity: 1,
   // F023: off, so every existing behavior is unchanged. When on, the water springs back to the
   // base about 3 times a second and settles within half a second.
-  sloshing: 1,
-  sloshFrequency: 2.8446218403331898,
-  sloshDamping: 0.6276849734699558,
+  sloshing: 0,
+  sloshFrequency: 3,
+  sloshDamping: 0.5,
   // A lower friction, almost no bounce and a very strong spin damping make the rotation settle
   // early in the flight, so the angle at landing changes slowly with the power: that is what gives
   // a single flip a window of power instead of one lucky value (F020 had friction 0.76 and damping
   // 2.5 for the squat bottle; the slim one tips back from a smaller angle and needs the damping).
-  bottleFriction: 0.1552035820996437,
-  bottleRestitution: 0.024427701167349058,
-  bottleAngularDamping: 4.6818819919909975,
-  bottleLinearDamping: 0.32955820800259056,
+  bottleFriction: 0.14117870587580358,
+  bottleRestitution: 0.023977954722645436,
+  bottleAngularDamping: 5.011521786038433,
+  bottleLinearDamping: 0.24870375384908674,
   // Forward of straight up: a wider angle (F020: 5.9°) sends the throw farther out over the table.
   // It stays just under 14° (a drift under 0.25 of the upward speed: "a small drift").
   throwAngleDeg: 13.9,
@@ -187,12 +187,12 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // a little difficulty for a real throw: at the 10%, 50% and 90% window centers the whole bottle
   // rises about 0.13 to 0.36 m above the held bottle's top and lands about 0.9 to 1.0 m out from
   // the hand. The price is a new player's expected rate of about 44% (design aim: about 30%).
-  throwLinearImpulse: 6.240787451910916,
-  throwAngularImpulse: 8.255105572358172,
+  throwLinearImpulse: 6.703306846248563,
+  throwAngularImpulse: 8.586822226380386,
   // A spin that is almost the same at every power but climbs steadily toward 100, so a double flip
   // is still within reach of a full bottle.
-  throwSpinExponent: 0.03218375885331877,
-  throwSpinGrowth: 0.016786764629188135,
+  throwSpinExponent: 0.034213030895336206,
+  throwSpinGrowth: 0.014249104481199459,
   // Design section 2: upright within 15° for 0.5 s (an upright, still bottle cannot fall any
   // more, so a longer hold was only waiting); a throw with no outcome after 5 s fails.
   uprightToleranceDeg: 15,

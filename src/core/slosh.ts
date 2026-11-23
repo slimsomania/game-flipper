@@ -84,9 +84,6 @@ export class WaterSlosh {
       type: 'dynamic',
       position: shell.getPosition(),
       angle: shell.getAngle(),
-      // The same damping as the shell, so the bottle slows and stops spinning as the solid one does.
-      angularDamping: tuning.bottleAngularDamping,
-      linearDamping: tuning.bottleLinearDamping,
     });
     this.body.createFixture({
       shape: new Polygon(vertices.map((p) => ({ x: p.x, y: p.y }))),

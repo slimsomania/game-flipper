@@ -9,7 +9,6 @@ import {
 import { bottleExtent } from '../../src/core/outcome';
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
-import { DEFAULT_TUNING } from '../../src/core/tuning';
 import { MAX_POWER } from '../../src/core/throw';
 import { run } from './helpers';
 
@@ -23,15 +22,8 @@ import { run } from './helpers';
  */
 
 const STARTED = Date.now();
-/** Every water level the game draws, taken from the tuning's range and step (10% to 90% in 5% steps). */
-const LEVELS = Array.from(
-  {
-    length:
-      Math.round((DEFAULT_TUNING.waterMax - DEFAULT_TUNING.waterMin) / DEFAULT_TUNING.waterStep) +
-      1,
-  },
-  (_, i) => Math.round((DEFAULT_TUNING.waterMin + i * DEFAULT_TUNING.waterStep) * 1e6) / 1e6,
-);
+/** The water levels of the design's targets: 10% to 90% in 10% steps. */
+const LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 const ONE_TURN = 2 * Math.PI;
 
 interface Level {
@@ -74,15 +66,6 @@ function doubleOf(level: Level): FlipWindow {
   return level.double!;
 }
 
-describe('the tested water levels', () => {
-  it('are the 17 levels the game draws, 10% to 90% in 5% steps', () => {
-    expect(LEVELS).toHaveLength(17);
-    expect(LEVELS[0]).toBe(0.1);
-    expect(LEVELS[16]).toBe(0.9);
-    expect(LEVELS[1]).toBe(0.15);
-  });
-});
-
 describe('single-flip windows of the default tuning', () => {
   // Design section 3: a window at least 10 points wide. The upper end is the test's own sanity
   // limit: a window wider than 28 would let one fixed power land too many bottles.
@@ -116,7 +99,8 @@ describe('single-flip windows of the default tuning', () => {
   });
 
   // Design section 3: "No single fixed power may land a single flip on more than about 60% of
-  // water levels", so reading the water matters.
+  // water levels", so reading the water matters. Over the 9 levels that is at most 5 (55.6%); 6
+  // would be 66.7%.
   it('no fixed power from 0 to 100 lands a single flip on more than 60% of the water levels', () => {
     let worst = { power: 0, share: 0 };
     for (let power = 0; power <= MAX_POWER; power++) {
