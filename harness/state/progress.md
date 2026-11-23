@@ -1650,3 +1650,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F031 → needs_review
 - Issues / follow-ups: none
 - Next: reviewer re-checks criterion 3 against the new test.
+
+> [harness] session 85 · builder F031 · todo → needs_review · ok · verify passed · 1 commit(s) · 20 tool calls · 19m 51s · ~$0.26 API-equivalent
