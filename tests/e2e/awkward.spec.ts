@@ -195,14 +195,15 @@ test.describe('awkward play', () => {
     const errors = await openGame(page, '?seed=7');
     await page.evaluate(() => window.__FLIPPER__!.pause());
     for (let round = 0; round < 3; round++) {
+      let points = 0; // what this round's throws have scored so far, one outcome at a time
       for (let n = 1; n <= 10; n++) {
         expect(await gameState(page)).toMatchObject({ throwNumber: n, phase: 'aiming' });
         if (n % 3 === 0) {
-          // A real-mouse push.
+          // A mouse push on the virtual clock. Playwright's own mouse took as long as the browser
+          // took to answer, so on a busy machine the release sometimes came after the push window
+          // had emptied and nothing was thrown (about 1 run in 3 on 2026-11-23).
           const at = await bottleCenter(page);
-          await press(page, at);
-          await page.mouse.move(at.x, at.y - 40, { steps: 3 });
-          await page.mouse.up();
+          await dragInPage(page, { at, rise: 40, ms: 60, end: 'release' });
           await expect.poll(async () => (await gameState(page)).throws).toBe(round * 10 + n);
           expect(await stepToOutcome(page)).not.toBeNull();
         } else if (n % 3 === 1) {
@@ -215,7 +216,9 @@ test.describe('awkward play', () => {
           expect(await stepToOutcome(page)).not.toBeNull();
         }
         const result = await gameState(page);
-        expect(result.score).toBeLessThanOrEqual(10);
+        points += result.outcome!.points;
+        // A double scores 2, so a round can pass 10 points: the score must be its throws' points.
+        expect(result.score).toBe(points);
         await next(page);
         if (n < 10) await expect.poll(() => phaseOf(page)).toBe('aiming');
       }

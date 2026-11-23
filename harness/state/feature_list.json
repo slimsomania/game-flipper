@@ -592,7 +592,7 @@
       "description": "The design's M5 bug-fix pass. Write e2e tests for awkward play and fix what they find: mashing Space and the arrow keys during flight and result, pressing R or pausing mid-flight and mid-result, starting a drag during the result, releasing the mouse outside the canvas, a long frame gap (hidden tab), resizing the window mid-throw, and three full rounds in a row with mixed keyboard and mouse throws. Every case must end in a valid state with no console errors.",
       "acceptance": [
         "An e2e test exists for each listed scenario, and each passes.",
-        "E2E: after three full rounds, the counters are consistent (score at most 10, throw numbers restart each round) and no console errors appeared.",
+        "E2E: after three full rounds, the counters are consistent (after each throw the score equals the sum of that round's outcome points, and throw numbers restart each round) and no console errors appeared.",
         "E2E: after a simulated long frame gap the simulation advances at most the capped number of steps, and the throw still resolves.",
         "Each bug fixed comes with a test that covers it, and the progress entry lists the bugs found (or says none were)."
       ],
