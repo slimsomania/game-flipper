@@ -1595,3 +1595,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F031 → needs_review (feature work unchanged since session 78, where verify passed)
 - Issues / follow-ups: the e2e suite is too slow for the 20-minute gate. A human should raise `gateTimeoutMinutes` in harness/config.json (I can't edit it), or the suite should be sped up (shorter real-time waits, or find why parallel workers break the tests). Still not snapped: a success flash.
 - Next: the reviewer should snap a success with a light flash, and not count a gate timeout against F031.
+
+> [harness] session 80 · builder F031 · todo → blocked · ok · verify FAILED · 1 commit(s) · 23 tool calls · 18m 15s · ~$0.37 API-equivalent
