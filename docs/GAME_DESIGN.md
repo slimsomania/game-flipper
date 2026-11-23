@@ -19,7 +19,7 @@ status: ready
 
 Flipper is a skill game about throwing an object so it flips in the air and lands standing upright. It mimics the game kids play with a plastic bottle partly filled with water: hold the bottle by the top, toss it so it spins, and try to land it exactly on its bottom. If it lands on any other side, the throw fails.
 
-The fun is in the guess: every bottle holds a different amount of water, so the player has to judge how hard to throw it. A quick, easy-to-learn "one more try" game for anyone on a PC browser.
+The fun is in the guess: every bottle holds a different amount of water, so the player has to judge how hard to throw it. A quick, easy-to-learn "one more try" game for anyone in a browser, on a PC or a phone (phones from M7).
 
 ## 2. Core loop
 
@@ -36,7 +36,9 @@ One throw, start to finish:
 - **Power meter (keyboard).** A power bar is always on screen. The player raises or lowers it with Up/Down (hold to move faster) or the mouse wheel, then presses Space to throw. This is the player's guess made visible.
 - **Mouse push.** The player presses the left button on the bottle to grab it and, while holding, moves the mouse upward as if pushing the bottle with a hand. On release, the game measures the push (how far and how fast the mouse moved in the last moments) and converts it to power. A harder push means a harder throw. The power bar shows the live value while dragging.
 
-In both cases the result is the same: one number, **power**, from 0 to 100%. The physics treats them identically, so the rest of the game doesn't care which input was used.
+On a phone (from M7), the push is done with a finger on the bottle instead of the mouse (see section 7).
+
+In every case the result is the same: one number, **power**, from 0 to 100%. The physics treats them identically, so the rest of the game doesn't care which input was used.
 
 **Direction.** The throw goes mostly straight up with a small, fixed forward drift so the bottle lands on the table in front of the hand. The player controls only power, not angle. Keeping it to one variable keeps the guess clear.
 
@@ -87,7 +89,7 @@ Screens, in order: **Title → Play → Round summary → Play again or Title**.
 
 ## 7. Controls
 
-PC browser only, mouse and keyboard.
+PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 
 | Action | Mouse | Keyboard |
 | --- | --- | --- |
@@ -97,6 +99,14 @@ PC browser only, mouse and keyboard.
 | Restart the round | Restart button on the pause overlay | R |
 | Pause | Pause button in the corner | Esc or P |
 | Mute | Speaker button | M |
+
+**On a phone (from M7):**
+
+- **Throw:** touch the bottle, push the finger upward and let go. It is the same push as the mouse, converted to the same power. A finger moves differently from a mouse and the phone screen is much smaller, so the push may need its own conversion numbers (in the config module) so that a natural finger flick covers the whole power range. The difficulty targets of section 3 apply on a phone too.
+- **Power bar:** shows the live value while pushing, as with the mouse. There are no on-screen Up/Down buttons: on a phone the push is the only way to throw.
+- **Skip the wait:** tap anywhere.
+- **Pause, mute, restart, and the buttons on the title and summary screens:** tap the same on-screen buttons. Every button must be big enough to hit with a thumb.
+- Every action in the game must be possible without a keyboard.
 
 ## 8. Art direction
 
@@ -114,11 +124,13 @@ PC browser only, mouse and keyboard.
 
 ## 10. Platforms and technical targets
 
-- Browser game on desktop (mouse and keyboard). No touch or phone support for now.
-- Latest Chrome, Edge and Firefox. Chrome is the main test target.
-- Performance target: a steady 60 fps on an ordinary laptop.
+- Browser game on desktop (mouse and keyboard) and, from M7, on phones (touch). One game and one page for both: the same canvas, rules and tuning, with the input and a few screen details adapted to the device.
+- Desktop: latest Chrome, Edge and Firefox. Chrome is the main test target.
+- Phone (from M7): Chrome on Android and Safari on iPhone, held sideways (landscape). Held upright, the game shows a "Turn your phone sideways" message instead of a squeezed game. While playing, the page must not scroll, zoom, select text or show the browser's long-press menu, the game fills the screen as much as the browser allows, nothing important sits under a notch or rounded corner, and all text is readable on a 6-inch phone.
+- Phone tests: automated tests also run in Chromium emulating a phone (touch input, a small landscape screen). The human checks a real Android phone and iPhone at the milestone stop. For that, the human needs a way to open the game on a phone: a dev server reachable on the home network, or a hosted page.
+- Performance target: a steady 60 fps on an ordinary laptop and on a mid-range phone from the last few years.
 - The logical canvas is **1280×720 landscape**, scaled to fit the window. The scaffold still has the old 720×1280 portrait values (`GAME_WIDTH` and `GAME_HEIGHT` in `src/core/constants.ts`, `docs/ARCHITECTURE.md`, the Playwright viewport in `playwright.config.ts`); the first feature must switch them over. We can change the orientation again later.
-- Later: itch.io or a hosted page, touch support, installable web app.
+- Later: itch.io or a hosted page, installable web app.
 
 ## 11. Milestones
 
@@ -128,16 +140,18 @@ PC browser only, mouse and keyboard.
 - **M4, screens and audio:** title screen, pause overlay, generated sound effects, mute toggle.
 - **M5, polish and tuning:** quicker result timing, tune difficulty so a good player can reach 6 to 8 out of 10 and reading the water matters, camera shake and small effects, the soft shading and readability of section 8, bug fixes.
 - **M6, sloshing and replay:** water that moves inside the bottle and affects the flip, and a short slow-motion replay of the landing after each throw (skippable).
+- **M7, phones:** play on a phone with touch, as in sections 7 and 10: the finger push and its tuning, taps for every button and for skipping, the sideways-only message, no scrolling or zooming, readable text and big enough buttons, phone e2e tests, and a way for the human to open the game on a real phone. It comes after M6 so the finger push is tuned once, against the final bottle and its sloshing water.
+- **M8, performance and release check:** the performance budget and the production-build check, measured on a phone as well as a laptop.
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
 ## 12. Out of scope
 
-- Touch and phone support.
 - Two-player and three-player modes (planned for later, but build nothing for them now).
 - Objects other than the bottle, and surfaces other than the single table.
 - Levels, wind, targets, time limits, online leaderboards, accounts.
 - Music.
 - Sloshing water and the replay are wanted, but only from M6. Don't build them before then.
+- Phone support is wanted, but only from M7. Don't build it before M6 is done. Until then, don't make it harder either: anything new must not need a keyboard or a mouse wheel to use.
 
 ## 13. Open questions
 
@@ -179,6 +193,12 @@ Decided on 2026-11-20, answering questions the builders raised:
 - **Going for doubles must not beat reading the water (section 3).** Points stay 1/2/3 per turn. The rule is checked on the expected points with the same aiming error as the practiced player, and the current tuning meets it (6.25 against 5.55 points per 10 throws). It was raised when an error-free fixed power of about 95 scored 16.3 per 10.
 - **Quitting to the title abandons the round.** A round quit from the pause overlay is not scored and doesn't count toward the best, like leaving a match early. Only finished rounds count.
 - **No pause button on the round summary.** Nothing is moving there, so only the mute button shows.
+
+Decided on 2026-11-23:
+
+- **Phones too, not only desktop.** Most players are expected to try the game on a phone. The desktop version stays as it is, and the same game also works on a phone with touch (sections 7 and 10). This replaces "no touch or phone support for now".
+- **Phones come after M6 (M7).** The finger push has to be tuned against the bottle's final shape and its sloshing water, which M6 still changes, so tuning it earlier would mean tuning it twice. The performance budget and the production-build check (previously M7 in the plan) move to M8, so they are measured on a phone too.
+- **Landscape on phones as well.** The 1280×720 landscape canvas stays: a phone held sideways fits it, and an upright phone shows a message asking to turn it. A separate portrait layout is not planned.
 
 Still open, to be settled by playtesting after M1:
 
