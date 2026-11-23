@@ -1633,3 +1633,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Problems:
   1. Criterion 3: tests/e2e/shadow.spec.ts takes its "rest" reading from the bottle held in the hand before any throw, not from a bottle resting on the table. The test should read shadow() once the bottle has landed (outcome set, replay not started, one frame rendered). The behavior is right; only the test needs to change.
 - Notes for later: the real-mouse and real-time e2e tests flake when the machine is busy (a concurrent snap is enough), so don't run snaps during verify. The shadow hook reports the drawn frame, which during the replay is the replayed pose, so read it outside the replay. The shell highlight strip is faint but visible with half-full water.
+
+> [harness] session 83 · reviewer F031 · needs_review → todo · ok · 1 commit(s) · 36 tool calls · 45m 40s · ~$1.25 API-equivalent
