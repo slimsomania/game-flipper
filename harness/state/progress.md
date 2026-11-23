@@ -1658,3 +1658,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Evidence: `npm run verify` run alone passed (format, typecheck, unit, build, 271 e2e, 18.5 min). Read tests/e2e/shadow.spec.ts: the "rest" reading is now taken after stepUntilOutcome plus one frame, with the bottle on the table, and asserted wider and darker than both the top-of-flight and the held-bottle readings. The only change since the session 83 review is that test (`git show ed6c46c --stat`), so the session 83 snaps (rest, flight, success flash, 1024x576, restart midway, no console errors) and the unit checks still apply.
 - Problems: none
 - Notes for later: I did not take new snaps this session, to keep the machine idle during verify. The real-mouse and real-time e2e tests still flake under load.
+
+> [harness] session 86 · reviewer F031 · needs_review → done · ok · 1 commit(s) · 16 tool calls · 19m 25s · ~$0.23 API-equivalent
