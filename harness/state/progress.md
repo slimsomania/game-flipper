@@ -1763,3 +1763,5 @@ best-scoring fixed power (95, no error)                            55.5%        
   1. tests/e2e/slosh.spec.ts, last test: the contact detector starts with `prevVy = 0`, but on step 1 the bottle already moves upward at several m/s, so `contact` is true from step 1 and "offset above 0 after first contact" is no stronger than "some offset above 0". The behavior is right (snap evidence above). Seed prevVy from the snapshot before the first step, or detect contact once vy has gone positive and then dropped by over 1 m/s.
   2. tests/e2e/mouse.spec.ts:47 ("the same with the real mouse, at whatever pace the machine manages") fails under load because the push window is real time. Don't run snaps or other browsers next to a gate.
   3. The sloshing water stays in the body: in a cap-down landing it does not run into the shoulder or neck. That is the design's "stays inside the bottle's outline", but a human may want it to look like it pours into the neck.
+
+> [harness] session 92 · reviewer F024 · needs_review → done · ok · 1 commit(s) · 63 tool calls · 44m 33s · ~$2.14 API-equivalent
