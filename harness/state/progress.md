@@ -1747,3 +1747,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: run `npm run verify` on an idle machine to confirm.
 
 > [harness] session 91 · builder F036 · todo → blocked · ok · verify FAILED · 1 commit(s) · 10 tool calls · 43s · ~$0.20 API-equivalent
+
+## Human session · 2026-11-23 · F024 and F036 unblocked
+- F024 and F036 blocked → needs_review, attempts reset to 0, stale review_feedback removed. Their code was done; every red gate since session 88 was timing, not logic.
+- Sessions 88 to 90: unit tests timed out under a loaded machine; fixed in 06c4129 (testTimeout 60 s, calibration wall-clock bound 60 s). On the now idle machine `npm test` passes 885/885 with and without those bounds.
+- Session 91's gate: 270/271 e2e green. The one failure (mouseNothing.spec.ts:31, "Execution context was destroyed ... navigation") came from the human session editing vite.config.ts at 12:16:58 while the gate ran; the e2e dev server restarted and reloaded the page (screenshot at 12:17:00). Not a flaky test; no test change.
+- Lesson: never touch vite.config.ts (or anything the dev server watches) while the harness gate runs.
+- Next: reviewers for F036, then F024; then F025, F035.
