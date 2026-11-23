@@ -200,6 +200,25 @@ describe('the flight at the 50% bottle’s window centers', () => {
   }
 });
 
+// F034 follow-up: with the higher throw, a double flip at low water leaves the top of the screen
+// for a moment (the off-screen marker shows where it is, see offscreen.test.ts). Wherever it goes,
+// a throw at every level's double-flip window center must come down and stand on the table.
+describe('a throw at every tested level’s double-flip window center', () => {
+  it('comes down onto the table and lands upright after two turns', () => {
+    for (const level of levels) {
+      const sim = new Simulation({ seed: 1 });
+      sim.setWater(level.water);
+      sim.throwBottle(Math.round(doubleOf(level).center));
+      for (let i = 0; i < 400 && sim.phase === 'flying'; i++) sim.step();
+      const { outcome, bottle } = sim.snapshot();
+      expect(outcome, labelOf(level)).toMatchObject({ result: 'success', turns: 2 });
+      expect(bottle.x, labelOf(level)).toBeGreaterThan(TABLE_LEFT_X);
+      expect(bottle.x, labelOf(level)).toBeLessThan(TABLE_RIGHT_X);
+      expect(bottle.y, labelOf(level)).toBeCloseTo(TABLE_TOP_Y, 1);
+    }
+  });
+});
+
 describe('a throw is only its launch', () => {
   it('nothing moves or turns the bottle after release: the launch velocities alone give the same flight', () => {
     for (const level of levels) {

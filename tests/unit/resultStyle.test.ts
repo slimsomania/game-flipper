@@ -38,6 +38,17 @@ describe('resultStyle', () => {
     expect(successMessage(12)).toBe('Flip ×12! +12');
   });
 
+  it('says "Cap landing! +N" in green for a landing on the cap (a success since 2026-11-22)', () => {
+    expect(resultStyle({ result: 'success', reason: 'cap', points: 1 })).toEqual({
+      message: 'Cap landing! +1',
+      flash: COLORS.successFlash,
+      text: COLORS.successText,
+    });
+    expect(resultStyle({ result: 'success', reason: 'cap', points: 2 }).message).toBe(
+      'Cap landing! +2',
+    );
+  });
+
   it('says "Down!" in red for a fail', () => {
     expect(resultStyle(FAIL)).toEqual({
       message: 'Down!',

@@ -20,7 +20,8 @@ export interface SweepPoint extends Outcome {
 }
 
 /** The part of a `SweepPoint` that `findWindows` reads, so hand-made lists stay short. */
-export type SweepResult = Pick<SweepPoint, 'power' | 'result' | 'turns'>;
+export type SweepResult = Pick<SweepPoint, 'power' | 'result' | 'turns'> &
+  Partial<Pick<SweepPoint, 'reason'>>;
 
 /** A run of neighboring powers that all succeed with the same number of turns. */
 export interface FlipWindow {
@@ -92,7 +93,8 @@ export function findWindows(results: readonly SweepResult[]): FlipWindow[] {
     open = null;
   };
   for (const r of sorted) {
-    if (r.result !== 'success') {
+    // A window is a run of upright landings: a lone cap landing (a success too) is no target to aim at.
+    if (r.result !== 'success' || r.reason === 'cap') {
       close();
     } else if (open && open.turns === r.turns) {
       open.high = r.power;

@@ -11,8 +11,9 @@ import type { Tuning } from './tuning';
 
 export type OutcomeResult = 'success' | 'fail';
 /**
- * Why a throw ended as it did. `upright` is the only success. `noFlip` is a bottle that came to
- * rest upright without a full turn (for example a plain drop at power 0): a fail.
+ * Why a throw ended as it did. `upright` (after at least one full turn) and `cap` (resting on its
+ * cap after any rotation: design section 2, 2026-11-22) are the successes. `noFlip` is a bottle
+ * that came to rest upright without a full turn (for example a plain drop at power 0): a fail.
  */
 export type OutcomeReason =
   'upright' | 'noFlip' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
@@ -23,9 +24,12 @@ export interface Outcome {
   reason: OutcomeReason;
   /** Radians the bottle turned since release, clockwise positive (it may be several turns). */
   rotation: number;
-  /** `rotation` in full turns, rounded to a whole number. */
+  /**
+   * `rotation` in full turns: rounded to a whole number, except on the cap, where it is the full
+   * turns completed (a bottle on its cap has turned a whole number and a half).
+   */
   turns: number;
-  /** What the throw scores: its number of turns for a success, 0 for any fail. */
+  /** What the throw scores: its number of turns for a success (at least 1 on the cap), 0 for a fail. */
   points: number;
 }
 
@@ -155,16 +159,19 @@ export class LandingJudge {
 
     const found = this.judge(sample);
     if (found) {
-      const turns = Math.round(this.turned / TWO_PI) + 0; // + 0 turns -0 into 0
+      // On the cap the bottle has turned k and a half turns: it scores the k it completed.
+      const whole = found === 'cap' ? Math.trunc : Math.round;
+      const turns = whole(this.turned / TWO_PI) + 0; // + 0 turns -0 into 0
       // Resting upright counts only after a full turn; without one it is a fail of its own kind.
       const reason = found === 'upright' && turns === 0 ? 'noFlip' : found;
-      const success = reason === 'upright';
+      const success = reason === 'upright' || reason === 'cap';
+      const points = reason === 'cap' ? Math.max(1, pointsForTurns(turns)) : pointsForTurns(turns);
       this.decided = {
         result: success ? 'success' : 'fail',
         reason,
         rotation: this.turned,
         turns,
-        points: success ? pointsForTurns(turns) : 0,
+        points: success ? points : 0,
       };
     }
     return this.decided;

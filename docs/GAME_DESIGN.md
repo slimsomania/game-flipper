@@ -40,13 +40,13 @@ In both cases the result is the same: one number, **power**, from 0 to 100%. The
 
 **Direction.** The throw goes mostly straight up with a small, fixed forward drift so the bottle lands on the table in front of the hand. The player controls only power, not angle. Keeping it to one variable keeps the guess clear.
 
-**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright and nearly still, for at least half a second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides.
+**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright and nearly still, for at least half a second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides. Coming to rest upside down on its cap also counts, after any rotation: it scores one point per full turn completed in the air, and at least 1.
 
-**Fail.** The bottle comes to rest on its side or on its cap, falls off the table, or leaves the screen. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall. A bottle that lands upright without a full turn (for example a plain drop at very low power) is also a fail.
+**Fail.** The bottle comes to rest on its side, or falls off the table (past either end, or below the tabletop). Flying above the top of the screen is not a fail: a marker on the top edge shows where the bottle is, and if it comes down and lands upright on the table it counts as a success. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall. A bottle that lands upright without a full turn (for example a plain drop at very low power) is also a fail.
 
 **After the result.**
 
-- Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that). The score goes up by that many points.
+- Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that), or "Cap landing! +N" on the cap. The score goes up by that many points.
 - No flip (upright, but without a full turn): a red flash and the message "No flip!", and the score doesn't change.
 - Fail: a red flash and a short message ("Down!"), and the score doesn't change.
 - After about 1 second the next bottle appears automatically. Space or click skips the wait.
@@ -166,6 +166,12 @@ Decided after an outside review of the game (Gemini, 2026-11-18), checked agains
 - **Soft shading and a gentler flash (section 8).** A shadow under the bottle gives a sense of its height, the water's surface line makes the level easier to read (the player's only clue), the background is no longer an empty flat color, and the full-screen flash (40% opacity on every throw) becomes a light tint.
 - **Not changed:** points stay 1/2/3 per turn (the human's decision of 2026-11-16), streaks still give no bonus, triples stay optional, the mouse push is unchanged (it already uses the fastest 50 ms of the push, so a short pause before release doesn't lose the throw). (This list also said the bottle's shape stays as calibrated in D23; that was reversed on 2026-11-19, see section 3 and F034: the calibrated 1.13:1 bottle looked like a squat jar.)
 - **Ideas kept for later** (none planned yet): an endless mode (play until you miss), a daily challenge with the same bottles for everyone, a practice mode that shows each bottle's window on the power bar, a special score for landing on the cap, more surfaces and bottle types.
+
+Decided on 2026-11-22:
+
+- **The bottle-like look and a real throw come before the 40% new-player limit (F034).** No tuning of a 1.8:1 or slimmer bottle met every target and also rose above the hand and landed out on the table. The bottle stays 0.80 by 1.48 m, and a new player's expected landing rate may be up to 45%. This replaces the 2026-11-20 decision below that no target is relaxed.
+- **Leaving the top of the screen is not a fail.** The higher throw carries low-water double flips and over-powered throws above the screen. A marker on the top edge shows where the bottle is, and only the landing decides the result: upright on the table is a success, missing the table is a fail.
+- **A landing on the cap is a success.** It is rare (about 3% of throws over every water level and power, half of them a weak push that tips the bottle half a turn onto its cap) and scores its completed full turns, at least 1. The power windows still count upright landings only. It raised the expected rates slightly: practiced 61.0%, new player 44.7%.
 
 Decided on 2026-11-20, answering questions the builders raised:
 

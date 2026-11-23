@@ -50,10 +50,13 @@ describe('sweepPowers', () => {
     }
   });
 
-  it('never succeeds without a full turn, and scores its turns when it does', () => {
+  it('never lands upright without a full turn, and scores its turns when it does', () => {
     for (const water of [0.1, 0.3, 0.5, 0.7, 0.9]) {
       for (const r of sweepPowers(water)) {
-        if (r.result === 'success') {
+        if (r.result === 'success' && r.reason === 'cap') {
+          // On the cap (design section 2, 2026-11-22): its completed full turns, at least 1.
+          expect(r.points).toBe(Math.max(1, Math.abs(r.turns)));
+        } else if (r.result === 'success') {
           expect(r.turns).toBeGreaterThanOrEqual(1);
           expect(r.points).toBe(r.turns);
         } else {

@@ -45,14 +45,21 @@ describe('judging a landing in the simulation', () => {
     }
   });
 
-  it('judges a bottle upside down on its cap a fail, reason cap', () => {
+  // Design section 2 (2026-11-22): resting on the cap is a success; it scores its completed full
+  // turns, at least 1. This bottle was placed on its cap, so it turned no full turn: 1 point.
+  it('judges a bottle upside down on its cap a success, reason cap, worth 1 point', () => {
     const sim = placed({
       x: TABLE_CENTER_X,
       y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02,
       angle: Math.PI,
     });
     runToOutcome(sim);
-    expect(sim.snapshot().outcome).toMatchObject({ result: 'fail', reason: 'cap' });
+    expect(sim.snapshot().outcome).toMatchObject({
+      result: 'success',
+      reason: 'cap',
+      turns: 0,
+      points: 1,
+    });
   });
 
   it('judges a bottle that fell onto its cap and toppled by the time it rests: side, not cap', () => {

@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { BOTTLE_HEIGHT } from '../../src/core/bottleShape';
+import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
 import { COLORS } from '../../src/game/theme';
 import { SIDE, UPRIGHT, flipped, type PlacedPose } from '../shared';
 import { openGame, stepUntilOutcome, visibleFlash, visibleTexts } from './helpers';
@@ -16,7 +18,15 @@ async function land(page: Page, pose: PlacedPose) {
   return stepUntilOutcome(page);
 }
 
-const RESULT_MESSAGES = ['Nailed it!', 'Double!', 'Triple!', 'Flip ×', 'No flip!', 'Down!'];
+const RESULT_MESSAGES = [
+  'Nailed it!',
+  'Double!',
+  'Triple!',
+  'Flip ×',
+  'Cap landing!',
+  'No flip!',
+  'Down!',
+];
 const messagesIn = (texts: string[]) =>
   texts.filter((text) => RESULT_MESSAGES.some((message) => text.startsWith(message)));
 
@@ -54,6 +64,31 @@ test('a no flip after a success leaves the score where it was', async ({ page })
   const texts = await visibleTexts(page);
   expect(messagesIn(texts)).toEqual(['No flip!']);
   expect(texts).toContain('Score: 1');
+  expect(errors).toEqual([]);
+});
+
+// Design section 2 (2026-11-22): resting on the cap is a success worth its completed full turns,
+// at least 1. Placed upside down on the table, with 0 and with 2 turns credited.
+test('a landing on the cap shows "Cap landing!" with the green flash and scores its turns', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7');
+  const onCap: PlacedPose = {
+    x: TABLE_CENTER_X,
+    y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02,
+    angle: Math.PI,
+  };
+  const first = await land(page, onCap);
+  expect(first.outcome).toMatchObject({ result: 'success', reason: 'cap', points: 1 });
+  expect(first.score).toBe(1);
+  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +1']);
+  expect((await visibleFlash(page))?.color).toBe(COLORS.successFlash);
+
+  await page.evaluate(() => window.__FLIPPER__!.skip());
+  const second = await land(page, { ...onCap, turns: 2 });
+  expect(second.outcome).toMatchObject({ result: 'success', reason: 'cap', turns: 2, points: 2 });
+  expect(second.score).toBe(3);
+  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +2']);
   expect(errors).toEqual([]);
 });
 
@@ -125,9 +160,14 @@ test('a real throw lands by the same rules: its message and score follow its tur
   const decided = await stepUntilOutcome(page);
   const { result, reason, turns, points } = decided.outcome!;
 
-  // A real throw has no credit: its points are its own turns, and 0 turns can never score.
-  expect(points).toBe(result === 'success' ? turns : 0);
-  if (result === 'success') expect(turns).toBeGreaterThanOrEqual(1);
+  // A real throw has no credit: its points are its own turns, and 0 turns can never land upright.
+  // On the cap (a success since 2026-11-22) it scores its completed turns, at least 1.
+  if (reason === 'cap') {
+    expect(points).toBe(Math.max(1, Math.abs(turns)));
+  } else {
+    expect(points).toBe(result === 'success' ? turns : 0);
+    if (result === 'success') expect(turns).toBeGreaterThanOrEqual(1);
+  }
   expect(decided.score).toBe(points);
   const texts = await visibleTexts(page);
   expect(messagesIn(texts)).toHaveLength(1);

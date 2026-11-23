@@ -16,6 +16,7 @@ import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
 import { createHudView, type HudView } from '../view/hudView';
 import { createMuteControl } from '../view/muteButtonView';
+import { createOffscreenMarkerView, type OffscreenMarkerView } from '../view/offscreenMarkerView';
 import { createPauseButton } from '../view/pauseButtonView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createReplayLabelView, type ReplayLabelView } from '../view/replayLabelView';
@@ -40,6 +41,7 @@ export class GameScene extends Phaser.Scene {
   private powerBarView!: PowerBarView;
   private resultView!: ResultView;
   private replayLabelView!: ReplayLabelView;
+  private offscreenMarkerView!: OffscreenMarkerView;
   private hudView!: HudView;
   private cursorView!: CursorView;
   private effectsView!: EffectsView;
@@ -70,6 +72,7 @@ export class GameScene extends Phaser.Scene {
 
     createTableView(this);
     this.bottleView = createBottleView(this);
+    this.offscreenMarkerView = createOffscreenMarkerView(this);
     this.powerBarView = createPowerBarView(this);
     this.resultView = createResultView(this);
     this.replayLabelView = createReplayLabelView(this);
@@ -137,17 +140,17 @@ export class GameScene extends Phaser.Scene {
   private draw(snapshot: SimSnapshot): void {
     // During the replay the bottle view draws the recorded pose instead of the live bottle.
     const { replay } = snapshot;
-    this.bottleView.update(
-      replay
-        ? {
-            ...snapshot.bottle,
-            x: replay.x,
-            y: replay.y,
-            angle: replay.angle,
-            waterOffset: replay.waterOffset,
-          }
-        : snapshot.bottle,
-    );
+    const shown = replay
+      ? {
+          ...snapshot.bottle,
+          x: replay.x,
+          y: replay.y,
+          angle: replay.angle,
+          waterOffset: replay.waterOffset,
+        }
+      : snapshot.bottle;
+    this.bottleView.update(shown);
+    this.offscreenMarkerView.update(shown);
     this.replayLabelView.update(replay !== null);
     this.powerBarView.update(snapshot.power);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);

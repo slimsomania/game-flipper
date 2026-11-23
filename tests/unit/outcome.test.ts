@@ -165,7 +165,8 @@ describe('LandingJudge (synthetic samples)', () => {
     expect(feed(judge(), 30, resting(deg(134)))).toMatchObject({ reason: 'side' });
     expect(feed(judge(), 30, resting(deg(136)))).toMatchObject({ reason: 'cap' });
     expect(feed(judge(), 30, resting(deg(-136)))).toMatchObject({ reason: 'cap' });
-    expect(feed(judge(), 30, resting(Math.PI))).toMatchObject({ result: 'fail', reason: 'cap' });
+    // On the cap is a success (design section 2, 2026-11-22); on the side stays a fail.
+    expect(feed(judge(), 30, resting(Math.PI))).toMatchObject({ result: 'success', reason: 'cap' });
     expect(feed(judge(), 30, resting(3 * Math.PI))).toMatchObject({ reason: 'cap' });
     expect(feed(judge({ capAngleDeg: 100 }), 30, resting(deg(120)))).toMatchObject({
       reason: 'cap',

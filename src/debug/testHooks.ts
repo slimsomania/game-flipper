@@ -6,6 +6,7 @@ import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
+import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
@@ -67,6 +68,12 @@ export interface FlipperTestApi {
    * what the scene last drew, so wait a frame after stepping.
    */
   flash(): FlashView | null;
+  /**
+   * The off-screen marker (an arrow on the top edge under a bottle that has flown above the
+   * screen) as the scene last drew it: its `x` in game pixels and its opacity, or null when it is
+   * hidden or no game scene is running. Wait a frame after stepping.
+   */
+  offscreenMarker(): { x: number; alpha: number } | null;
   /**
    * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime' or 'thud'),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to
@@ -205,6 +212,12 @@ export function installTestHooks(game: Phaser.Game): void {
       return camera ? { x: camera.scrollX, y: camera.scrollY } : null;
     },
     flash: () => visibleFlash(game.scene.getScenes(true)),
+    offscreenMarker: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      const marker = scene?.children.getByName(OFFSCREEN_MARKER_NAME) as
+        Phaser.GameObjects.Graphics | null | undefined;
+      return marker?.visible ? { x: marker.x, alpha: marker.alpha } : null;
+    },
     sounds: () => sharedSfx().log(),
     muted: () => sharedSfx().muted,
     setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),

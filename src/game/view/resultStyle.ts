@@ -36,13 +36,16 @@ export function successMessage(points: number): string {
 
 /**
  * The message and colors for a throw's outcome. Success is green and names the flip and the
- * points ("Nailed it! +1", "Double! +2", ...). Every fail is red: "No flip!" for a bottle that
+ * points ("Nailed it! +1", "Double! +2", ...), or "Cap landing! +N" on the cap. Every fail is red: "No flip!" for a bottle that
  * stood up without a full turn, "Down!" for any other.
  */
 export function resultStyle(outcome: Pick<Outcome, 'result' | 'reason' | 'points'>): ResultStyle {
   if (outcome.result === 'success') {
     return {
-      message: successMessage(outcome.points),
+      message:
+        outcome.reason === 'cap'
+          ? `Cap landing! +${outcome.points}`
+          : successMessage(outcome.points),
       flash: COLORS.successFlash,
       text: COLORS.successText,
     };

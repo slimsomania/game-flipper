@@ -189,6 +189,9 @@ test.describe('awkward play', () => {
   });
 
   test('three full rounds in a row with mixed keyboard and mouse throws', async ({ page }) => {
+    // 30 throws with several page round-trips each: it ran close to the 30 s limit and went over
+    // it on 2026-11-22 (the off-screen marker adds a little work per frame). Nothing is checked less.
+    test.slow();
     const errors = await openGame(page, '?seed=7');
     await page.evaluate(() => window.__FLIPPER__!.pause());
     for (let round = 0; round < 3; round++) {
