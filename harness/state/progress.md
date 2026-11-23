@@ -1736,3 +1736,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F036 → needs_review
 - Issues / follow-ups: the unit suite takes about 2 min because flipWindowsScript tests spawn the script; wall-clock tests are fragile under load.
 - Next: if verify still fails, look at e2e timing, not F036's logic.
+
+> [harness] session 90 · builder F036 · todo → todo · ok · verify FAILED · 1 commit(s) · 23 tool calls · 23m 7s · ~$0.32 API-equivalent
