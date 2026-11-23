@@ -1566,3 +1566,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 ## Human session · 2026-11-22 · F024 unblocked (human decision)
 - F024 criterion 2 relaxed: the water must visibly shift when the bottle lands, bounces or tips (after the first table contact), not mid-flight, where the spin pins it to the base (session 70's finding). Status blocked → todo, attempts reset to 0 because the requirement changed. F025, F035 and F028 wait on it, so this unblocks M6.
 - Verify (human session, after all of the above): format, typecheck, 875 unit, build, 268 of 269 e2e passed. The one failure, awkward.spec.ts "three full rounds", ran out of its 30 s test time (30 throws; it was close to the limit before); with `test.slow()` it and the whole awkward.spec.ts (9) pass. No assertion changed.
+
+## Session 77 · reviewer · F034 Make the bottle look like a water bottle again: taller and slimmer, retuned to the same targets
+- Verdict: pass
+- Evidence: `npm run verify` passed (format, typecheck, 875 unit, build, 269 e2e). Unit: bottle.test.ts locks height/width >= 1.8 and the neck and cap minimums. difficulty.test.ts now checks exact expected rates (practiced 61.0%, new 44.7%, limit 45% per the human's decision of 2026-11-22) and calibration.test.ts the windows and double-window landings. Snaps (seed 7, 1280x720, Enter then lockWater 0.1/0.5/0.9 and throws at 17/36/51): the held, mid-flight and landed bottle reads as a plastic water bottle; the 50% throw lands upright at x 3.82 m (hand 2.8 m), about 1 m out; no console errors. Test diff adds tests and changes only assertions the rule changes required. The scripts/_*.log files are gone and the snap help text now says 312 to 460.
+- Problems: none
+- Notes for later:
+  - The flight is still low: the bottle stays beside the power bar and rises only about 0.13 m (10%) to 0.35 m (50%) above the held top. Accepted by the human on 2026-11-22.
+  - The practiced expected margin is thin (61.0% vs 60%) and the new-player one is 0.3 points under 45%.
