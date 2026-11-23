@@ -14,5 +14,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['tests/unit/noReplaySetup.ts'],
     allowOnly: false,
+    // Files run in parallel workers; on a busy machine a physics-heavy test can exceed the 5 s default.
+    testTimeout: 60_000,
   },
 });

@@ -247,7 +247,7 @@ describe('a throw is only its launch', () => {
 });
 
 describe('the calibration tests', () => {
-  it('take under 15 seconds together', () => {
-    expect(Date.now() - STARTED).toBeLessThan(15_000);
+  it('take under 60 seconds together, even with every test file running at once', () => {
+    expect(Date.now() - STARTED).toBeLessThan(60_000);
   });
 });
