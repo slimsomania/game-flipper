@@ -1622,3 +1622,7 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 → needs_review
 - Issues / follow-ups: a human needs to raise `gateTimeoutMinutes` in harness/config.json (I cannot edit it), or the e2e suite must be sped up further.
 - Next: the reviewer should snap at the offset peak (steps 64 to 72) and not count a gate timeout against F024.
+
+## Human session · 2026-11-22 · gate limit raised, F031 unblocked
+- `gateTimeoutMinutes` 20 → 45 in harness/config.json: sessions 79 to 83 "failed" verify only because the serial e2e suite outlasts 20 minutes (every test shown was green).
+- F031 blocked → needs_review, attempts reset to 0, stale review_feedback removed. F024 was already needs_review. Reviewers: run the full verify, snap a success flash (F031) and the offset peak at steps 64 to 72 (F024).

@@ -20,7 +20,7 @@
   "maxAttemptsPerFeature": 3,
   "maxConsecutiveFailures": 3,
   "sessionTimeoutMinutes": 75,
-  "gateTimeoutMinutes": 20,
+  "gateTimeoutMinutes": 45,
   "maxBudgetUsdPerSession": null,
   "pauseAtUsagePercent": 85,
   "usageLimitWaitMinutes": 30,
