@@ -1795,3 +1795,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 96 · builder F025 · todo → todo · transient · verify FAILED · 1 commit(s) · 50 tool calls · 1h 1m · ~$0.72 API-equivalent
 > [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
+
+## Session 97 · builder · F025 Turn sloshing on by default and recalibrate
+- Did: no default change. After session 96's WIP commit the tree had sloshing on with a new tuning and 28 failing unit tests; I restored tuning.ts, slosh.ts and calibration.test.ts to their session-95 state (green: 886/886 unit). Added scripts/retune-search.ts, a hill climb over 11 tuning numbers scoring all 17 levels (windows, centers, ratio, fixed-power shares, exact expected rates, points rule); it writes coverage/best-N.json.
+- Findings (sloshing on, 17 levels, session-96 tuning: shellDensity 0.3278, impulses 6.24/8.26, slosh 2.84 Hz / 0.63): singles 9-13 wide, double windows 73-78 at 10% but 86-100 for 40-90%, so power 96 lands 74-80% of bottles (limit 65%); practiced 58.5%, new 39.6%; aiming at 100 scores about 10.1 points per 10 vs 5.85 for reading the water (a test requires the reverse). Six runs of 25-30 min stayed near penalty 860. The doubles are the blocker: they do not rise with water for mid and heavy bottles, because the spin is nearly constant and rotation is mostly flight time. Old tuning values (still the default) are in the session 95 entry.
+- Verified: `npm test` 886/886, typecheck.
+- Status: F025 stays todo (notes updated)
+- Issues / follow-ups: when the default flips, setting sloshing 0 in tests/unit/noReplaySetup.ts for every file except calibration, difficulty, slosh, flipWindows and architecture fixed 24 of the 28 failures; flip-windows.ts needs 17 rows and a `--solid` switch (its tests index rows); the calibration "launch alone" test must use sloshing 0 (placeBottle cannot give the water its motion).
+- Next: change the spin model so doubles climb with water (spin exponent growing with power, or more spin growth with less impulse), or ask the human to relax the fixed-power and points targets for doubles; then reuse scripts/retune-search.ts.
