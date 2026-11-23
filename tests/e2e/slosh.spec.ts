@@ -43,3 +43,27 @@ test('with sloshing on, the water slides toward the cap in a spinning throw and 
   expect(max).toBeGreaterThan(0.05);
   expect(errors).toEqual([]);
 });
+
+test('with sloshing on, the water stays at the base in the air, shifts as the bottle comes down and lands, and is back at rest', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7');
+  await page.evaluate(() => {
+    window.__FLIPPER__!.pause();
+    window.__FLIPPER__!.setTuningValue('sloshing', 1);
+    window.__FLIPPER__!.setWater(0.3);
+    window.__FLIPPER__!.throwBottle(40);
+  });
+  const trace: { y: number; offset: number }[] = [];
+  for (let i = 0; i < 240; i++) {
+    const s = (await page.evaluate(() => window.__FLIPPER__!.step(1)))!;
+    trace.push({ y: s.bottle.y, offset: s.bottle.waterOffset });
+  }
+  // Rising and spinning in the air, the spin pins the water to the base: no shift for a long while.
+  expect(trace.slice(0, 50).every((t) => t.offset === 0)).toBe(true);
+  // Coming down, landing and tipping move it toward the cap, by a visible amount.
+  expect(Math.max(...trace.map((t) => t.offset))).toBeGreaterThan(0.03);
+  // At rest on the table it is back at the base.
+  expect(trace[150].offset).toBe(0);
+  expect(errors).toEqual([]);
+});

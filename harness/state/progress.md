@@ -1597,3 +1597,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: the reviewer should snap a success with a light flash, and not count a gate timeout against F031.
 
 > [harness] session 80 · builder F031 · todo → blocked · ok · verify FAILED · 1 commit(s) · 23 tool calls · 18m 15s · ~$0.37 API-equivalent
+
+## Session 81 · builder · F024 Draw the moving water
+- Did: no drawing change needed (slidWaterVertices and bottleView already draw the slid fill). Added the e2e test for the relaxed criterion 2 in tests/e2e/slosh.spec.ts: sloshing on, seed 7, water 0.3, power 40: waterOffset is 0 for the first 50 steps, peaks above 0.03 m as the bottle comes down and lands, and is 0 at rest.
+- Verified: `npm run test:e2e -- tests/e2e/slosh.spec.ts` (3 pass), `npm run typecheck`, `npm run format`; snaps (key:Enter first) at step 70 and at rest show the water at the base end with no console errors. The shift in the snap is small (peak 0.045 m for 30% water). I did not run the full `npm run verify`: the e2e suite alone is longer than a session (see session 80).
+- Status: F024 → needs_review
+- Issues / follow-ups: the visible shift is small; the reviewer may want a bigger-looking snap at the peak step (about step 64 to 72). Sloshing-off drawing is untouched (unit test slidWater: offset 0 equals waterVertices).
+- Next: the reviewer should run the full verify and snap at the offset peak.
