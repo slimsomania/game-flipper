@@ -1635,3 +1635,9 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: the real-mouse and real-time e2e tests flake when the machine is busy (a concurrent snap is enough), so don't run snaps during verify. The shadow hook reports the drawn frame, which during the replay is the replayed pose, so read it outside the replay. The shell highlight strip is faint but visible with half-full water.
 
 > [harness] session 83 · reviewer F031 · needs_review → todo · ok · 1 commit(s) · 36 tool calls · 45m 40s · ~$1.25 API-equivalent
+
+## Session 84 · reviewer · F024 Draw the moving water
+- Verdict: fail
+- Evidence: `npm run verify` ran: format, typecheck and 882 unit tests passed, e2e passed through test 152 before my 10-minute tool limit (the harness's own run showed all 250 e2e green). Snaps (seed 7, water 0.3, power 40): with `setTuningValue;sloshing;1` waterOffset was 0.001, 0.111, 0.071, 0.017, 0.036 at steps 64 to 76 and 0 at rest; the step-67 snap shows the fill shifted away from the base. Read slidWaterVertices, bottleView and the unit and e2e tests.
+- Problems: 1. The criterion's own command `call:setTuningValue;sloshing;true` is a silent no-op (the hook rejects a boolean), so following the criterion literally shows no shift at all. 2. Minor: the e2e test does not assert offset > 0 specifically after first contact.
+- Notes for later: offset at rest reads 0.0002, not exactly 0 (visually at the base). bottleView also gained a surface line and highlight strip in this range, which may change sloshing-off snaps versus before; the builder should confirm that came from an earlier accepted feature.
