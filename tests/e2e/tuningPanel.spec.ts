@@ -271,3 +271,19 @@ test('an empty or half-typed field is not applied, and shows the value in effect
   await expect(input).toHaveValue('11');
   expect((await tuningOf(page)).throwLinearImpulse).toBe(11);
 });
+
+test('the sloshing switch in the panel follows the tuning and changes it for the next bottle (F025)', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7', false);
+  await showPanel(page);
+  const box = page.locator('#tuning-sloshing-switch');
+  await expect(box).toBeVisible();
+  await expect(box).not.toBeChecked(); // off until F025's recalibration makes it the default
+  await box.check();
+  await expect.poll(async () => (await tuningOf(page)).sloshing).toBe(1);
+  await expect(page.locator(field('sloshing'))).toHaveValue('1');
+  await box.uncheck();
+  await expect.poll(async () => (await tuningOf(page)).sloshing).toBe(0);
+  expect(errors).toEqual([]);
+});

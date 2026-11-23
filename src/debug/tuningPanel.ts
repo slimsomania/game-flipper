@@ -1,3 +1,4 @@
+import { isSloshing } from '../core/slosh';
 import { DEFAULT_TUNING } from '../core/tuning';
 import { currentSimulation } from './currentSimulation';
 import { panelEnabled } from './debugMode';
@@ -106,6 +107,8 @@ function buildPanel(control: TuningControl): { panel: HTMLElement; toggle: () =>
 
   // The list: one row per tuning key, in the order of src/core/tuning.ts.
   const list = el('div', { className: 'tp-list' });
+  const sloshSwitch = el('input', { id: 'tuning-sloshing-switch', type: 'checkbox' });
+  sloshSwitch.title = 'Sloshing water';
   const rows = new Map<TuningKey, { row: HTMLElement; input: HTMLInputElement }>();
   for (const key of TUNING_KEYS) {
     const input = el('input', { id: `tuning-${key}`, type: 'number', step: String(stepFor(key)) });
@@ -122,6 +125,13 @@ function buildPanel(control: TuningControl): { panel: HTMLElement; toggle: () =>
       hint,
     );
     rows.set(key, { row, input });
+    if (key === 'sloshing') {
+      // The sloshing switch (F025): a checkbox beside the number, both editing the same value.
+      sloshSwitch.addEventListener('change', () =>
+        control.set('sloshing', sloshSwitch.checked ? 1 : 0),
+      );
+      row.insertBefore(sloshSwitch, input);
+    }
     list.append(row);
   }
 
@@ -145,6 +155,7 @@ function buildPanel(control: TuningControl): { panel: HTMLElement; toggle: () =>
         input.value = String(values[key]);
       }
     }
+    sloshSwitch.checked = isSloshing(values);
     const lock = control.waterLock();
     lockBox.checked = lock !== null;
     if (lock !== null && document.activeElement !== lockLevel) lockLevel.value = String(lock);
