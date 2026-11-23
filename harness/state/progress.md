@@ -1738,3 +1738,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: if verify still fails, look at e2e timing, not F036's logic.
 
 > [harness] session 90 · builder F036 · todo → todo · ok · verify FAILED · 1 commit(s) · 23 tool calls · 23m 7s · ~$0.32 API-equivalent
+
+## Session 91 · builder · F036 Keep the length of a result fixed once it starts
+- Did: no code change. F036's code, tests and D15 are done (sessions 89-90). The verify tail lists nearly every e2e test from summary.spec.ts onward as failed, with "15 passed (11.8m)". That looks like the e2e run running out of time on a slow machine, not an assertion failure in F036's logic.
+- Verified: `npx playwright test tests/e2e/throw.spec.ts` alone: 4 passed in 14 s. The full e2e run was denied permission in this session, so I could not reproduce the full-suite failure.
+- Status: F036 → needs_review (attempt 3 of 3; nothing left to change in F036)
+- Issues / follow-ups: the full e2e takes over 11 min on this machine. If verify keeps failing, check the verify time limit and machine load, not F036.
+- Next: run `npm run verify` on an idle machine to confirm.
