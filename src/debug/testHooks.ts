@@ -164,7 +164,7 @@ export interface FlipperTestApi {
    * new tuning, or null (changing nothing) for a key that isn't in the tuning or a value that isn't
    * a finite number.
    */
-  setTuningValue(key: keyof Tuning, value: number): Tuning | null;
+  setTuningValue(key: keyof Tuning, value: number | boolean): Tuning | null;
   /**
    * Lock every bottle's water level to `level` (0 to 1, clamped), or pass null for random levels
    * again, like the panel's "Lock water" box. The held bottle takes the level at once. Returns the
@@ -254,7 +254,7 @@ export function installTestHooks(game: Phaser.Game): void {
     tuning: () => ({ ...(currentSimulation()?.tuning ?? tuningControl().values()) }),
     setTuningValue: (key, value) => {
       const control = tuningControl();
-      return control.set(key, value) ? { ...control.values() } : null;
+      return control.set(key, Number(value)) ? { ...control.values() } : null;
     },
     lockWater: (level) => {
       tuningControl().setWaterLock(level);

@@ -1711,3 +1711,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Checked F037–F045 from session 87: no changes to them. F028 now sits after F045 and depends on it (plus F025, F027), so the harness builds M6, then M7, then F028. Its planner note is replaced with this.
 - Open questions from session 87, decided: (2) no WebKit project for now; iPhone Safari is checked by hand on a real phone at the M7 stop. (3) F045's ranges stand as best guesses, to be judged on real phones at the M7 stop.
 - Next: F036, then M6 (F024, F025, F035).
+
+## Session 88 · builder · F024 Draw the moving water
+- Did: the `setTuningValue` hook (src/debug/testHooks.ts) takes booleans and converts them with Number(), so snap's `true` turns sloshing on. The slosh e2e test now passes `true` and checks an offset above 0 after the first table contact (found by the vy jump).
+- Verified: typecheck, format and unit tests pass. The criterion's exact snap command gives offsets 0.0013, 0.111, 0.071 after contact. Slosh e2e file: the machine was heavily loaded (tests 5-20x slower) and one untouched test hit a 30 s context teardown timeout, its assertions passed; the full verify was not run.
+- Status: F024 → needs_review
+- Issues / follow-ups: e2e slowness on this machine today, not from this change.
+- Next: none for F024.
