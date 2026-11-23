@@ -1706,3 +1706,8 @@ best-scoring fixed power (95, no error)                            55.5%        
   3. Are F045's finger-travel ranges (full power at 30 to 60 mm) about right? The human judges them on real phones at the M7 stop, with the tuning panel that F044 makes reachable by touch.
 
 > [harness] session 87 · planner · ok · 1 commit(s) · 34 tool calls · 8m 43s · ~$2.80 API-equivalent
+
+## Human session · M7 plan checked, F028 moved (2026-11-23)
+- Checked F037–F045 from session 87: no changes to them. F028 now sits after F045 and depends on it (plus F025, F027), so the harness builds M6, then M7, then F028. Its planner note is replaced with this.
+- Open questions from session 87, decided: (2) no WebKit project for now; iPhone Safari is checked by hand on a real phone at the M7 stop. (3) F045's ranges stand as best guesses, to be judged on real phones at the M7 stop.
+- Next: F036, then M6 (F024, F025, F035).

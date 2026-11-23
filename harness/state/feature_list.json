@@ -774,28 +774,6 @@
       "review_feedback": ""
     },
     {
-      "id": "F028",
-      "milestone": "M8",
-      "category": "performance",
-      "title": "Performance budget",
-      "description": "Check the 60 fps target with headroom and fix whatever misses it. Measure the simulation's cost in Node, the scene's per-frame update and draw time in the browser through a hook that averages it, and the number of game objects across many throws, to catch leaks. Measure on an emulated phone too (the phone e2e setup from M7, with the CPU slowed 4x), since the design targets 60 fps on a mid-range phone.",
-      "acceptance": [
-        "Unit: simulating a full 5 s throw (300 steps, sloshing on) takes under 50 ms in Node (median of 5 runs).",
-        "E2E: over 5 s of real-time play including throws, the hook reports an average update-and-draw time under 4 ms per frame.",
-        "E2E: in the phone e2e setup with the CPU slowed 4x (Chromium CPU throttling), the same hook reports an average update-and-draw time under 8 ms per frame.",
-        "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
-        "The progress entry lists the measured numbers."
-      ],
-      "depends_on": [
-        "F025",
-        "F027"
-      ],
-      "status": "todo",
-      "attempts": 0,
-      "notes": "Planner session 87: build this after M7, because its phone criterion needs the phone e2e project from F037. The planner can only append features, so F028 still sits before the M7 features in the list, and the human is asked to move it after F045 and add F045 to its depends_on. If a builder reaches it before F037 is done, set it blocked with that reason rather than building the phone setup here.",
-      "review_feedback": ""
-    },
-    {
       "id": "F037",
       "milestone": "M7",
       "category": "input",
@@ -983,6 +961,29 @@
       "status": "todo",
       "attempts": 0,
       "notes": "Assumption: the targets (full power at 30 to 60 mm, nothing under 2 mm, windows at least 3 mm of travel) are best guesses at \"a natural finger flick\", to be judged on real phones; 5.5 CSS px per mm is about the average of common 6-inch phones. The difficulty targets hold on a phone by construction (they are measured in power), so only the push conversion is new.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F028",
+      "milestone": "M8",
+      "category": "performance",
+      "title": "Performance budget",
+      "description": "Check the 60 fps target with headroom and fix whatever misses it. Measure the simulation's cost in Node, the scene's per-frame update and draw time in the browser through a hook that averages it, and the number of game objects across many throws, to catch leaks. Measure on an emulated phone too (the phone e2e setup from M7, with the CPU slowed 4x), since the design targets 60 fps on a mid-range phone.",
+      "acceptance": [
+        "Unit: simulating a full 5 s throw (300 steps, sloshing on) takes under 50 ms in Node (median of 5 runs).",
+        "E2E: over 5 s of real-time play including throws, the hook reports an average update-and-draw time under 4 ms per frame.",
+        "E2E: in the phone e2e setup with the CPU slowed 4x (Chromium CPU throttling), the same hook reports an average update-and-draw time under 8 ms per frame.",
+        "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
+        "The progress entry lists the measured numbers."
+      ],
+      "depends_on": [
+        "F025",
+        "F027",
+        "F045"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project.",
       "review_feedback": ""
     }
   ]
