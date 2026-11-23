@@ -1588,3 +1588,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: the reviewer should snap a success with a light flash and confirm the bottle and table stay visible.
 
 > [harness] session 79 · builder F031 · todo → todo · ok · verify FAILED · 1 commit(s) · 21 tool calls · 19m 49s · ~$0.32 API-equivalent
+
+## Session 80 · builder · F031 Soft shading: bottle shadow, readable water, table edge, gradient, gentler flash
+- Did: no code change. The feedback's verify tail shows every e2e test passing (up to #241) and no error, so the "failure" looks like the harness gate's 20-minute limit (`gateTimeoutMinutes`), not a test failure. My own `npm run verify` reached e2e test #183 after about 13 minutes with all tests green, so the serial e2e suite (263+ tests, one worker) is about as long as the whole gate.
+- Verified: partial verify run (green up to #183, stopped by me); I did not see it finish. Trying `workers: 3` in playwright.config.ts broke nearly every e2e test (only 1 passed), so I reverted it. The shadow spec passes alone.
+- Status: F031 → needs_review (feature work unchanged since session 78, where verify passed)
+- Issues / follow-ups: the e2e suite is too slow for the 20-minute gate. A human should raise `gateTimeoutMinutes` in harness/config.json (I can't edit it), or the suite should be sped up (shorter real-time waits, or find why parallel workers break the tests). Still not snapped: a success flash.
+- Next: the reviewer should snap a success with a light flash, and not count a gate timeout against F031.
