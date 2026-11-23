@@ -155,48 +155,40 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 
 ## Plan
 
-Written by the planner (session 1) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F029, milestones M1–M7); this section is the intended shape. F001 switched the canvas to landscape 1280×720 and updated the coordinates table and D5 above.
+Written by the planner (session 1, extended in session 87 for phones) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F045, milestones M1–M8; M7 "Phones" is F037–F045); this section is the intended shape.
 
 ### Expected modules
 
 | Path | Responsibility | Features |
 | --- | --- | --- |
-| `src/core/tuning.ts` | `DEFAULT_TUNING` and the `Tuning` type: every tunable gameplay number (built in F002; later features add their fields) | F002 on |
-| `src/core/table.ts` | the table: static body, top surface and end constants (built in F001) | F001 |
-| `src/core/bottleShape.ts`, `bottle.ts` | bottle shape; mass and center of mass per water level; the physics body and the water draw (built in F002) | F002 |
-| `src/core/throw.ts` | power (0–100) → launch impulse and spin (built in F003; the bottle's mass and inertia bring the water in) | F003 |
-| `src/core/outcome.ts` | judging rest: upright, side, cap, off table, off screen, timeout (built in F004) | F004 |
+| `src/core/tuning.ts` | `DEFAULT_TUNING` / `Tuning`: every tunable gameplay number; later features add fields (touch push numbers in F045) | F002 on |
+| `src/core/table.ts`, `bottleShape.ts`, `bottle.ts` | the table; bottle shape, mass and center of mass per water level; the physics body and the water draw | F001, F002 |
+| `src/core/throw.ts`, `outcome.ts` | power (0–100) → launch impulse and spin; judging rest (upright, side, cap, off table, timeout) | F003, F004 |
 | `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |
-| `src/core/powerMeter.ts`, `push.ts` | power bar (taps, hold acceleration, wheel); mouse push → power | F006, F011 |
-| `src/core/round.ts` | round counters, streak, `updateBest` | F013, F015 |
-| `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, simulated-player benchmark | F008, F020 |
+| `src/core/powerMeter.ts`, `push.ts`, `grab.ts`, `mouseControl.ts` | power bar (taps, hold acceleration, wheel); a mouse or finger push → power, one grab for both, the pointer kind picking its tuning | F006, F011, F037, F045 |
+| `src/core/round.ts`; `flipWindow.ts`, `difficulty.ts` | round counters, streak, `updateBest`; power sweeps, flip windows, the simulated-player benchmark (`scripts/flip-windows.ts` prints them) | F013, F015; F008, F020 |
 | `src/core/replay.ts` | per-step recording, the landing clip, and the replay timing (`replayStepCount`, `replayFrameAt`; the result phase lasts the delay plus clip / `replaySpeed`, `snapshot.replay` is the frame to draw, `replaySpeed` 0 turns it off; unit tests default it to 0 via `tests/unit/noReplaySetup.ts`, e2e `startGame` sets it to 0) | F026, F027 |
-| `src/core/offscreen.ts` | the off-screen marker (F034 follow-up): `offscreenMarker(x, y, angle)` is null while the whole bottle is on screen, otherwise where the arrow sits on the top edge (the bottle's middle, kept 0.3 m inside the sides), how high the bottle is and whether all of it is hidden. `src/game/view/offscreenMarkerView.ts` draws it (solid when hidden, fainter when only cut off) and `__FLIPPER__.offscreenMarker()` reads it. The higher F034 throw sends low-water double flips (10 to 40%) and over-powered throws above the screen; `calibration.test.ts` checks that every level's double-window center still lands upright on the table |
-| `src/game/scenes/` | Boot → Title (since F018) → Game; Summary since F014; the Pause overlay since F019 | F001, F014, F018, F019 |
-| `src/game/view/` | bottle, table, power bar, HUD, result flash, effects | F002–F007, F021 |
-| `src/game/audio/` (`soundPlan.ts`, `synth.ts`, `sfx.ts`), `src/game/storage.ts` | Web Audio effects (built in F016); versioned localStorage save (best score since F015, mute since F017) | F015–F017 |
-| `src/debug/testHooks.ts`, `tuningPanel.ts` | `window.__FLIPPER__`; the developer tuning panel (dev or `?debug`) | all, F010 |
-| `scripts/flip-windows.ts` | prints flip windows and benchmark rates per water level | F008, F020 |
+| `src/core/offscreen.ts` | the off-screen marker on the top edge while the bottle is above the screen (`offscreenMarkerView.ts` draws it) | F034 follow-up |
+| `src/game/scenes/` | Boot → Title → Game; the Summary and Pause overlays | F001, F014, F018, F019 |
+| `src/game/view/` | bottle, table, power bar, HUD, result flash, effects; the `*Layout.ts` / `*Text.ts` modules hold button hit areas (thumb-sized since F042) and words (finger hints since F043) | F002–F007, F021, F042, F043 |
+| `src/game/audio/`, `src/game/storage.ts` | Web Audio effects; the versioned localStorage save (best score, mute) | F015–F017 |
+| `index.html`, a page module in `src/game` | phone page behavior: no scroll, zoom, selection or long-press menu, `100dvh`, safe-area padding, fullscreen on the Play tap, the "Turn your phone sideways" overlay | F040, F041 |
+| `src/debug/testHooks.ts`, `tuningPanel.ts` | `window.__FLIPPER__`; the developer tuning panel (dev or `?debug`; a touch button opens it on phones) | all, F010, F044 |
+| `tests/e2e/phone/`, a shared phone device module | the `phone` Playwright project (Chromium, 740×360 landscape, touch) and touch helpers on a virtual clock; `npm run snap -- --phone` | F037, F038 |
 
 ### Core state
 
 ```ts
 type Phase = 'aiming' | 'flying' | 'result' | 'roundOver';
 interface SimSnapshot {
-  tick: number; seed: number; phase: Phase;
-  power: number; // the power bar, 0–100 (the live push while dragging)
-  dragging: boolean; // the mouse holds the bottle
+  tick: number; seed: number; phase: Phase; power: number; // the bar, 0–100 (live push while dragging)
+  dragging: boolean; // a mouse or a finger holds the bottle
   bottle: BodySnapshot & { water: number; waterOffset?: number }; // water: filled fraction 0–1
-  lastThrow: { power: number; water: number; source: 'keyboard' | 'mouse' } | null;
-  outcome: { result: 'success' | 'fail';
-             reason: 'upright' | 'noFlip' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
-             rotation: number; turns: number; // rotation: radians since release
-             points: number } | null; // turns for a success, 0 for a fail
+  lastThrow: { power: number; water: number; source: 'keyboard' | 'mouse' | 'touch' } | null; // touch from F037
+  outcome: { result: 'success' | 'fail'; reason: 'upright' | 'noFlip' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
+             rotation: number; turns: number; points: number } | null; // points: turns for a success, 0 for a fail
   resultSteps: number | null; // steps since the outcome; null outside the result phase
-  score: number; // this round's points
-  throws: number; // every bottle released by this simulation; never reset
-  throwNumber: number; throwsPerRound: number; // "Throw 3 / 10": the round's own counter
-  landings: number; streak: number; // this round's upright landings; consecutive ones
+  score: number; throws: number; throwNumber: number; throwsPerRound: number; landings: number; streak: number;
 }
 ```
 
@@ -217,3 +209,6 @@ Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `ski
 | P9 | Sound and effects react to simulation events | core stays free of audio and Phaser |
 | P10 | Saves use one versioned localStorage key; the rules (`updateBest`) live in core | storage is a browser API; the rules stay testable |
 | P11 | Sloshing is a second body on a prismatic joint along the bottle's axis, behind a switch until recalibrated | the simplest moving mass that changes the flip |
+| P12 | Phones use the same 1280×720 canvas, rules and tuning; only the input path and page behavior adapt, and a finger push goes through the mouse's grab with its own tuning | one game for both; the push stays one rule in core |
+| P13 | Phone tests are a second Playwright project (740×360, touch) over `tests/e2e/phone/` only | the desktop suite isn't run twice, and 740×360 draws the canvas at exactly half size |
+| P14 | "Touch device" means no fine pointer (`(any-pointer: fine)` false); it picks the hints, the portrait message and fullscreen | a touchscreen laptop keeps the desktop behavior |

@@ -792,7 +792,197 @@
       ],
       "status": "todo",
       "attempts": 0,
+      "notes": "Planner session 87: build this after M7, because its phone criterion needs the phone e2e project from F037. The planner can only append features, so F028 still sits before the M7 features in the list, and the human is asked to move it after F045 and add F045 to its depends_on. If a builder reaches it before F037 is done, set it blocked with that reason rather than building the phone setup here.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F037",
+      "milestone": "M7",
+      "category": "input",
+      "title": "Run e2e tests on an emulated phone and throw with a finger",
+      "description": "Design sections 7 and 10: phones play by touch, and automated tests also run in Chromium emulating a phone. Add a second Playwright project, `phone`, that emulates a small 6-inch Android phone held sideways: viewport 740×360 (Scale.FIT then draws the canvas at exactly half size, 0.5 CSS px per game px), deviceScaleFactor 3, isMobile and hasTouch, running only the specs in tests/e2e/phone/ (the desktop project ignores that folder), so `npm run test:e2e` and `npm run verify` run both. Keep the phone device settings in one module that the config imports (F038 reuses it). Add tests/e2e/phone/touchHelpers.ts: touch events made inside the page on a virtual clock, like mouseHelpers' dragInPage, so a finger push has an exact speed on any machine. Then make a finger on the held bottle grab it, and its upward push throw through the same `sim.mouse` grab, `pushPower` and `throwBottle` as the mouse, with a new throw source `touch` (the scene tells core the pointer's kind at the grab; the physics treats every source the same).",
+      "acceptance": [
+        "`npm run test:e2e` runs a `phone` project (Chromium, 740×360 landscape, isMobile, hasTouch) on tests/e2e/phone/ only; the desktop project skips that folder, and every existing desktop test passes unchanged.",
+        "Phone E2E: the game boots to the Title with no console errors, and the canvas is drawn 640×360 CSS px, centered.",
+        "Phone E2E: touching the held bottle, pushing 50 CSS px (100 game px) up over 100 ms on the virtual clock and lifting the finger throws: phase 'flying', lastThrow.source 'touch', and lastThrow.power above 0 and equal to the bar's value at the release; while the finger is down, state().dragging is true and state().power follows the live push.",
+        "Phone E2E: a touch away from the bottle, or a touch on it lifted without moving, throws nothing, and a touch during a result still skips it.",
+        "Unit: a mouse push and a touch push with the same samples give the same power, and a touch throw and a keyboard throw with the same power, water and seed fly identically."
+      ],
+      "depends_on": [
+        "F033",
+        "F035",
+        "F036"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the emulated phone is 740×360 CSS px (a 6-inch Android phone held sideways), the smallest common landscape phone screen, so the readability and button checks are conservative; at that size the canvas is drawn at exactly half scale. Phone work waits until M6 is done (design section 12), hence the dependency on F035.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F038",
+      "milestone": "M7",
+      "category": "tooling",
+      "title": "Snap the game as a phone sees it",
+      "description": "Later M7 features and their reviewers need to look at the game at phone size. Extend `npm run snap` with `--phone` (the same emulated phone as F037's e2e project, from the shared device module, landscape 740×360) and `--portrait` (the same phone held upright, 360×740), and with the actions `tap:x;y`, `touchdown:x;y`, `touchmove:x;y;ms` and `touchup` in game coordinates (converted to the page through the canvas's position and scale, as the mouse actions are), so a finger push can be photographed halfway. Update the snap row in docs/ARCHITECTURE.md.",
+      "acceptance": [
+        "A snap with `--phone` that taps Play, puts a finger on the bottle, moves it 100 game px up over 100 ms and takes a screenshot shows the Game scene at 740×360 with the power bar at the live value; its printed state has dragging true, and after `touchup` lastThrow.source is 'touch'. No console errors.",
+        "A snap with `--portrait` takes its screenshots at 360×740.",
+        "Unit: scripts/snapActions.ts parses the four touch actions and rejects malformed ones (a missing coordinate, a negative duration).",
+        "playwright.config.ts and scripts/snap.ts read the phone settings from the same module, and `npm run snap -- --help` lists --phone, --portrait and the touch actions."
+      ],
+      "depends_on": [
+        "F037"
+      ],
+      "status": "todo",
+      "attempts": 0,
       "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F039",
+      "milestone": "M7",
+      "category": "input",
+      "title": "Tap every button and skip the wait with a finger",
+      "description": "Design section 7: on a phone every action must be possible by touch, and a tap anywhere skips the wait. Make a tap act exactly once on every button (the Title's Play, the corner pause and speaker buttons, the pause overlay's Resume, Restart and Quit to title, the summary's Play again and Title), a tap elsewhere during a result skip it, and the first tap unlock the sound. Watch for the compatibility mouse events a browser sends after a touch: they must not act a second time (a button activated twice, a skip that also skips the next bottle, a tap that also lands on the scene opening underneath). Only the first finger counts: a second finger during a push neither grabs, moves nor releases, and a touchcancel (the system taking the touch) ends the grab without a throw.",
+      "acceptance": [
+        "Phone E2E: a whole visit made of taps and finger pushes alone, with no key press: Title → Play → ten finger-push throws, each result skipped by a tap → summary → Play again → pause → Restart → pause → Quit to title, with the expected scene at each step, ending on the Title with no console errors.",
+        "Phone E2E: each tap acts once: a tap on the speaker toggles muted() once and the save matches; a tap on Play starts throw 1 and throws nothing; a tap during a result skips only that result (the next bottle stays held, throws unchanged); a tap on Resume neither skips nor grabs in the Game scene underneath.",
+        "Phone E2E: the AudioContext is running after the first tap on the Title, and a finger throw then logs its whoosh in sounds().",
+        "Phone E2E: a second finger put down and lifted during a push changes neither dragging nor the power and throws nothing, and the first finger's release still throws. A touchcancel mid-push leaves dragging false and throws nothing.",
+        "Every existing desktop mouse and keyboard test passes unchanged."
+      ],
+      "depends_on": [
+        "F038"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F040",
+      "milestone": "M7",
+      "category": "ui",
+      "title": "Keep the page still on a phone and fill the screen",
+      "description": "Design section 10: while playing, the page must not scroll, zoom, select text or show the browser's long-press menu, the game fills the screen as much as the browser allows, and nothing important sits under a notch or rounded corner. In index.html and a small module in src/game: touch-action none, user-select none, -webkit-touch-callout none and overscroll-behavior none on the page, a viewport meta without user zoom, the contextmenu and Safari's gesture events prevented on the game; the page height follows the visible viewport (100dvh), so the browser's bars don't push the canvas; and the game container is padded by the safe-area insets, read through CSS custom properties (`--safe-left: env(safe-area-inset-left, 0px)` and so on, so a test can set them), so Scale.FIT keeps the canvas inside the safe area. On a touch device the Play tap also asks for fullscreen and a landscape orientation lock where the browser allows them (Android Chrome), ignoring a refusal (Safari on iPhone has no page fullscreen). Desktop is unchanged: no fullscreen request from a click or a key.",
+      "acceptance": [
+        "Phone E2E: a touch held 1 s on the canvas opens no menu (its contextmenu event is default-prevented) and selects no text (getSelection() is empty); after touch swipes across the canvas and across the letterbox, window.scrollX and scrollY stay 0 and visualViewport.scale stays 1.",
+        "Phone E2E: the viewport meta has user-scalable=no and maximum-scale=1, and html, body and the game container compute touch-action none and user-select none.",
+        "Phone E2E: with the safe-area custom properties set to 44 px left and right (as on a notched phone held sideways), the canvas's bounding box lies inside the viewport minus those insets; with them at 0 the canvas is as large as before (640×360).",
+        "Phone E2E: the Play tap calls requestFullscreen once (stubbed in the test to record the call and reject), and the round starts normally after the refusal; on the desktop project neither a click on Play nor Enter calls it.",
+        "Snaps with `--phone` of the Title and the Play screen show the canvas filling the screen's height with no scrollbar or page margin."
+      ],
+      "depends_on": [
+        "F038"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: fullscreen is requested by the Play tap (browsers require a user gesture) rather than at load or by a button of its own; a refusal is silent, and leaving fullscreen is left to the browser.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F041",
+      "milestone": "M7",
+      "category": "ui",
+      "title": "Ask to turn the phone sideways when it is held upright",
+      "description": "Design section 10: held upright, a phone shows a \"Turn your phone sideways\" message instead of a squeezed game. On a touch device whose window is taller than wide, show a full-screen message over the canvas (an HTML overlay in the game's palette, drawn in code; a simple phone icon is optional). The game must not go on unseen: if a round is under way (aiming, flying or in a result), the Game scene opens the pause overlay when the message appears, so turning back shows Paused with Resume. A desktop window that is taller than wide shows no message and letterboxes as today. Expose whether the message shows through the hooks (for example `rotateMessage()`).",
+      "acceptance": [
+        "Phone E2E: resizing the phone viewport to 360×740 shows the message (the hook reports it, its text is visible and it covers the canvas); back to 740×360 hides it. No console errors.",
+        "Phone E2E: turning upright mid-flight opens the pause overlay and the bottle freezes; after turning back the Pause scene shows, and Resume continues the same flight to an outcome. On the Title or the summary, turning upright and back changes nothing but the message.",
+        "Phone E2E: a page opened upright shows the message at once, and turning it sideways then shows the Title.",
+        "Desktop E2E: a 600×900 window shows no message.",
+        "Snap with `--portrait`: the message is centered and readable, its text at least 18 CSS px tall."
+      ],
+      "depends_on": [
+        "F040"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the message is a DOM overlay (it has to fill a portrait screen, which the landscape canvas can't), and turning upright during a round pauses it through the existing pause overlay rather than a new pause state.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F042",
+      "milestone": "M7",
+      "category": "accessibility",
+      "title": "Make every button big enough for a thumb",
+      "description": "Design section 7: every button must be big enough to hit with a thumb. On the 740×360 phone the canvas is drawn at half size, so the 56 px corner buttons are 28 CSS px wide, under the usual 44 CSS px minimum for a touch target. Give every button a hit area at least 88 game px in each direction (44 CSS px at half scale) on the Title, Play, Pause and Summary screens, with no two areas overlapping and the corner buttons clear of the HUD and the power bar; a drawn face may stay smaller than its hit area. Keep the sizes in the existing *Layout.ts modules and the desktop look close to today. Add a hook that lists the shown buttons and their hit areas (for example `buttons()`, like `muteButton()`).",
+      "acceptance": [
+        "Unit: the layout constants give every button a hit area at least 88×88 game px, no two areas on one screen overlap, and the corner buttons' areas are clear of the HUD texts and the power bar.",
+        "Phone E2E: on each screen the hook lists the shown buttons, each at least 44×44 CSS px on the phone, and a tap 4 CSS px inside each corner of each area activates that button.",
+        "All existing e2e tests pass (tests that click a button through the layout constants follow the new sizes).",
+        "Snaps at 1280×720 and with `--phone` of the Title, Play, Pause and Summary screens show every button whole, with nothing overlapping."
+      ],
+      "depends_on": [
+        "F039"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F043",
+      "milestone": "M7",
+      "category": "accessibility",
+      "title": "Readable text and finger hints on a phone",
+      "description": "Design section 10: all text must be readable on a 6-inch phone, where the canvas is drawn at half size. Make every text the player sees at least 24 game px tall (12 CSS px on the 740×360 phone): raise the small ones (the controls hint, the key hints, the power bar's percentage and any others) and rearrange lines that would then not fit. On a touch device (no fine pointer, for example the media query `(any-pointer: fine)` not matching) the hints speak of fingers: the Title's controls hint says to touch the bottle and push it up, and the pause and summary key hints, which name keys a phone doesn't have, are hidden. The words stay in the *Text.ts modules, unit-tested.",
+      "acceptance": [
+        "Phone E2E: on the Title, Play (aiming, and showing a result message), Pause and Summary screens, every textBounds() entry is at least 24 game px tall, lies inside the canvas, and overlaps no other text.",
+        "Phone E2E: the Title's controls hint tells the player to touch the bottle and push up and names no key; texts() on the Pause and Summary screens name no key (Esc, P, Enter, Space, R).",
+        "Desktop E2E: the Title still shows a keyboard and mouse hint, and the pause and summary key hints still show.",
+        "Unit: the *Text.ts modules give both wordings, chosen by the input kind passed in.",
+        "Snaps with `--phone` of each screen show every text readable, with nothing cut off or overlapping."
+      ],
+      "depends_on": [
+        "F042"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: \"readable on a 6-inch phone\" is checked as at least 12 CSS px of text height on the 740×360 phone. A device counts as touch-only when no fine pointer is present, so a touchscreen laptop keeps the desktop hints.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F044",
+      "milestone": "M7",
+      "category": "tooling",
+      "title": "Open the game on a real phone",
+      "description": "Design section 10: the human checks a real Android phone and iPhone at the M7 stop, so they need to open the game from a phone on the home network. Add `npm run dev:phone` (the Vite dev server listening on the local network) and `npm run preview:phone` (a production build served on the network). The tuning panel needs a keyboard today (Backquote): with ?debug on a touch device, show a small corner button that opens and closes it, and make the panel usable at phone size (it scrolls, and its fields can be tapped and edited). Add an \"On a phone\" part to the Play section of README.md: the same Wi-Fi, the commands, how to find the PC's address on Windows (`ipconfig`), allowing Node through the Windows firewall, `?debug` for the tuning panel, and that agents never run these commands (they don't exit).",
+      "acceptance": [
+        "Unit: package.json's dev:phone runs Vite with --host, preview:phone builds and then runs vite preview with --host, and verify runs neither.",
+        "Phone E2E with ?debug: a tuning button shows (not without ?debug, and not on the desktop project, where Backquote works); a tap opens the panel, a field can be tapped, changed and applied (tuning() shows the new value), the panel scrolls to its last field within 740×360, and a second tap closes it.",
+        "Phone E2E against the production build without URL flags: no tuning button and no panel.",
+        "README.md has the \"On a phone\" part with both commands, the address to open, the firewall note and the ?debug hint."
+      ],
+      "depends_on": [
+        "F038"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the human reaches the game from a phone through a server on the home network rather than a hosted page (hosting stays a later idea in design section 10). No test starts a server on the network: on Windows that raises a firewall prompt in an unattended run.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F045",
+      "milestone": "M7",
+      "category": "tuning",
+      "title": "Tune the finger push",
+      "description": "Design section 7: a finger moves differently from a mouse and the phone screen is much smaller, so the push gets its own numbers in the config module, and a natural finger flick must cover the whole power range; the difficulty targets of section 3 apply on a phone too. Add touch tuning fields (for example `touchFullDistance`, `touchFullSpeed`, `touchMinPower`, `touchGrabPadding`) that a touch grab uses instead of the mouse's, shown in the tuning panel like every Tuning key. Measure the push in millimeters of finger travel on the reference phone (740×360 CSS px, 0.5 CSS px per game px, and about 5.5 CSS px per mm as on a typical 6-inch phone, stated in the test), and set the touch defaults to meet the ranges below. The human then judges the feel on real phones at the M7 stop with F044's panel. Record the old and new values in the progress entry.",
+      "acceptance": [
+        "Unit (a new test file): on the reference phone, a steady upward push over 150 ms first reaches power 100 at between 30 and 60 mm of travel, and 2 mm gives less than 8.",
+        "Unit: a touch on the bottle lifted after at most 2 mm of upward jitter throws nothing (under touchMinPower), and touchGrabPadding lets a touch up to 4 mm outside the bottle grab it.",
+        "Unit: every water level's single-flip window (as tests/unit/calibration.test.ts measures it) spans at least 3 mm of steady-push travel on the reference phone.",
+        "Unit: the mouse's tuning and every mouse push test are unchanged, and changing a touch field changes only touch pushes.",
+        "Phone E2E: on the virtual clock, a 2 mm push throws nothing and a 60 mm push over 150 ms throws power 100, through the real page and its scale.",
+        "The progress entry lists the old and new touch values and the finger travel that each water level's single-flip center needs."
+      ],
+      "depends_on": [
+        "F037",
+        "F044"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the targets (full power at 30 to 60 mm, nothing under 2 mm, windows at least 3 mm of travel) are best guesses at \"a natural finger flick\", to be judged on real phones; 5.5 CSS px per mm is about the average of common 6-inch phones. The difficulty targets hold on a phone by construction (they are measured in power), so only the push conversion is new.",
       "review_feedback": ""
     }
   ]
