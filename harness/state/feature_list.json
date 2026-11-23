@@ -560,7 +560,7 @@
         "F034"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "From the outside review of 2026-11-18. Keep the style flat: soft shapes and gradients, no outlines or textures. Depends on F034 so the shadow and the shell highlight are drawn for the final bottle shape.",
       "review_feedback": ""
     },

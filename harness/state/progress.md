@@ -1576,3 +1576,6 @@ best-scoring fixed power (95, no error)                            55.5%        
   - The practiced expected margin is thin (61.0% vs 60%) and the new-player one is 0.3 points under 45%.
 
 > [harness] session 77 · reviewer F034 · needs_review → done · ok · 1 commit(s) · 23 tool calls · 21m 50s · ~$0.35 API-equivalent
+
+> [harness] session 78 · builder F031 · todo → todo · timeout · verify passed · 1 commit(s) · 85 tool calls · 1h 15m · ~$1.01 API-equivalent
+> [harness] corrected: ended with uncommitted changes (the harness committed them as WIP)
