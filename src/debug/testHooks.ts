@@ -6,6 +6,7 @@ import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
+import { drawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
@@ -74,6 +75,13 @@ export interface FlipperTestApi {
    * hidden or no game scene is running. Wait a frame after stepping.
    */
   offscreenMarker(): { x: number; alpha: number } | null;
+  /**
+   * The soft shadow on the tabletop under the bottle as the scene last drew it: its `width` in game
+   * pixels and `alpha` (0 to 1), or null when it is hidden (the bottle is not over the table) or no
+   * game scene is running. Widest and darkest at rest, smaller and fainter the higher the bottle.
+   * Wait a frame after stepping.
+   */
+  shadow(): { width: number; alpha: number } | null;
   /**
    * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime' or 'thud'),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to
@@ -217,6 +225,10 @@ export function installTestHooks(game: Phaser.Game): void {
       const marker = scene?.children.getByName(OFFSCREEN_MARKER_NAME) as
         Phaser.GameObjects.Graphics | null | undefined;
       return marker?.visible ? { x: marker.x, alpha: marker.alpha } : null;
+    },
+    shadow: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      return scene ? drawnShadow(scene) : null;
     },
     sounds: () => sharedSfx().log(),
     muted: () => sharedSfx().muted,

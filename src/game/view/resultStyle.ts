@@ -10,7 +10,7 @@ import { COLORS } from '../theme';
 /** The flash is strongest at the moment of the outcome and gone this many seconds later. */
 export const FLASH_SECONDS = 0.5;
 /** Opacity of the flash at its strongest: the bottle and the table stay clearly visible under it. */
-export const FLASH_PEAK_ALPHA = 0.4;
+export const FLASH_PEAK_ALPHA = 0.2;
 
 /** The message pops in over this many seconds: it starts small, swells past full size and settles. */
 export const POP_SECONDS = 0.25;

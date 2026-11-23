@@ -12,6 +12,7 @@ import { createEffectsView, type EffectsView } from '../effects/effectsView';
 import { bindGameInput } from '../gameInput';
 import { bindPauseKeys } from '../pauseKeys';
 import { intParam } from '../urlParams';
+import { createBottleShadowView, type BottleShadowView } from '../view/bottleShadowView';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
 import { createHudView, type HudView } from '../view/hudView';
@@ -38,6 +39,7 @@ export class GameScene extends Phaser.Scene {
   private sim!: Simulation;
   private readonly stepper = createFixedStepper(SIM_DT);
   private bottleView!: BottleView;
+  private shadowView!: BottleShadowView;
   private powerBarView!: PowerBarView;
   private resultView!: ResultView;
   private replayLabelView!: ReplayLabelView;
@@ -71,6 +73,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     createTableView(this);
+    this.shadowView = createBottleShadowView(this);
     this.bottleView = createBottleView(this);
     this.offscreenMarkerView = createOffscreenMarkerView(this);
     this.powerBarView = createPowerBarView(this);
@@ -150,6 +153,7 @@ export class GameScene extends Phaser.Scene {
         }
       : snapshot.bottle;
     this.bottleView.update(shown);
+    this.shadowView.update(shown);
     this.offscreenMarkerView.update(shown);
     this.replayLabelView.update(replay !== null);
     this.powerBarView.update(snapshot.power);

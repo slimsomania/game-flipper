@@ -7,6 +7,7 @@ import { COLORS } from '../theme';
 /** Opacity of the plastic: the table and the background show through a little. */
 const SHELL_ALPHA = 0.55;
 const WATER_ALPHA = 0.92;
+const SURFACE_LINE_PX = 3;
 
 export interface BottleView {
   /** Move the bottle to the snapshot's pose and redraw the water if its level changed. */
@@ -47,7 +48,17 @@ export function createBottleView(scene: Phaser.Scene): BottleView {
       water.clear();
       const vertices = slidWaterVertices(bottle.water, bottle.waterOffset);
       if (!vertices) return;
-      water.fillStyle(COLORS.water, WATER_ALPHA).fillPoints(toPixels(vertices), true);
+      const px = toPixels(vertices);
+      water.fillStyle(COLORS.water, WATER_ALPHA).fillPoints(px, true);
+      // A light line along the surface (the top edge: the last two vertices), so the level reads.
+      const [, , right, left] = px as [Point, Point, Point, Point];
+      water.fillStyle(0xffffff, 0.7).fillRect(left.x, left.y, right.x - left.x, SURFACE_LINE_PX);
+      // A faint highlight strip down the shell's left side, drawn over the water.
+      const top = Math.min(left.y, right.y);
+      const bottom = px[0]!.y;
+      water
+        .fillStyle(0xffffff, 0.2)
+        .fillRect(left.x + 5, top + 4, 5, Math.max(0, bottom - top - 8));
     },
   };
 }

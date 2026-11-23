@@ -6,11 +6,17 @@ export const COLORS = {
   background: '#eaf0f6',
   /** Text colors for a light background (CSS colors, for Phaser text). */
   text: '#243040',
-  accent: '#2f7fd6',
+  /** Violet, clearly apart from the water's blue. */
+  accent: '#6a4cc2',
   muted: '#6b7a90',
   /** Wooden-brown table: the tabletop slab and its legs. */
   table: 0x9a6b44,
   tableLegs: 0x7d5434,
+  /** The lighter strip along the tabletop's top edge. */
+  tableEdge: 0xc08d63,
+  /** Top and bottom of the gentle vertical gradient behind everything. */
+  gradientTop: '#f4f8fc',
+  gradientBottom: '#dbe5f0',
   /** The bottle: a translucent blue shell with a lighter cap, and a deeper blue water fill. */
   bottle: 0x4a9be0,
   cap: 0xc4dff7,
@@ -25,13 +31,13 @@ export const COLORS = {
   card: 0xffffff,
   cardShadow: 0xd5deea,
   /**
-   * Buttons: a blue face on a darker lip (a flat "key" that sinks when pressed). White text on the
+   * Buttons: a violet face on a darker lip (a flat "key" that sinks when pressed). White text on the
    * face is at least 3.7:1 in every state, which is enough for large bold text.
    */
-  button: 0x2b76c9,
-  buttonHover: 0x3787de,
-  buttonPressed: 0x2262a8,
-  buttonLip: 0x1b4f8a,
+  button: 0x6a4cc2,
+  buttonHover: 0x7b5fd4,
+  buttonPressed: 0x573ba6,
+  buttonLip: 0x40297c,
   buttonText: '#ffffff',
   /** The same white, as a number, for icons drawn with Graphics. */
   buttonIcon: 0xffffff,
