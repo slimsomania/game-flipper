@@ -1805,3 +1805,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: change the spin model so doubles climb with water (spin exponent growing with power, or more spin growth with less impulse), or ask the human to relax the fixed-power and points targets for doubles; then reuse scripts/retune-search.ts.
 
 > [harness] session 97 · builder F025 · todo → todo · ok · verify FAILED · 2 commit(s) · 63 tool calls · 23m 7s · ~$0.98 API-equivalent
+
+> [harness] session 98 · builder F025 · todo → blocked · ok · verify passed · 0 commit(s) · 3 tool calls · 20s · ~$0.15 API-equivalent
