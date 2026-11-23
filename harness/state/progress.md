@@ -1613,3 +1613,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 → needs_review
 - Issues / follow-ups: the e2e suite is still near the gate limit; other specs that step one frame per round trip could be sped up the same way. A human may need to raise `gateTimeoutMinutes`.
 - Next: the reviewer should snap at the offset peak (about step 64 to 72) and not count a gate timeout against F024.
+
+> [harness] session 82 · builder F024 · todo → todo · ok · verify FAILED · 1 commit(s) · 5 tool calls · 44s · ~$0.17 API-equivalent
