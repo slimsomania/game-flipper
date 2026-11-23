@@ -1745,3 +1745,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F036 → needs_review (attempt 3 of 3; nothing left to change in F036)
 - Issues / follow-ups: the full e2e takes over 11 min on this machine. If verify keeps failing, check the verify time limit and machine load, not F036.
 - Next: run `npm run verify` on an idle machine to confirm.
+
+> [harness] session 91 · builder F036 · todo → blocked · ok · verify FAILED · 1 commit(s) · 10 tool calls · 43s · ~$0.20 API-equivalent
