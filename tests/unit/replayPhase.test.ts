@@ -67,4 +67,21 @@ describe('replay timing (F027)', () => {
     expect(sim.skip()).toBe(true);
     expect(sim.phase).toBe('aiming');
   });
+
+  it('changing the result delay or replay speed mid-result keeps the length and the replay frames (F036)', () => {
+    const frames = (change: boolean) => {
+      const sim = judged(FLIPPED, { tuning: ON });
+      run(sim, 5);
+      if (change) sim.setTuning({ replaySpeed: 0.1, resultDelaySeconds: 3 });
+      const seen: unknown[] = [];
+      let steps = 5;
+      while (sim.phase === 'result') {
+        seen.push(sim.snapshot().replay);
+        run(sim, 1);
+        steps++;
+      }
+      return { steps, seen };
+    };
+    expect(frames(true)).toEqual(frames(false));
+  });
 });

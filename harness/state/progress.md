@@ -1775,3 +1775,8 @@ best-scoring fixed power (95, no error)                            55.5%        
   2. Load-related loosening committed with this feature: vitest testTimeout 60 s for every test (vite.config.ts), the calibration wall-clock bound raised from 15 s to 60 s, and a 60 s timeout on the 210-throw slosh test. No assertion about behavior changed, but the calibration speed check now only catches a 4x slowdown; tighten it again if the machine stays idle.
 
 > [harness] session 93 · reviewer F036 · needs_review → done · ok · 1 commit(s) · 66 tool calls · 22m 40s · ~$1.87 API-equivalent
+
+## Session 94 · maintainer
+- Did: `npm run verify` was green on the current tree (the session-91 e2e failure was the dev server restarting under a human edit, per the human-session note). Added the replay-on unit test the F036 reviewer asked for (tests/unit/replayPhase.test.ts: changing resultDelaySeconds and replaySpeed at result step 5 keeps the total length and every replay frame). Test-only; no behavior change.
+- Verified: `npm run verify` (before the test was added; exit 0), then `npm test -- tests/unit/replayPhase.test.ts`, `npm run format`, `npm run typecheck` after.
+- Debt left: slosh e2e contact detector starts with prevVy = 0 so "after first contact" is weak (F024 review note 1); mouse.spec.ts:47 is wall-clock and fragile under load; vitest testTimeout 60 s and calibration bound 60 s are loosened and could be tightened on an idle machine; full e2e takes ~20 min.
