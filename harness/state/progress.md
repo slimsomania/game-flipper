@@ -1643,3 +1643,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: offset at rest reads 0.0002, not exactly 0 (visually at the base). bottleView also gained a surface line and highlight strip in this range, which may change sloshing-off snaps versus before; the builder should confirm that came from an earlier accepted feature.
 
 > [harness] session 84 · reviewer F024 · needs_review → todo · ok · 1 commit(s) · 35 tool calls · 20m 10s · ~$0.49 API-equivalent
+
+## Session 85 · builder · F031 Soft shading: bottle shadow, readable water, table edge, gradient, gentler flash
+- Did: Fixed the review finding only. tests/e2e/shadow.spec.ts now takes the "rest" shadow with the bottle resting on the table (throw 36, lockWater 0.5, stepUntilOutcome, one frame, shadow()), and asserts it is wider and darker than the reading near the top of the flight and than the held-bottle reading.
+- Verified: `npm run test:e2e -- tests/e2e/shadow.spec.ts` passed; full `npm run verify` passed (exit 0), run with nothing else running. No source changes, so the earlier snaps still stand.
+- Status: F031 → needs_review
+- Issues / follow-ups: none
+- Next: reviewer re-checks criterion 3 against the new test.
