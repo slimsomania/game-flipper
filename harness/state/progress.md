@@ -1727,3 +1727,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F036 → needs_review
 - Issues / follow-ups: the red build from session 88 was tests/unit/slosh.test.ts "changes some outcomes..." timing out at 5 s (210 full throws, slow machine); I gave it a 60 s timeout, no assertion changed.
 - Next: F024 was marked blocked only because of that timeout; the planner/human may reopen it.
+
+> [harness] session 89 · builder F036 · todo → todo · ok · verify FAILED · 1 commit(s) · 20 tool calls · 3m 55s · ~$0.24 API-equivalent
