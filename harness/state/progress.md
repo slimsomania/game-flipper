@@ -1604,3 +1604,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 → needs_review
 - Issues / follow-ups: the visible shift is small; the reviewer may want a bigger-looking snap at the peak step (about step 64 to 72). Sloshing-off drawing is untouched (unit test slidWater: offset 0 equals waterVertices).
 - Next: the reviewer should run the full verify and snap at the offset peak.
+
+> [harness] session 81 · builder F024 · todo → todo · ok · verify FAILED · 1 commit(s) · 27 tool calls · 3m 40s · ~$0.35 API-equivalent
