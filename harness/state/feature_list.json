@@ -667,7 +667,7 @@
         "F024"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Part done (session 95): the tuning panel has a sloshing checkbox (#tuning-sloshing-switch, e2e tested). NOT done: the default stays sloshing 0 and the 17-level calibration test is not committed, because the work is a real retune. The 17-level test fails today even with sloshing off (15% water: double window 2 wide, under 4), and with sloshing on the F034 tuning gives single windows 8 to 11 wide, centers tied at 40% and 50%, ratio 1.7, practiced 50.5% and new 49.4%; a hill climb of 12 tuning numbers (25 min, 3 runs) stayed near 630 to 730 penalty. Remaining: apply the 17-level test change (git apply is not needed, see progress entry for the edit), then retune with sloshing on (maybe also sloshFrequency, sloshDamping, shell shape), then flip the default.",
       "review_feedback": ""
     },

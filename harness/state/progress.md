@@ -1790,3 +1790,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F025 stays todo (notes updated)
 - Issues / follow-ups: the 17-level edit to calibration.test.ts: replace the LEVELS literal by `Array.from({ length: Math.round((waterMax - waterMin) / waterStep) + 1 }, (_, i) => Math.round((waterMin + i * waterStep) * 1e6) / 1e6)` from DEFAULT_TUNING, make the fixed-power share limit 60% of 17 levels, and add a test of the 17 levels. Sloshing's effect is large (slower, lower flights), so it likely needs a joint search with the shape/impulse, and may need a human decision on targets like F034 had.
 - Next: do the retune first with exact expected rates (coverage/ scratch scorers, one process per candidate), starting from sloshFrequency and sloshDamping, then the test and the default switch together in one commit.
+
+> [harness] session 95 · builder F025 · todo → todo · ok · verify FAILED · 1 commit(s) · 43 tool calls · 10m 18s · ~$0.69 API-equivalent
