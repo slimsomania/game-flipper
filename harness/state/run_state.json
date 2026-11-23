@@ -1,5 +1,5 @@
 {
-  "sessions": 87,
+  "sessions": 88,
   "doneAtLastMaintenance": 24,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -36,9 +36,9 @@
     "F031": "77acdfd580699f4f6a85b45948c872d51a587b94"
   },
   "lastGate": {
-    "session": 85,
-    "ok": true,
-    "tail": ""
+    "session": 88,
+    "ok": false,
+    "tail": " ✓ tests/unit/grab.test.ts (19 tests) 21ms\n ✓ tests/harness/claude.test.ts (12 tests) 20ms\n ✓ tests/unit/resultStyle.test.ts (11 tests) 20ms\n ✓ tests/unit/pauseOverlay.test.ts (16 tests) 27ms\n ✓ tests/harness/snapActions.test.ts (8 tests) 20ms\n ✓ tests/unit/waterSupply.test.ts (7 tests) 14ms\n ✓ tests/unit/shake.test.ts (13 tests) 20ms\n ✓ tests/unit/effectLog.test.ts (5 tests) 12ms\n ✓ tests/unit/round.test.ts (8 tests) 19ms\n ✓ tests/unit/titleScreen.test.ts (8 tests) 11ms\n ✓ tests/unit/best.test.ts (7 tests) 12ms\n ✓ tests/unit/coalescedMoves.test.ts (12 tests) 13ms\n ✓ tests/unit/summaryText.test.ts (8 tests) 10ms\n ✓ tests/unit/cursorView.test.ts (3 tests) 10ms\n ✓ tests/unit/buttonLook.test.ts (7 tests) 12ms\n ✓ tests/unit/softShading.test.ts (7 tests) 20ms\n ✓ tests/unit/fixedStep.test.ts (4 tests) 11ms\n ✓ tests/unit/popScale.test.ts (6 tests) 10ms\n ✓ tests/unit/hudText.test.ts (3 tests) 7ms\n ✓ tests/unit/summaryLayout.test.ts (3 tests) 10ms\n ✓ tests/unit/difficulty.test.ts (32 tests) 35062ms\n   ✓ normalSample (2)\n     ✓ gives the same numbers for the same seed, and is always finite 517ms\n   ✓ the player models on a made-up world (15)\n     ✓ is deterministic for a seed, and another seed gives other bottles 1384ms\n     ✓ throws 200 bottles by default and as many as asked 882ms\n     ✓ a bigger error lands fewer bottles 447ms\n     ✓ the expected rates do not depend on the seed 467ms\n   ✓ the benchmark of the default tuning (12)\n     ✓ is deterministic for a seed: the same run twice gives the same numbers 9625ms\n ✓ tests/unit/flipWindowsScript.test.ts (4 tests) 111836ms\n   ✓ scripts/flip-windows.ts (4)\n     ✓ prints one row per water level, 10% to 90%, each with a single and a double window or \"none\", in under a minute 29185ms\n     ✓ then prints both landing rates, the best fixed power and its rate, and each player’s points per 10 throws 12255ms\n     ✓ accepts --sloshing (and sloshing=1): it says so first and the table changes 45739ms\n     ✓ takes tuning overrides as name=value, and refuses an unknown name 24653ms\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  tests/unit/slosh.test.ts > sloshing water > changes some outcomes compared with solid water, and the offset stays within its limits\nError: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n ❯ tests/unit/slosh.test.ts:91:3\n     89|   });\n     90|\n     91|   it('changes some outcomes compared with solid water, and the offset …\n       |   ^\n     92|     let different = 0;\n     93|     for (const level of [0.1, 0.3, 0.5, 0.7, 0.9]) {\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed | 67 passed (68)\n      Tests  1 failed | 881 passed (882)\n   Start at  11:22:36\n   Duration  112.93s (tests 95%, import 2%, transform 1%, setup 1%, worker 1%)\n\n    Isolate  68 workers spawned · ~1.23s startup each (spawn + environment, per file)\n             at least ~10.70s faster with isolate: false — reuses workers across files instead of one per file"
   },
   "lastViolations": []
 }

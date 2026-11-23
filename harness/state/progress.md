@@ -1718,3 +1718,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F024 → needs_review
 - Issues / follow-ups: e2e slowness on this machine today, not from this change.
 - Next: none for F024.
+
+> [harness] session 88 · builder F024 · todo → blocked · ok · verify FAILED · 1 commit(s) · 28 tool calls · 10m 19s · ~$0.33 API-equivalent
