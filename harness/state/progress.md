@@ -1574,3 +1574,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later:
   - The flight is still low: the bottle stays beside the power bar and rises only about 0.13 m (10%) to 0.35 m (50%) above the held top. Accepted by the human on 2026-11-22.
   - The practiced expected margin is thin (61.0% vs 60%) and the new-player one is 0.3 points under 45%.
+
+> [harness] session 77 · reviewer F034 · needs_review → done · ok · 1 commit(s) · 23 tool calls · 21m 50s · ~$0.35 API-equivalent
