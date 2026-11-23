@@ -1773,3 +1773,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later:
   1. The F036 unit tests (tests/unit/resultWait.test.ts) run with the replay off by the setup file, so the "at the replay speed in effect at the outcome" part of criterion 1 has no committed test with a clip. A case in tests/unit/replayPhase.test.ts with `ON`, setTuning({ replaySpeed: 0.1, resultDelaySeconds: 3 }) at result step 5, expecting the same total and the same replay frames, would lock it in.
   2. Load-related loosening committed with this feature: vitest testTimeout 60 s for every test (vite.config.ts), the calibration wall-clock bound raised from 15 s to 60 s, and a 60 s timeout on the 210-throw slosh test. No assertion about behavior changed, but the calibration speed check now only catches a 4x slowdown; tighten it again if the machine stays idle.
+
+> [harness] session 93 · reviewer F036 · needs_review → done · ok · 1 commit(s) · 66 tool calls · 22m 40s · ~$1.87 API-equivalent
