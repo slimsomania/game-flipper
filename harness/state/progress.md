@@ -1677,3 +1677,11 @@ best-scoring fixed power (95, no error)                            55.5%        
   3. `src/core/simulation.ts` is over the ~300-line guideline: **no fix here.** It is 340 lines, not 312 as reported, and the helpers Gemini named to extract (`isSettled`, `isRestingOnBody`, `contactNormal`) don't exist. It grew with M6 replay work; splitting it is the maintainer's routine cleanup, not an M5 defect.
 - Also found while checking finding 1: the same three-rounds test was flaky before this change (the unchanged test failed 1 of 3 runs at a real-mouse push, `throws` 25 instead of 26). Playwright's mouse takes as long as the browser takes to answer, so on a busy machine the release came after the 150 ms push window had emptied and nothing was thrown. The push now goes through `dragInPage` on the virtual clock (40 px in 60 ms), like the other mouse tests. Nothing is checked less: the push is still mouse events through Phaser, and the test still waits for the throw.
 - Next: F036, then M6 continues (F024, F025, F035).
+
+## Human session · phone support added to the design (2026-11-23)
+- What: the human decided most players will try the game on a phone. `docs/GAME_DESIGN.md` now adds phone support (touch, landscape with a turn-sideways message, Chrome on Android and Safari on iPhone, phone e2e tests, 60 fps on a mid-range phone) as M7, after M6, so the finger push is tuned once against the final sloshing bottle. The desktop version is unchanged. Until then, nothing new may need a keyboard or a mouse wheel.
+- Plan fixes, by hand, because the planner may only append:
+  1. `npm run agents -- --plan` refused to start: F036 depends on F027 but came before it in the list. F036 now sits right after F027 (still in M5, unchanged otherwise).
+  2. Milestone M7 is now "Phones" (no features yet, for the planner to add). The old M7 "Release readiness" is now M8, with F029 (done) and F028 moved to it and to the end of the list. F028 gains a phone criterion: under 8 ms per frame in the phone e2e setup with the CPU slowed 4x.
+- After the planner adds the M7 features, F028 must move after them again and depend on the last one, because the harness builds the first ready feature in list order.
+- Next: planner session to add the M7 phone features; then F036 and M6.

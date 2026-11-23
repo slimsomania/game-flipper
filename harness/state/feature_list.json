@@ -33,8 +33,13 @@
     },
     {
       "id": "M7",
+      "title": "Phones",
+      "goal": "The same game plays on a phone held sideways, with touch: a finger push tuned against the final M6 bottle, taps for every button and for skipping, a turn-sideways message when upright, no scrolling or zooming, readable text and thumb-sized buttons, phone e2e tests, and a way for the human to open the game on a real phone (design sections 7 and 10)."
+    },
+    {
+      "id": "M8",
       "title": "Release readiness",
-      "goal": "The 60 fps target is met with headroom, and the production build works without test hooks."
+      "goal": "The 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
     }
   ],
   "features": [
@@ -606,27 +611,6 @@
       "review_feedback": ""
     },
     {
-      "id": "F036",
-      "milestone": "M5",
-      "category": "core",
-      "title": "Keep the length of a result fixed once it starts",
-      "description": "Found by the outside review of M1 and M5 (2026-11-23, see the progress log). Simulation.resultLength() in src/core/simulation.ts reads resultDelaySeconds and replaySpeed from the live tuning on every step of the result phase, so a setTuning() call during a result (the tuning panel, or setTuningValue) shortens or lengthens the result already on screen, against D9 and F010 (tuning changes apply from the next bottle). Compute the result length once, when the outcome is set, and use that value until the next bottle appears. Say so in D15 in docs/ARCHITECTURE.md.",
-      "acceptance": [
-        "Unit: five steps into a result with the default 1 s delay, setTuning({ resultDelaySeconds: 0.1 }) does not end it early and setTuning({ resultDelaySeconds: 3 }) does not lengthen it: the next bottle appears exactly as many steps after the outcome as without the change (the delay plus any replay, at the replay speed in effect at the outcome).",
-        "Unit: the result after the next throw uses the new delay.",
-        "Unit: skip() still ends a result at once, and the existing result-timing and replay tests pass unchanged."
-      ],
-      "depends_on": [
-        "F010",
-        "F030",
-        "F027"
-      ],
-      "status": "todo",
-      "attempts": 0,
-      "notes": "",
-      "review_feedback": ""
-    },
-    {
       "id": "F023",
       "milestone": "M6",
       "category": "physics",
@@ -748,19 +732,19 @@
       "review_feedback": ""
     },
     {
-      "id": "F028",
-      "milestone": "M7",
-      "category": "performance",
-      "title": "Performance budget",
-      "description": "Check the 60 fps target with headroom and fix whatever misses it. Measure the simulation's cost in Node, the scene's per-frame update and draw time in the browser through a hook that averages it, and the number of game objects across many throws, to catch leaks.",
+      "id": "F036",
+      "milestone": "M5",
+      "category": "core",
+      "title": "Keep the length of a result fixed once it starts",
+      "description": "Found by the outside review of M1 and M5 (2026-11-23, see the progress log). Simulation.resultLength() in src/core/simulation.ts reads resultDelaySeconds and replaySpeed from the live tuning on every step of the result phase, so a setTuning() call during a result (the tuning panel, or setTuningValue) shortens or lengthens the result already on screen, against D9 and F010 (tuning changes apply from the next bottle). Compute the result length once, when the outcome is set, and use that value until the next bottle appears. Say so in D15 in docs/ARCHITECTURE.md.",
       "acceptance": [
-        "Unit: simulating a full 5 s throw (300 steps, sloshing on) takes under 50 ms in Node (median of 5 runs).",
-        "E2E: over 5 s of real-time play including throws, the hook reports an average update-and-draw time under 4 ms per frame.",
-        "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
-        "The progress entry lists the measured numbers."
+        "Unit: five steps into a result with the default 1 s delay, setTuning({ resultDelaySeconds: 0.1 }) does not end it early and setTuning({ resultDelaySeconds: 3 }) does not lengthen it: the next bottle appears exactly as many steps after the outcome as without the change (the delay plus any replay, at the replay speed in effect at the outcome).",
+        "Unit: the result after the next throw uses the new delay.",
+        "Unit: skip() still ends a result at once, and the existing result-timing and replay tests pass unchanged."
       ],
       "depends_on": [
-        "F025",
+        "F010",
+        "F030",
         "F027"
       ],
       "status": "todo",
@@ -770,7 +754,7 @@
     },
     {
       "id": "F029",
-      "milestone": "M7",
+      "milestone": "M8",
       "category": "release",
       "title": "Check the production build",
       "description": "Make sure the build players get works. Add an e2e check against the production build (vite preview of the `npm run build` output), for example as a second Playwright project that runs as part of `npm run test:e2e`: without ?testhooks, window.__FLIPPER__ is undefined and the tuning panel can't open; with ?testhooks, the game boots to the Title and a keyboard throw resolves. Add a short 'Play' section to README.md with the controls and the build and preview commands.",
@@ -787,6 +771,28 @@
       "status": "done",
       "attempts": 1,
       "notes": "The second Playwright web server (port 5197) now runs a real `vite build --outDir dist-e2e` plus `vite preview`, instead of a dev server with NODE_ENV=production; tests/e2e/productionBuild.spec.ts (2 tests) checks no hooks, no panel and no console errors without flags, and Title, Play and a Space throw to an outcome with ?testhooks. README.md has a Play section. I ran the new spec and tuningPanelBuild.spec (7 pass) plus format:check and typecheck; the full `npm run verify` was blocked by the session's permission check, so the harness run is the first full pass. Reviewed: npm run verify green (266 e2e incl. productionBuild.spec 2 and tuningPanelBuild.spec 5 against the real vite build/preview), productionBuild spec passed 6/6 with --repeat-each 3, README controls checked against gameInput/pauseKeys/mute code, 1024x576 snap of Title and a Space throw to an outcome with no console errors.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F028",
+      "milestone": "M8",
+      "category": "performance",
+      "title": "Performance budget",
+      "description": "Check the 60 fps target with headroom and fix whatever misses it. Measure the simulation's cost in Node, the scene's per-frame update and draw time in the browser through a hook that averages it, and the number of game objects across many throws, to catch leaks. Measure on an emulated phone too (the phone e2e setup from M7, with the CPU slowed 4x), since the design targets 60 fps on a mid-range phone.",
+      "acceptance": [
+        "Unit: simulating a full 5 s throw (300 steps, sloshing on) takes under 50 ms in Node (median of 5 runs).",
+        "E2E: over 5 s of real-time play including throws, the hook reports an average update-and-draw time under 4 ms per frame.",
+        "E2E: in the phone e2e setup with the CPU slowed 4x (Chromium CPU throttling), the same hook reports an average update-and-draw time under 8 ms per frame.",
+        "E2E: after 20 throws the Game scene has the same number of display objects, tweens and timers as after 1 (within a small constant).",
+        "The progress entry lists the measured numbers."
+      ],
+      "depends_on": [
+        "F025",
+        "F027"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
       "review_feedback": ""
     }
   ]
