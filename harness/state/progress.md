@@ -1660,3 +1660,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: I did not take new snaps this session, to keep the machine idle during verify. The real-mouse and real-time e2e tests still flake under load.
 
 > [harness] session 86 · reviewer F031 · needs_review → done · ok · 1 commit(s) · 16 tool calls · 19m 25s · ~$0.23 API-equivalent
+
+## Human session · independent Copilot review of M1 and M5 (2026-11-23)
+- What: a second-opinion review of M1 (F001 to F010) and M5 (F030, F020, F032, F021, F034, F031, F033, F022) by GitHub Copilot (Copilot Fusion, gpt-6-luna), run by hand outside the harness. It was told the design in the prompt, not allowed to read harness/, and given 29 source and test files; it made 58 read-only tool calls and no edits. Claude then checked each finding against the code with its own sweeps.
+- Findings and decisions:
+  1. A tuning change during a result changes that result: **fix, new F036.** Confirmed: `Simulation.resultLength()` (`src/core/simulation.ts:264`) reads `resultDelaySeconds` and `replaySpeed` from the live tuning on every result step, so the tuning panel (or `setTuningValue`) shortens or lengthens the result on screen, against D9 and F010. The landing judge is fine: it keeps the tuning object it got at the throw. Dev builds and `?debug` only, so minor.
+  2. The calibration tests skip half the water levels: **fix, added to F025.** Confirmed: `calibration.test.ts` sweeps 10%, 20% ... 90%, while the game draws 17 levels in 5% steps. A sweep of all 17 with the default tuning finds one target missed: at 15% water a miss at power 68 splits the double-flip window into 65 to 67 and 69 to 71, each 2 wide, against the 4-point minimum. Every other level passes (singles 11 to 15 wide, centers rising, doubles 5 to 8 wide), and the fixed-power rule still holds over 17 levels (power 35 lands 10 of 17, 58.8%). F025 retunes everything with sloshing on, so a retune now would be thrown away; F025 now first extends the calibration test to every drawn level, and F035 inherits it.
+- Plan: F036 added to M5 after F022 (depends on F010, F030, F027). F025's description and second criterion now require the 17-level calibration test. M5 goal updated.
+- Next: F036, then M6 continues (F024, F025, F035). The Gemini review of M1 and M5 is still to come.

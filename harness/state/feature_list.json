@@ -24,7 +24,7 @@
     {
       "id": "M5",
       "title": "Polish and tuning",
-      "goal": "Quicker result timing, difficulty tuned to the design's targets so that reading the water level matters, camera shake and small effects, soft shading that makes the scene and the water level easier to read, and a bug-fix pass over awkward input."
+      "goal": "Quicker result timing, difficulty tuned to the design's targets so that reading the water level matters, camera shake and small effects, soft shading that makes the scene and the water level easier to read, a bug-fix pass over awkward input, and a result whose length a mid-result tuning change cannot alter."
     },
     {
       "id": "M6",
@@ -606,6 +606,27 @@
       "review_feedback": ""
     },
     {
+      "id": "F036",
+      "milestone": "M5",
+      "category": "core",
+      "title": "Keep the length of a result fixed once it starts",
+      "description": "Found by the outside review of M1 and M5 (2026-11-23, see the progress log). Simulation.resultLength() in src/core/simulation.ts reads resultDelaySeconds and replaySpeed from the live tuning on every step of the result phase, so a setTuning() call during a result (the tuning panel, or setTuningValue) shortens or lengthens the result already on screen, against D9 and F010 (tuning changes apply from the next bottle). Compute the result length once, when the outcome is set, and use that value until the next bottle appears. Say so in D15 in docs/ARCHITECTURE.md.",
+      "acceptance": [
+        "Unit: five steps into a result with the default 1 s delay, setTuning({ resultDelaySeconds: 0.1 }) does not end it early and setTuning({ resultDelaySeconds: 3 }) does not lengthen it: the next bottle appears exactly as many steps after the outcome as without the change (the delay plus any replay, at the replay speed in effect at the outcome).",
+        "Unit: the result after the next throw uses the new delay.",
+        "Unit: skip() still ends a result at once, and the existing result-timing and replay tests pass unchanged."
+      ],
+      "depends_on": [
+        "F010",
+        "F030",
+        "F027"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
       "id": "F023",
       "milestone": "M6",
       "category": "physics",
@@ -650,10 +671,10 @@
       "milestone": "M6",
       "category": "physics",
       "title": "Turn sloshing on by default and recalibrate",
-      "description": "Make sloshing the default and retune so the game still meets its targets: F009's window tests and F020's difficulty benchmark run with the new default and pass. Show the sloshing switch in the tuning panel. Record the old and new tuning values in the progress entry.",
+      "description": "Make sloshing the default and retune so the game still meets its targets: F009's window tests and F020's difficulty benchmark run with the new default and pass. First extend tests/unit/calibration.test.ts from the 9 levels 10%, 20% ... 90% to every water level the game draws (17 levels, 10% to 90% in 5% steps, taken from the tuning's water range and step, not a hand-written list): the outside review of M1 and M5 (2026-11-23) found that 15% water, which the tests skip, has its double-flip window split by a miss at power 68 into two windows 2 points wide, under the 4-point minimum. Then retune with sloshing on until every level meets every target. Show the sloshing switch in the tuning panel. Record the old and new tuning values in the progress entry.",
       "acceptance": [
         "The default tuning has sloshing true, and during a normal throw state() shows the water offset moving.",
-        "All F009 window tests and the F020 benchmark pass with sloshing on.",
+        "tests/unit/calibration.test.ts checks every per-level target (single window 10 to 28 wide, centers rising, a double window at least 4 wide, narrower than and above the single, starting below power 100) at every water level the tuning draws (17 levels, 10% to 90% in 5% steps, derived from the tuning), and it, the other F009 window tests and the F020 benchmark pass with sloshing on.",
         "The tuning panel shows the sloshing switch, and toggling it affects the next bottle.",
         "The progress entry includes the new flip-windows table and the benchmark rates."
       ],
