@@ -1606,3 +1606,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: the reviewer should run the full verify and snap at the offset peak.
 
 > [harness] session 81 · builder F024 · todo → todo · ok · verify FAILED · 1 commit(s) · 27 tool calls · 3m 40s · ~$0.35 API-equivalent
+
+## Session 82 · builder · F024 Draw the moving water
+- Did: the session 81 verify tail shows every e2e test green, so the failure is the 20-minute gate limit (see session 80). My new slosh e2e test took 43 s because it stepped 240 times with one browser round trip each; it now steps inside one `page.evaluate` and takes 1.9 s (tests/e2e/slosh.spec.ts). No other change.
+- Verified: `npm run format`, `npm run typecheck`, the 3 slosh e2e tests pass. I did not run the full verify (longer than a session).
+- Status: F024 → needs_review
+- Issues / follow-ups: the e2e suite is still near the gate limit; other specs that step one frame per round trip could be sped up the same way. A human may need to raise `gateTimeoutMinutes`.
+- Next: the reviewer should snap at the offset peak (about step 64 to 72) and not count a gate timeout against F024.
