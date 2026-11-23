@@ -667,7 +667,7 @@
         "F024"
       ],
       "status": "todo",
-      "attempts": 1,
+      "attempts": 2,
       "notes": "Part done (session 95): the tuning panel has a sloshing checkbox (#tuning-sloshing-switch, e2e tested). NOT done: the default stays sloshing 0 and the 17-level calibration test is not committed, because the work is a real retune. The 17-level test fails today even with sloshing off (15% water: double window 2 wide, under 4), and with sloshing on the F034 tuning gives single windows 8 to 11 wide, centers tied at 40% and 50%, ratio 1.7, practiced 50.5% and new 49.4%; a hill climb of 12 tuning numbers (25 min, 3 runs) stayed near 630 to 730 penalty. Session 97: scripts/retune-search.ts (17 levels, 11 numbers, 6 runs) gets singles 9 to 13 wide, but the double windows of the 40-90% levels all sit at about 86-100, so one fixed power near 96 lands 74-80% of bottles (limit 65%) and aiming at 100 scores about 10 points per 10 throws against 5.9 for reading the water. Needs a change in how spin scales with power so doubles rise with water, or a human decision on those targets. See the session 97 entry for what else changes when the default flips.",
       "review_feedback": ""
     },

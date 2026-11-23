@@ -1803,3 +1803,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F025 stays todo (notes updated)
 - Issues / follow-ups: when the default flips, setting sloshing 0 in tests/unit/noReplaySetup.ts for every file except calibration, difficulty, slosh, flipWindows and architecture fixed 24 of the 28 failures; flip-windows.ts needs 17 rows and a `--solid` switch (its tests index rows); the calibration "launch alone" test must use sloshing 0 (placeBottle cannot give the water its motion).
 - Next: change the spin model so doubles climb with water (spin exponent growing with power, or more spin growth with less impulse), or ask the human to relax the fixed-power and points targets for doubles; then reuse scripts/retune-search.ts.
+
+> [harness] session 97 · builder F025 · todo → todo · ok · verify FAILED · 2 commit(s) · 63 tool calls · 23m 7s · ~$0.98 API-equivalent
