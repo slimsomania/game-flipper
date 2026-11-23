@@ -1807,3 +1807,8 @@ best-scoring fixed power (95, no error)                            55.5%        
 > [harness] session 97 · builder F025 · todo → todo · ok · verify FAILED · 2 commit(s) · 63 tool calls · 23m 7s · ~$0.98 API-equivalent
 
 > [harness] session 98 · builder F025 · todo → blocked · ok · verify passed · 0 commit(s) · 3 tool calls · 20s · ~$0.15 API-equivalent
+
+## Human session · 2026-11-23 · F025 unblocked with a spin-model change
+- F025 blocked → todo, attempts 0, review_feedback removed. It was blocked after sessions 95 to 97 because, with sloshing on, the double-flip windows of the 40-90% levels all sit at about power 86-100 (one fixed power near 96 lands 74-80% of bottles; aiming at 100 scores about 10 points per 10 against 5.9 for reading the water). Session 98 only hit the attempt limit (no work).
+- Decision (human, option 2): keep all targets and change the spin model, so doubles rise with the water level. The builder may change how spin scales with power in src/core (the throwSpinExponent/throwSpinGrowth curve or how it is applied) and start from scripts/retune-search.ts. Fallback if three attempts fail: relax only the fixed-power landing limit, keep the points rule.
+- Next: builder F025; then F035 and M7.
