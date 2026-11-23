@@ -1586,3 +1586,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F031 → needs_review
 - Issues / follow-ups: I did not snap a success flash (my throw ended "Down!"); the flash peak is only unit-tested at 0.2.
 - Next: the reviewer should snap a success with a light flash and confirm the bottle and table stay visible.
+
+> [harness] session 79 · builder F031 · todo → todo · ok · verify FAILED · 1 commit(s) · 21 tool calls · 19m 49s · ~$0.32 API-equivalent
