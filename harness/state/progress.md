@@ -1826,3 +1826,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F025 stays todo (notes updated; attempt 1 of 3)
 - Issues / follow-ups: the missing doubles at 20-50% are the open question: look at the sweep at 30% water for powers 60-100 (rotation, result, turns). If they land outside the table or fail to settle, that is a separate cause from tuning.
 - Next: print the 30% sweep above power 60, find why no 2-turn success exists, then rerun the search from coverage/best-11.json-style start (growth 0.02, angular impulse 12.88). The 17-level calibration test edit is still described in the session 95 entry.
+
+> [harness] session 99 · builder F025 · todo → todo · ok · verify FAILED · 1 commit(s) · 35 tool calls · 22m 6s · ~$0.62 API-equivalent
