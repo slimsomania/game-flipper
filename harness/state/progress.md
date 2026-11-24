@@ -1886,3 +1886,12 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Finding 4 (accepted as is, the human's decision): the water does not move in flight. In this model it can only slide along the axis and the spin presses it onto the base, as in a real throw; real water also spreads toward both ends in flight and slows the spin, which the game's strong in-air angular damping stands in for. A water model that spreads in flight would be a new feature with a new calibration.
 - Verified: `npm run verify` green after the fix (format, typecheck, 899 unit, build, 273 e2e).
 - Status: F025 stays needs_review.
+
+## Human session · 2026-11-24 · F025 outside review (Antigravity)
+- Antigravity (Gemini 3.8 Flash) reviewed the same commits after 00ef25a was in. It confirmed the spin leak (34% lost by step 5, 69% by step 40 at power 80, damping 0; 50 iterations no help, 16 substeps 20%), the water's center below the combined center at every level (by 0.064 to 0.491 m), 0 pinned contacts after 00ef25a, the 17-level calibration and that no test was weakened.
+- Finding 1 (the late release): the same as Copilot's, already fixed in 00ef25a.
+- Finding 2 (risk, acknowledged): the expected rates sit about 0.2 points inside their limits, so one power point at a window edge flips difficulty.test.ts. Known (D35); F035's retune must score margins, not just pass.
+- Finding 3 (rejected, as Copilot's): the release constants into tuning.ts; they are numerical safety margins, not feel.
+- Finding 4 (rejected): no calibration test for solid water. Solid water is a developer switch with no design targets; it stays exercised by flipWindowsScript.test.ts (`--solid` sweeps all 17 levels), slosh.test.ts and damping.test.ts.
+- Its correction to claim 2 is right: the old joint model moved the water up to about 1 cm in the first two steps at power 80 to 100 (a solver transient; measured 1.05 cm at 50%, power 100). D35 corrected (27d6d53).
+- Status: F025 stays needs_review.
