@@ -13,7 +13,7 @@ test('with sloshing off (the default) the snapshot reports no water offset in a 
   await page.evaluate(() => {
     window.__FLIPPER__!.pause();
     window.__FLIPPER__!.setWater(0.1);
-    window.__FLIPPER__!.throwBottle(40);
+    window.__FLIPPER__!.throwBottle(50);
   });
   for (let i = 0; i < 30; i++) {
     const state = await page.evaluate(() => window.__FLIPPER__!.step(3));
@@ -30,7 +30,7 @@ test('with sloshing on, the water slides toward the cap in a spinning throw and 
     window.__FLIPPER__!.pause();
     window.__FLIPPER__!.setTuningValue('sloshing', 1);
     window.__FLIPPER__!.setWater(0.1);
-    window.__FLIPPER__!.throwBottle(40);
+    window.__FLIPPER__!.throwBottle(50);
   });
   expect((await gameState(page)).bottle.waterOffset).toBe(0);
   let max = 0;
@@ -53,7 +53,7 @@ test('with sloshing on, the water stays at the base in the air, shifts as the bo
     // A boolean works too (snap passes `true`), and turns sloshing on.
     window.__FLIPPER__!.setTuningValue('sloshing', true);
     window.__FLIPPER__!.setWater(0.3);
-    window.__FLIPPER__!.throwBottle(40);
+    window.__FLIPPER__!.throwBottle(70);
   });
   const trace = await page.evaluate(() => {
     const out: { y: number; offset: number; contact: boolean }[] = [];
