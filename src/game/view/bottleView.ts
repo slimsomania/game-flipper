@@ -55,16 +55,18 @@ export function createBottleView(scene: Phaser.Scene): BottleView {
       container
         .setPosition(bottle.x * PIXELS_PER_METER, bottle.y * PIXELS_PER_METER)
         .setRotation(bottle.angle);
+      // A tick going back (the replay starting) or far ahead, or another water level (a new
+      // bottle), is a new scene for the water.
+      const steps = tick - lastTick;
+      if (!(steps >= 0 && steps <= MAX_STEPS_BETWEEN_DRAWS) || bottle.water !== heightsLevel)
+        motion.restart();
+      lastTick = tick;
       if (bottle.water !== heightsLevel) {
         heightsLevel = bottle.water;
         centerHeight = bottleMassProperties(bottle.water, DEFAULT_TUNING).centerHeight;
         const rect = waterRect(bottle.water);
         waterHeight = rect ? -(rect.y0 + rect.y1) / 2 : 0;
       }
-      // A tick going back (the replay starting) or far ahead is a new scene for the water.
-      const steps = tick - lastTick;
-      if (!(steps >= 0 && steps <= MAX_STEPS_BETWEEN_DRAWS)) motion.restart();
-      lastTick = tick;
       motion.step(
         Number.isFinite(steps) && steps > 0 ? steps * SIM_DT : 0,
         bottle,

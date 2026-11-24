@@ -39,8 +39,11 @@ const MAX_ACCEL = 2.5 * G;
 const DEAD_ZONE = 0.3 * G;
 /** Smoothing of the acceleration and spin estimates taken from the drawn poses (seconds). */
 const SMOOTHING = 0.04;
-/** A pose that moves farther than this in one frame is a jump (new bottle, replay): start over. */
-const JUMP_METERS = 1.5;
+/**
+ * A pose that moves faster than this (m/s) between two steps is a jump, not a motion (a new bottle
+ * in the hand, the replay starting or ending): the water starts over. Real throws stay far below.
+ */
+const JUMP_SPEED = 25;
 const MAX_FRAME = 1 / 20;
 const SUBSTEP = 1 / 120;
 
@@ -190,7 +193,7 @@ export class WaterMotion {
     const cos = Math.cos(pose.angle);
     const cx = pose.x + centerHeight * sin;
     const cy = pose.y - centerHeight * cos;
-    if (!Number.isFinite(this.cx) || Math.hypot(cx - this.cx, cy - this.cy) > JUMP_METERS) {
+    if (!Number.isFinite(this.cx) || Math.hypot(cx - this.cx, cy - this.cy) > JUMP_SPEED * dt) {
       this.reset(cx, cy, pose.angle);
       return;
     }
@@ -240,8 +243,14 @@ export class WaterMotion {
     const size = Math.hypot(ux, uy);
     // In free fall with no spin nothing pulls the water, so it keeps its direction.
     const pull = Math.min(MAX_PULL, Math.max(0, size - DEAD_ZONE) / G);
-    const tx = size > 1e-6 ? ux / size : this.sx;
-    const ty = size > 1e-6 ? uy / size : this.sy;
+    let tx = size > 1e-6 ? ux / size : this.sx;
+    let ty = size > 1e-6 ? uy / size : this.sy;
+    if (tx * this.sx + ty * this.sy < -0.95) {
+      // Pulled straight away from where it lies (a bottle turned upside down): a balance the
+      // water would not keep. A small sideways nudge lets it fall one way.
+      tx -= 0.3 * this.sy;
+      ty += 0.3 * this.sx;
+    }
     const damping = DAMPING * Math.max(0.3, Math.sqrt(pull));
     let left = frame;
     while (left > 1e-9) {

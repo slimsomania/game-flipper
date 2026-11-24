@@ -139,6 +139,21 @@ describe('WaterMotion', () => {
     expect(worst).toBeLessThan(0.2);
   });
 
+  it('starts over when a new bottle appears close to where the last one lay', () => {
+    const motion = new WaterMotion();
+    // Lying on its side for a while: the water lies along the lower wall.
+    for (let i = 0; i < 300; i++)
+      motion.step(frame, { x: 3, y: 5.6, angle: Math.PI / 2 }, center, water);
+    expect(motion.down().x).toBeGreaterThan(0.9);
+    // The next bottle stands in the hand 1 m away: no slosh, the water is on the base at once.
+    motion.step(frame, { x: 2.8, y: 4.6, angle: 0 }, center, water);
+    expect(motion.down()).toEqual({ x: 0, y: 1 });
+    for (let i = 0; i < 30; i++) {
+      motion.step(frame, { x: 2.8, y: 4.6, angle: 0 }, center, water);
+      expect(Math.abs(motion.down().x)).toBeLessThan(1e-9);
+    }
+  });
+
   it('starts over on restart()', () => {
     const motion = new WaterMotion();
     for (let i = 0; i < 60; i++) motion.step(frame, { x: 0, y: 0, angle: Math.PI }, center, water);
