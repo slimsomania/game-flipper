@@ -1818,3 +1818,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Check, scratch only and reverted: damping shell and water as one rigid body gave decay 4.9 to 5.2/s at every level and single windows 23.5 to 53 (ratio 2.3), widths 13 to 20; doubles moved above 100 and one fixed power landed 87.5%, so a normal retune is still needed.
 - F025's notes now say: fix the damping first (own commit, unit test that the decay is the same at every level), then retune from there with scripts/retune-search.ts, all targets kept; change the spin curve only if that fails. Fallback unchanged: relax only the fixed-power landing limit.
 - Next: builder F025.
+
+## Session 99 · builder · F025 Turn sloshing on by default and recalibrate
+- Did: step 1 (the damping fix, commit 8de4c09 from before this session, with tests/unit/damping.test.ts) was already in. This session was step 2, the retune: scripts/retune-search.ts now starts with sloshing on (score() forces it). Default stays sloshing 0; no tuning value changed.
+- Findings (sloshing on, damping fixed): old tuning gives singles 17-30 (10%), 32-52 (30%), 35-54 (50%), 38-55 (70%), 46-60 (90%), ratio about 2.3 (target 2.5), doubles only at 10% (89), the rest above 100. Spin growth 0.02 with angular impulse 12.88 (x1.5): 10% single 20-30 double 72-76; 50% single 34-47, no double; 90% single 42-51, double 82-88. Three 20-minute searches from there (starts: growth 0.02 x1.5, x2, growth 0.025 x2.5) stalled at penalty 1640 / 2175 / 2584: singles only 9-14 wide, and the 20-50% levels have no double window at all (60-90% doubles at 82-100).
+- Verified: `npm run typecheck`, `npm run format`; no test changed since the last green gate.
+- Status: F025 stays todo (notes updated; attempt 1 of 3)
+- Issues / follow-ups: the missing doubles at 20-50% are the open question: look at the sweep at 30% water for powers 60-100 (rotation, result, turns). If they land outside the table or fail to settle, that is a separate cause from tuning.
+- Next: print the 30% sweep above power 60, find why no 2-turn success exists, then rerun the search from coverage/best-11.json-style start (growth 0.02, angular impulse 12.88). The 17-level calibration test edit is still described in the session 95 entry.

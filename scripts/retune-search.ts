@@ -18,7 +18,8 @@ const KEYS = [
 ] as const;
 const LEVELS = Array.from({ length: 17 }, (_, i) => Math.round((0.1 + 0.05 * i) * 1e6) / 1e6);
 
-export function score(t: Partial<Tuning>) {
+export function score(t0: Partial<Tuning>) {
+  const t = { sloshing: 1, ...t0 };
   let pen = 0;
   const sweeps = new Map<number, any[]>();
   const sing: any[] = [];
@@ -97,7 +98,7 @@ if (process.argv[2]) {
     return (u - 3) / Math.sqrt(0.5);
   };
   const file = `coverage/best-${id}.json`;
-  let cur: any = { ...DEFAULT_TUNING };
+  let cur: any = { ...DEFAULT_TUNING, sloshing: 1 };
   const start = process.argv[4];
   if (start && existsSync(start)) cur = { ...cur, ...JSON.parse(readFileSync(start, 'utf8')) };
   let best = score(cur);
