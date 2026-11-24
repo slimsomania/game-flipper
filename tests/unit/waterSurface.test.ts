@@ -126,6 +126,19 @@ describe('WaterMotion', () => {
     expect(motion.down()).toEqual({ x: 0, y: 1 });
   });
 
+  it('does not fling the water when it starts on a bottle already in flight (the replay)', () => {
+    const motion = new WaterMotion();
+    let worst = 0;
+    for (let i = 0; i < 40; i++) {
+      const t = i * frame;
+      // Already moving at 4 m/s sideways and 3 m/s down, barely turning, lying on its side.
+      const pose: Pose = { x: 4 * t, y: 3 * t + (9.81 * t * t) / 2, angle: Math.PI / 2 + 0.2 * t };
+      motion.step(frame, pose, center, water);
+      worst = Math.max(worst, Math.abs(motion.down().x));
+    }
+    expect(worst).toBeLessThan(0.2);
+  });
+
   it('starts over on restart()', () => {
     const motion = new WaterMotion();
     for (let i = 0; i < 60; i++) motion.step(frame, { x: 0, y: 0, angle: Math.PI }, center, water);

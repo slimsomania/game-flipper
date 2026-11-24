@@ -37,7 +37,7 @@ const MAX_ACCEL = 2.5 * G;
  * push would otherwise tip the water once the spin has died down.
  */
 const DEAD_ZONE = 0.3 * G;
-/** Smoothing of the speed estimates taken from the drawn poses (seconds). */
+/** Smoothing of the acceleration and spin estimates taken from the drawn poses (seconds). */
 const SMOOTHING = 0.04;
 /** A pose that moves farther than this in one frame is a jump (new bottle, replay): start over. */
 const JUMP_METERS = 1.5;
@@ -169,9 +169,18 @@ export class WaterMotion {
   private cx = Number.NaN;
   private cy = Number.NaN;
   private angle = 0;
+  /** The last measured speed of the center of mass, and the smoothed acceleration and spin. */
   private vx = 0;
   private vy = 0;
+  private ax = 0;
+  private ay = 0;
   private omega = 0;
+  /**
+   * What has been measured since the last start: 0 nothing, 1 a speed, 2 an acceleration. The
+   * water only moves from stage 2: a replay starts mid-flight, and reading its speed as a jump from
+   * rest (or its free fall as a slow start) would fling the water round the bottle.
+   */
+  private stage = 0;
 
   step(dt: number, pose: Pose, centerHeight: number, waterHeight: number): void {
     const frame = Math.min(dt, MAX_FRAME);
@@ -190,14 +199,28 @@ export class WaterMotion {
     const nvy = (cy - this.cy) / dt;
     const turn = Math.atan2(Math.sin(pose.angle - this.angle), Math.cos(pose.angle - this.angle));
     const nomega = turn / dt;
-    const ax = ((nvx - this.vx) * mix) / frame;
-    const ay = ((nvy - this.vy) * mix) / frame;
-    this.vx += (nvx - this.vx) * mix;
-    this.vy += (nvy - this.vy) * mix;
-    this.omega += (nomega - this.omega) * mix;
     this.cx = cx;
     this.cy = cy;
     this.angle = pose.angle;
+    const rawAx = (nvx - this.vx) / dt;
+    const rawAy = (nvy - this.vy) / dt;
+    this.vx = nvx;
+    this.vy = nvy;
+    if (this.stage === 0) {
+      this.omega = nomega;
+      this.stage = 1;
+      return;
+    }
+    if (this.stage === 1) {
+      this.ax = rawAx;
+      this.ay = rawAy;
+      this.stage = 2;
+    } else {
+      this.ax += (rawAx - this.ax) * mix;
+      this.ay += (rawAy - this.ay) * mix;
+    }
+    this.omega += (nomega - this.omega) * mix;
+    const { ax, ay } = this;
 
     // Gravity minus the bottle's acceleration (world), turned into the bottle's frame.
     let gx = -ax;
@@ -255,7 +278,10 @@ export class WaterMotion {
     this.angle = angle;
     this.vx = 0;
     this.vy = 0;
+    this.ax = 0;
+    this.ay = 0;
     this.omega = 0;
+    this.stage = 0;
     // On the base: a bottle appears upright in the hand, and a replay starts in a spinning flight.
     this.sx = 0;
     this.sy = 1;
