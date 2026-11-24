@@ -10,6 +10,7 @@ import { bottleExtent } from '../../src/core/outcome';
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_LEFT_X, TABLE_RIGHT_X, TABLE_TOP_Y } from '../../src/core/table';
 import { MAX_POWER } from '../../src/core/throw';
+import { DEFAULT_TUNING } from '../../src/core/tuning';
 import { run } from './helpers';
 
 /*
@@ -22,8 +23,15 @@ import { run } from './helpers';
  */
 
 const STARTED = Date.now();
-/** The water levels of the design's targets: 10% to 90% in 10% steps. */
-const LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+/** Every water level the game draws: from the tuning's range and step (17 levels, 10% to 90% in 5% steps). */
+const LEVELS = Array.from(
+  {
+    length:
+      Math.round((DEFAULT_TUNING.waterMax - DEFAULT_TUNING.waterMin) / DEFAULT_TUNING.waterStep) +
+      1,
+  },
+  (_, i) => Math.round((DEFAULT_TUNING.waterMin + i * DEFAULT_TUNING.waterStep) * 1e6) / 1e6,
+);
 const ONE_TURN = 2 * Math.PI;
 
 interface Level {
@@ -35,7 +43,7 @@ interface Level {
 
 let levels: Level[] = [];
 
-// The sweeps are the whole cost of this file (909 throws). The generous hook timeout only keeps a
+// The sweeps are the whole cost of this file (1,717 throws). The generous hook timeout only keeps a
 // slow or busy machine from failing with a timeout; the 15 s budget is checked by its own test.
 beforeAll(() => {
   levels = LEVELS.map((water) => {
@@ -67,6 +75,12 @@ function doubleOf(level: Level): FlipWindow {
 }
 
 describe('single-flip windows of the default tuning', () => {
+  it('are checked at all 17 water levels the game draws, 10% to 90% in 5% steps', () => {
+    expect(levels.map((l) => Math.round(l.water * 100))).toEqual([
+      10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+    ]);
+  });
+
   // Design section 3: a window at least 10 points wide. The upper end is the test's own sanity
   // limit: a window wider than 28 would let one fixed power land too many bottles.
   it('every tested water level has a window 10 to 28 points wide', () => {
@@ -99,8 +113,8 @@ describe('single-flip windows of the default tuning', () => {
   });
 
   // Design section 3: "No single fixed power may land a single flip on more than about 60% of
-  // water levels", so reading the water matters. Over the 9 levels that is at most 5 (55.6%); 6
-  // would be 66.7%.
+  // water levels", so reading the water matters. Over the 17 levels that is at most 10 (58.8%); 11
+  // would be 64.7%.
   it('no fixed power from 0 to 100 lands a single flip on more than 60% of the water levels', () => {
     let worst = { power: 0, share: 0 };
     for (let power = 0; power <= MAX_POWER; power++) {

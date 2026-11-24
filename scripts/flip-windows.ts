@@ -2,7 +2,8 @@
  * Measure the flip windows and the difficulty of the default tuning:
  * `npx tsx scripts/flip-windows.ts [name=value ...]`.
  *
- * For each water level from 10% to 90% (every 10 points) it throws one bottle at every power from
+ * For each water level the game draws (10% to 90% in 5% steps, from the tuning's `waterMin`,
+ * `waterMax` and `waterStep`: 17 levels) it throws one bottle at every power from
  * 0 to 100 (headless, through `src/core/flipWindow.ts`) and prints two windows: the single-flip
  * window (the widest run of powers that land upright after exactly one turn) and the double-flip
  * window (the same with two turns), each as low, high, center and width, or `none`.
@@ -17,16 +18,31 @@
  * `npx tsx scripts/flip-windows.ts shellDensity=0.4 throwLinearImpulse=2.5`), to try a tuning
  * before changing the defaults in `src/core/tuning.ts`.
  *
- * `--sloshing` (or `sloshing=1`) turns the sloshing water on (F023): the water is a moving mass in
- * the bottle (`src/core/slosh.ts`) instead of one solid body, and the output starts with a line
- * saying so. Without it the output is exactly the solid-water tables.
+ * Sloshing water (F023, the default since F025) is a moving mass in the bottle once it comes down to
+ * the table (`src/core/slosh.ts`). `--solid` (or `sloshing=0`) makes the water one solid body
+ * instead, and `--sloshing` (or `sloshing=1`) turns it on. When the water model differs from the
+ * default, the output starts with a line saying which one it is; otherwise it starts with the table.
  */
 import { runBenchmark } from '../src/core/difficulty';
-import { findWindows, sweepPowers, widestWindow, type FlipWindow } from '../src/core/flipWindow';
+import {
+  findWindows,
+  sweepPowers,
+  widestWindow,
+  type FlipWindow,
+  type SweepPoint,
+} from '../src/core/flipWindow';
 import { isSloshing } from '../src/core/slosh';
 import { DEFAULT_TUNING, type Tuning } from '../src/core/tuning';
 
-const LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+/** Every water level the game draws: `waterMin` plus whole steps of `waterStep`, up to `waterMax`. */
+const LEVELS = Array.from(
+  {
+    length:
+      Math.round((DEFAULT_TUNING.waterMax - DEFAULT_TUNING.waterMin) / DEFAULT_TUNING.waterStep) +
+      1,
+  },
+  (_, i) => Math.round((DEFAULT_TUNING.waterMin + i * DEFAULT_TUNING.waterStep) * 1e6) / 1e6,
+);
 
 const pad = (text: string | number, width: number): string => String(text).padStart(width);
 const num = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1));
@@ -36,8 +52,8 @@ const percent = (rate: number): string => `${(rate * 100).toFixed(1)}%`;
 function overridesFromArgs(args: readonly string[]): Partial<Tuning> {
   const overrides: Record<string, number> = {};
   for (const arg of args) {
-    if (arg === '--sloshing') {
-      overrides.sloshing = 1;
+    if (arg === '--sloshing' || arg === '--solid') {
+      overrides.sloshing = arg === '--sloshing' ? 1 : 0;
       continue;
     }
     const [name, text] = arg.split('=');
@@ -65,15 +81,21 @@ function cells(window: FlipWindow | null): string {
 const started = Date.now();
 const tuning = overridesFromArgs(process.argv.slice(2));
 const columns = `${pad('low', 5)} ${pad('high', 5)} ${pad('center', 7)} ${pad('width', 6)}`;
+const sloshing = isSloshing({ sloshing: tuning.sloshing ?? DEFAULT_TUNING.sloshing });
+const note = sloshing
+  ? 'sloshing: on (the water is a moving mass; see src/core/slosh.ts)'
+  : 'sloshing: off (solid water: the water is one body with the bottle)';
 const lines = [
-  ...(isSloshing({ sloshing: tuning.sloshing ?? DEFAULT_TUNING.sloshing })
-    ? ['sloshing: on (the water is a moving mass; see src/core/slosh.ts)']
-    : []),
+  ...(sloshing !== isSloshing(DEFAULT_TUNING) ? [note] : []),
   `${pad('', 6)} ${'single flip (1 turn)'.padEnd(columns.length)}   double flip (2 turns)`,
   `${pad('water', 6)} ${columns}   ${columns}`,
 ];
+/** Each level's sweep, kept for the benchmark, which throws at the same levels (same tuning, same results). */
+const sweeps = new Map<number, SweepPoint[]>();
 for (const water of LEVELS) {
-  const windows = findWindows(sweepPowers(water, tuning));
+  const points = sweepPowers(water, tuning);
+  sweeps.set(water, points);
+  const windows = findWindows(points);
   const label = `${Math.round(water * 100)}%`;
   lines.push(
     `${pad(label, 6)} ${cells(widestWindow(windows, 1))}   ${cells(widestWindow(windows, 2))}`,
@@ -81,7 +103,10 @@ for (const water of LEVELS) {
 }
 console.log(lines.map((line) => line.trimEnd()).join('\n'));
 
-const result = runBenchmark({ tuning });
+const result = runBenchmark({
+  tuning,
+  sweep: (water) => sweeps.get(water) ?? sweepPowers(water, tuning),
+});
 const aim = Math.round(result.newPlayerAim * 10) / 10;
 // The two fixed powers are a perfect hand with no error: a ceiling for "ignore the water".
 const rows: [player: string, rate: string, points: string][] = [

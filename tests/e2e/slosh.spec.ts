@@ -2,16 +2,31 @@ import { expect, test } from '@playwright/test';
 import { gameState, openGame } from './helpers';
 
 /*
- * Sloshing water (F023) is off by default, so the player sees no change. The switch is the tuning
- * field `sloshing`; with it on, the snapshot reports how far the water has slid from the base.
+ * Sloshing water (F023) is on by default since F025. The switch is the tuning field `sloshing`;
+ * with it on, the snapshot reports how far the water has slid from the base.
  */
 
-test('with sloshing off (the default) the snapshot reports no water offset in a throw', async ({
+test('sloshing is on by default: in a normal throw the water stays at the base in the air and moves as the bottle lands', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
+  expect((await page.evaluate(() => window.__FLIPPER__!.tuning())).sloshing).toBe(1);
+  const offsets = await page.evaluate(() => {
+    window.__FLIPPER__!.pause();
+    window.__FLIPPER__!.setWater(0.3);
+    window.__FLIPPER__!.throwBottle(60);
+    return Array.from({ length: 80 }, () => window.__FLIPPER__!.step(3)!.bottle.waterOffset);
+  });
+  expect(offsets.slice(0, 15).every((o) => o === 0)).toBe(true); // the first 45 steps: in the air
+  expect(Math.max(...offsets)).toBeGreaterThan(0.03);
+  expect(errors).toEqual([]);
+});
+
+test('with sloshing off the snapshot reports no water offset in a throw', async ({ page }) => {
+  const errors = await openGame(page, '?seed=7');
   await page.evaluate(() => {
     window.__FLIPPER__!.pause();
+    window.__FLIPPER__!.setTuningValue('sloshing', 0);
     window.__FLIPPER__!.setWater(0.1);
     window.__FLIPPER__!.throwBottle(50);
   });
@@ -53,7 +68,7 @@ test('with sloshing on, the water stays at the base in the air, shifts as the bo
     // A boolean works too (snap passes `true`), and turns sloshing on.
     window.__FLIPPER__!.setTuningValue('sloshing', true);
     window.__FLIPPER__!.setWater(0.3);
-    window.__FLIPPER__!.throwBottle(60);
+    window.__FLIPPER__!.throwBottle(55);
   });
   const trace = await page.evaluate(() => {
     const out: { y: number; offset: number; contact: boolean }[] = [];

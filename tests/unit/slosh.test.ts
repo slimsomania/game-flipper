@@ -37,16 +37,21 @@ function fly(level: number, power: number, tuning: object, extraSteps = 0) {
 }
 
 describe('sloshing switch', () => {
-  it('is off by default, and the snapshot then reports no water offset', () => {
-    expect(DEFAULT_TUNING.sloshing).toBe(0);
-    const { offsets } = fly(0.3, 60, {});
-    expect(offsets.every((o) => o === 0)).toBe(true);
+  it('is on by default since F025, and a normal throw then shows the water offset moving', () => {
+    expect(DEFAULT_TUNING.sloshing).toBe(1);
+    const { offsets } = fly(0.3, 60, {}, 60);
+    expect(Math.max(...offsets)).toBeGreaterThan(0.03);
   });
 
-  it('with the switch off, snapshots match the default exactly', () => {
+  it('with the switch on, snapshots match the default exactly', () => {
     const a = fly(0.5, 70, {}, 30).sim.snapshot();
-    const b = fly(0.5, 70, { sloshing: 0 }, 30).sim.snapshot();
+    const b = fly(0.5, 70, SLOSH, 30).sim.snapshot();
     expect(b).toEqual(a);
+  });
+
+  it('with the switch off, the snapshot reports no water offset', () => {
+    const { offsets } = fly(0.3, 60, { sloshing: 0 }, 60);
+    expect(offsets.every((o) => o === 0)).toBe(true);
   });
 });
 
@@ -80,7 +85,7 @@ describe('sloshing water', () => {
   });
 
   it('gives the same launch speed as the solid bottle (same mass, same center)', () => {
-    const solid = fly(0.5, 60, {}).sim;
+    const solid = fly(0.5, 60, { sloshing: 0 }).sim;
     const slosh = new Simulation({ seed: 3, tuning: SLOSH });
     slosh.setWater(0.5);
     slosh.throwBottle(60);
@@ -101,7 +106,7 @@ describe('sloshing water', () => {
     for (const level of [0.1, 0.3, 0.5, 0.7, 0.9]) {
       const limit = sloshLimit(level);
       for (let power = 0; power <= 100; power += 5) {
-        const solid = fly(level, power, {}).sim.snapshot().outcome;
+        const solid = fly(level, power, { sloshing: 0 }).sim.snapshot().outcome;
         const wet = fly(level, power, SLOSH);
         const outcome = wet.sim.snapshot().outcome;
         if (solid?.result !== outcome?.result || solid?.turns !== outcome?.turns) different++;

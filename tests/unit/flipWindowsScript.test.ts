@@ -21,6 +21,13 @@ function runScript(args: string[] = []) {
   return { run, seconds: (Date.now() - started) / 1000 };
 }
 
+let defaultRun: ReturnType<typeof runScript> | null = null;
+/** The run with no arguments, made once for the whole file (each run sweeps all 17 levels). */
+function runDefault(): ReturnType<typeof runScript> {
+  defaultRun ??= runScript();
+  return defaultRun;
+}
+
 /** Read one window off the front of `cells`: `none`, or low, high, center and width. */
 function takeWindow(cells: string[]): void {
   if (cells[0] === 'none') {
@@ -36,8 +43,8 @@ function takeWindow(cells: string[]): void {
 }
 
 describe('scripts/flip-windows.ts', () => {
-  it('prints one row per water level, 10% to 90%, each with a single and a double window or "none", in under a minute', () => {
-    const { run, seconds } = runScript();
+  it('prints one row per drawn water level, 10% to 90% in 5% steps, each with a single and a double window or "none", in under a minute', () => {
+    const { run, seconds } = runDefault();
     expect(run.stderr).toBe('');
     expect(run.status).toBe(0);
     expect(seconds).toBeLessThan(60);
@@ -48,10 +55,11 @@ describe('scripts/flip-windows.ts', () => {
     const columns = ['low', 'high', 'center', 'width'];
     expect(lines[1].trim().split(/\s+/)).toEqual(['water', ...columns, ...columns]);
 
-    const rows = lines.slice(2, 11);
+    const rows = lines.slice(2, 19);
     expect(rows.map((row) => row.trim().split(/\s+/)[0])).toEqual(
-      [10, 20, 30, 40, 50, 60, 70, 80, 90].map((level) => `${level}%`),
+      Array.from({ length: 17 }, (_, i) => `${10 + 5 * i}%`),
     );
+    expect(lines[19]).toBe(''); // the table ends there
     for (const row of rows) {
       const cells = row.trim().split(/\s+/).slice(1);
       takeWindow(cells); // single flip
@@ -61,11 +69,11 @@ describe('scripts/flip-windows.ts', () => {
   }, 70_000);
 
   it('then prints both landing rates, the best fixed power and its rate, and each player’s points per 10 throws', () => {
-    const { run } = runScript();
+    const { run } = runDefault();
     expect(run.status).toBe(0);
     const lines = run.stdout.trim().split(/\r?\n/);
     const start = lines.findIndex((line) => line.startsWith('difficulty benchmark'));
-    expect(start).toBeGreaterThan(10); // after the table
+    expect(start).toBeGreaterThan(18); // after the table
     expect(lines[start]).toMatch(/200 random bottles, seed \d+, error σ 8 points/);
     expect(lines[start + 1]).toMatch(/player\s+landing rate\s+points per 10/);
 
@@ -110,23 +118,32 @@ describe('scripts/flip-windows.ts', () => {
     expect(lines[lines.length - 1]).toMatch(/^\(power 0 to 100 in steps of 1; [\d.]+ s\)$/);
   }, 70_000);
 
-  it('accepts --sloshing (and sloshing=1): it says so first and the table changes', () => {
-    const normal = runScript().run.stdout.split(/\r?\n/);
-    for (const arg of ['--sloshing', 'sloshing=1']) {
+  it('accepts --solid (and sloshing=0): it says so first and the table changes', () => {
+    const normal = runDefault().run.stdout.split(/\r?\n/);
+    for (const arg of ['--solid', 'sloshing=0']) {
       const { run } = runScript([arg]);
       expect(run.stderr).toBe('');
       expect(run.status).toBe(0);
       const lines = run.stdout.split(/\r?\n/);
-      expect(lines[0]).toContain('sloshing: on');
+      expect(lines[0]).toContain('sloshing: off');
       expect(lines[1]).toContain('single flip');
-      expect(lines.slice(3, 12)).not.toEqual(normal.slice(2, 11)); // the windows move
+      expect(lines.slice(3, 20)).not.toEqual(normal.slice(2, 19)); // the windows move
     }
-    expect(normal[0]).not.toContain('sloshing');
+    expect(normal[0]).not.toContain('sloshing'); // sloshing is the default: no line about it
+  }, 70_000);
+
+  it('accepts --sloshing (and sloshing=1), the default since F025: the same tables as no argument', () => {
+    const normal = runDefault().run.stdout.split(/\r?\n/);
+    for (const arg of ['--sloshing', 'sloshing=1']) {
+      const { run } = runScript([arg]);
+      expect(run.status).toBe(0);
+      expect(run.stdout.split(/\r?\n/).slice(0, 19)).toEqual(normal.slice(0, 19));
+    }
   }, 70_000);
 
   it('takes tuning overrides as name=value, and refuses an unknown name', () => {
     // A heavier throw changes the table (a 10% bottle thrown 3 times as hard needs far less power).
-    const normal = runScript().run.stdout.split(/\r?\n/)[2]!;
+    const normal = runDefault().run.stdout.split(/\r?\n/)[2]!;
     const { run } = runScript(['throwLinearImpulse=30']);
     expect(run.status).toBe(0);
     expect(run.stdout.split(/\r?\n/)[2]!).not.toBe(normal);

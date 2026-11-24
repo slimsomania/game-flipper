@@ -279,11 +279,22 @@ test('the sloshing switch in the panel follows the tuning and changes it for the
   await showPanel(page);
   const box = page.locator('#tuning-sloshing-switch');
   await expect(box).toBeVisible();
-  await expect(box).not.toBeChecked(); // off until F025's recalibration makes it the default
+  await expect(box).toBeChecked(); // on by default since F025's recalibration
+  await box.uncheck();
+  await expect.poll(async () => (await tuningOf(page)).sloshing).toBe(0);
+  await expect(page.locator(field('sloshing'))).toHaveValue('0');
   await box.check();
   await expect.poll(async () => (await tuningOf(page)).sloshing).toBe(1);
   await expect(page.locator(field('sloshing'))).toHaveValue('1');
   await box.uncheck();
   await expect.poll(async () => (await tuningOf(page)).sloshing).toBe(0);
+  // The next bottle has solid water: a throw that sloshes with the switch on shows no offset.
+  const offsets = await page.evaluate(() => {
+    window.__FLIPPER__!.pause();
+    window.__FLIPPER__!.setWater(0.3);
+    window.__FLIPPER__!.throwBottle(60);
+    return Array.from({ length: 80 }, () => window.__FLIPPER__!.step(3)!.bottle.waterOffset);
+  });
+  expect(offsets.every((o) => o === 0)).toBe(true);
   expect(errors).toEqual([]);
 });
