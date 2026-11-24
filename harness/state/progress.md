@@ -1970,3 +1970,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F038 reuses `tests/e2e/phoneDevice.ts`; verify takes over 10 minutes, so run it in the background with a long timeout.
 
 > [harness] session 105 · builder F037 · todo → todo · ok · verify FAILED · 1 commit(s) · 22 tool calls · 39m 49s · ~$0.32 API-equivalent
+
+## Session 106 · builder · F037 Run e2e tests on an emulated phone and throw with a finger
+- Did: fixed the one verify failure from session 105, awkward.spec.ts:144 (long frame gap). It was a race in the test, not a CPU-load or F037 problem: it failed 1 run in 5 alone. After the 3 s stall the throw resolves and the result auto-advances to throw 2, so `outcome` is null again by the time the poll looks (the failure screenshot shows "Throw 2 / 10"). The poll now accepts `outcome !== null || throwNumber > 1`. The assertion's meaning (the throw resolves) is kept; the 3 s stall and the step cap check are unchanged. F037 code from session 105 is unchanged.
+- Verified: that test 12 of 12 alone after the fix (it failed 1 of 5 before); full `npm run verify` run at the end of this session (see the harness line below).
+- Status: F037 → needs_review
+- Issues / follow-ups: none
+- Next: F038 reuses `tests/e2e/phoneDevice.ts`; verify takes about 20 minutes, so run it in the background with a long timeout.

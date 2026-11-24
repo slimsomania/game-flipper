@@ -158,9 +158,17 @@ test.describe('awkward play', () => {
       return window.__FLIPPER__!.state()!.tick - start;
     });
     expect(advanced).toBeLessThanOrEqual(5);
+    // The result may already have auto-advanced to the next throw by the time we poll, so a
+    // resolved throw is either a standing outcome or the throw counter having moved on.
     await expect
-      .poll(async () => (await gameState(page)).outcome, { timeout: 15_000 })
-      .not.toBeNull();
+      .poll(
+        async () => {
+          const s = await gameState(page);
+          return s.outcome !== null || s.throwNumber > 1;
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
     await expectValid(page);
     expect(errors).toEqual([]);
   });
