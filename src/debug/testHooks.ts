@@ -6,7 +6,7 @@ import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
-import { drawnShadow } from '../game/view/bottleShadowView';
+import { drawnShadow, type DrawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
@@ -76,12 +76,13 @@ export interface FlipperTestApi {
    */
   offscreenMarker(): { x: number; alpha: number } | null;
   /**
-   * The soft shadow on the tabletop under the bottle as the scene last drew it: its `width` in game
-   * pixels and `alpha` (0 to 1), or null when it is hidden (the bottle is not over the table) or no
-   * game scene is running. Widest and darkest at rest, smaller and fainter the higher the bottle.
+   * The soft shadow on the tabletop under the bottle as the scene last drew it: its center `x`,
+   * `width` (the bottle seen from above, so longer when it tilts) and `depth` in game pixels and
+   * `alpha` (0 to 1), or null when it is hidden (the bottle is not over the table) or no
+   * game scene is running. Deepest and darkest at rest, smaller and fainter the higher the bottle.
    * Wait a frame after stepping.
    */
-  shadow(): { width: number; alpha: number } | null;
+  shadow(): DrawnShadow | null;
   /**
    * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime' or 'thud'),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to

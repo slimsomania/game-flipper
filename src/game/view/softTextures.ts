@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import { SHADOW_FLATNESS } from './bottleShadow';
 
 /**
  * Small gradient textures, generated once in code with canvas gradients, for shading that has to
@@ -6,12 +7,20 @@ import type Phaser from 'phaser';
  * stacked semi-transparent shapes never do (they show as visible layers).
  */
 
-/** A dark blob, opaque in the middle and clear at the rim: the bottle's shadow, squashed flat. */
-export const SHADOW_BLOB_TEXTURE = 'soft-shadow-blob';
+/**
+ * A dark blob, opaque in the middle and clear at the rim, squashed into a flat ellipse and cut into
+ * a left end, a middle strip and a right end: the bottle's shadow, stretched to any length.
+ */
+export const SHADOW_BAR_TEXTURE = 'soft-shadow-bar';
+/** Height of the bar texture in texture pixels. */
+export const SHADOW_BAR_HEIGHT = 64;
+/** Width of each end: both ends together are the upright shadow, as wide as it is flat. */
+export const SHADOW_BAR_END = Math.round(SHADOW_BAR_HEIGHT / SHADOW_FLATNESS / 2);
+/** Width of the middle strip, the blob's center columns, that is stretched along the footprint. */
+const SHADOW_BAR_MIDDLE = 2;
 /** A black vertical fade, opaque at the top and clear at the bottom: the shadow under the slab. */
 export const FADE_DOWN_TEXTURE = 'soft-fade-down';
 
-const BLOB_SIZE = 128;
 const FADE_HEIGHT = 64;
 const FADE_WIDTH = 256;
 /** Fraction of the fade's width over which each end fades out. */
@@ -53,15 +62,36 @@ function makeTexture(
   return key;
 }
 
-/** The shadow blob's texture key, generating it the first time. */
-export function shadowBlobTexture(scene: Phaser.Scene): string {
-  return makeTexture(scene, SHADOW_BLOB_TEXTURE, BLOB_SIZE, BLOB_SIZE, (ctx) => {
-    const r = BLOB_SIZE / 2;
+/**
+ * The shadow's texture key, generating it the first time: a soft blob stretched into a flat
+ * ellipse, with frames 'left', 'middle' and 'right'.
+ */
+export function shadowBarTexture(scene: Phaser.Scene): string {
+  const width = 2 * SHADOW_BAR_END + SHADOW_BAR_MIDDLE;
+  const key = makeTexture(scene, SHADOW_BAR_TEXTURE, width, SHADOW_BAR_HEIGHT, (ctx) => {
+    const r = SHADOW_BAR_HEIGHT / 2;
+    ctx.save();
+    ctx.scale(width / SHADOW_BAR_HEIGHT, 1);
     const gradient = ctx.createRadialGradient(r, r, 0, r, r, r);
     for (const [at, alpha] of BLOB_STOPS) gradient.addColorStop(at, `rgba(36, 48, 64, ${alpha})`);
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, BLOB_SIZE, BLOB_SIZE);
+    ctx.fillRect(0, 0, SHADOW_BAR_HEIGHT, SHADOW_BAR_HEIGHT);
+    ctx.restore();
   });
+  const texture = scene.textures.get(key);
+  if (!texture.has('left')) {
+    texture.add('left', 0, 0, 0, SHADOW_BAR_END, SHADOW_BAR_HEIGHT);
+    texture.add('middle', 0, SHADOW_BAR_END, 0, SHADOW_BAR_MIDDLE, SHADOW_BAR_HEIGHT);
+    texture.add(
+      'right',
+      0,
+      SHADOW_BAR_END + SHADOW_BAR_MIDDLE,
+      0,
+      SHADOW_BAR_END,
+      SHADOW_BAR_HEIGHT,
+    );
+  }
+  return key;
 }
 
 /**
