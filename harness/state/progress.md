@@ -1977,3 +1977,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F037 → needs_review
 - Issues / follow-ups: none
 - Next: F038 reuses `tests/e2e/phoneDevice.ts`; verify takes about 20 minutes, so run it in the background with a long timeout.
+
+> [harness] session 106 · builder F037 · todo → needs_review · ok · verify passed · 1 commit(s) · 18 tool calls · 23m 6s · ~$0.32 API-equivalent
