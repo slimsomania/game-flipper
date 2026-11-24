@@ -1,8 +1,15 @@
 import { Polygon, type Body, type Fixture, type World } from 'planck';
 import { BOTTLE_PARTS, waterVertices, type Point } from './bottleShape';
-import { bottleExtent, type LandingSample } from './outcome';
+import type { LandingSample } from './outcome';
 import type { Rng } from './rng';
-import { WaterSlosh, isSloshing, setRigidVelocity, shouldReleaseWater, summarize } from './slosh';
+import {
+  WaterSlosh,
+  isSloshing,
+  lowestPointAhead,
+  setRigidVelocity,
+  shouldReleaseWater,
+  summarize,
+} from './slosh';
 import { TABLE_LEFT_X, TABLE_TOP_Y } from './table';
 import type { ThrowImpulse } from './throw';
 import type { Tuning } from './tuning';
@@ -183,9 +190,16 @@ export class Bottle {
   /** Call before each world step: pinned water is released near the table, then the water's spring and damper act. */
   beforeStep(): void {
     if (this.waterPinned && this.body.isDynamic()) {
-      const p = this.body.getPosition();
-      const { maxY } = bottleExtent(p.x, p.y, this.body.getAngle());
-      if (shouldReleaseWater(maxY, this.body.getLinearVelocity().y)) this.releaseWater();
+      const v = this.body.getLinearVelocity();
+      const lowest = lowestPointAhead({
+        center: this.body.getWorldCenter(),
+        localCenter: this.body.getLocalCenter(),
+        angle: this.body.getAngle(),
+        vx: v.x,
+        vy: v.y,
+        omega: this.body.getAngularVelocity(),
+      });
+      if (shouldReleaseWater(lowest)) this.releaseWater();
     }
     this.slosh?.applyForces();
   }

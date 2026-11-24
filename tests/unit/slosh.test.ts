@@ -4,7 +4,13 @@ import { Bottle } from '../../src/core/bottle';
 import { bottleMassProperties } from '../../src/core/bottleShape';
 import { GRAVITY, SIM_DT } from '../../src/core/constants';
 import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
-import { SLOSH_RELEASE_MARGIN, shouldReleaseWater, sloshLimit } from '../../src/core/slosh';
+import {
+  SLOSH_LOOKAHEAD_STEPS,
+  SLOSH_RELEASE_MARGIN,
+  lowestPointAhead,
+  shouldReleaseWater,
+  sloshLimit,
+} from '../../src/core/slosh';
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_LEFT_X, TABLE_TOP_Y, createTable } from '../../src/core/table';
 import { throwImpulse } from '../../src/core/throw';
@@ -204,20 +210,28 @@ describe('sloshing water is pinned to the base in the air (F025)', () => {
     }
   });
 
-  it('is released before the bottle first touches the table, at every level and power', () => {
-    for (let tenth = 1; tenth <= 9; tenth++) {
-      for (let power = 0; power <= 100; power += 10) {
-        const { bottle, table, step } = thrown(tenth / 10, power, SLOSH);
-        let steps = 0;
-        while (!bottle.touches(table) && steps < 400) {
-          step();
-          steps++;
+  // An outside review (2026-11-24) found that the first trigger, which looked only at the center's
+  // fall, let a fast-spinning corner reach the table first: 337 of 1,717 throws with no damping.
+  const NO_DAMPING = { ...SLOSH, bottleAngularDamping: 0, bottleLinearDamping: 0 };
+  for (const [name, overrides] of [
+    ['the default tuning', SLOSH],
+    ['no damping (the fastest spin at the table)', NO_DAMPING],
+  ] as const) {
+    it(`is released before the bottle first touches the table, at every level and power, with ${name}`, () => {
+      for (let tenth = 1; tenth <= 9; tenth++) {
+        for (let power = 0; power <= 100; power++) {
+          const { bottle, table, step } = thrown(tenth / 10, power, overrides);
+          let steps = 0;
+          while (!bottle.touches(table) && steps < 400) {
+            step();
+            steps++;
+          }
+          if (!bottle.touches(table)) continue; // off the end of the table: nothing to check
+          expect(bottle.isWaterPinned, `${tenth * 10}% water, power ${power}`).toBe(false);
         }
-        if (!bottle.touches(table)) continue; // off the end of the table: nothing to check
-        expect(bottle.isWaterPinned, `${tenth * 10}% water, power ${power}`).toBe(false);
       }
-    }
-  }, 60_000);
+    }, 60_000);
+  }
 
   it('releases the water without changing the bottle’s motion', () => {
     // No damping, so the one beforeStep() that releases the water changes nothing else.
@@ -253,18 +267,37 @@ describe('sloshing water is pinned to the base in the air (F025)', () => {
   });
 });
 
-describe('shouldReleaseWater', () => {
-  it('waits while the bottle is high up, and releases within the margin of the tabletop', () => {
-    expect(shouldReleaseWater(TABLE_TOP_Y - 1, 0)).toBe(false);
-    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN - 0.001, 0)).toBe(false);
-    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN, 0)).toBe(true);
-    expect(shouldReleaseWater(TABLE_TOP_Y + 0.5, 0)).toBe(true); // below the top: off the table
+describe('the release test: lowestPointAhead and shouldReleaseWater', () => {
+  // An upright bottle with its base at BASE_Y, its center of mass 0.5 m above the base.
+  const BASE_Y = TABLE_TOP_Y - 1;
+  const upright = (vy: number, omega = 0) => ({
+    center: { x: TABLE_LEFT_X + 2, y: BASE_Y - 0.5 },
+    localCenter: { x: 0, y: -0.5 },
+    angle: 0,
+    vx: 0,
+    vy,
+    omega,
+  });
+  const fall = (t: number) => 0.5 * GRAVITY * t * t;
+  const ahead = SLOSH_LOOKAHEAD_STEPS * SIM_DT;
+
+  it('follows the center and gravity over the next steps, and never looks back', () => {
+    expect(lowestPointAhead(upright(0))).toBeCloseTo(BASE_Y + fall(ahead), 9);
+    expect(lowestPointAhead(upright(3))).toBeCloseTo(BASE_Y + 3 * ahead + fall(ahead), 9);
+    // Rising: the lowest point is where it is now.
+    expect(lowestPointAhead(upright(-3))).toBeCloseTo(BASE_Y, 9);
   });
 
-  it('looks two steps ahead when falling, and not when rising', () => {
-    const y = TABLE_TOP_Y - SLOSH_RELEASE_MARGIN - 0.1;
-    expect(shouldReleaseWater(y, 3)).toBe(true); // 3 m/s down covers 0.1 m in two steps
-    expect(shouldReleaseWater(y, 2)).toBe(false);
-    expect(shouldReleaseWater(y, -3)).toBe(false);
+  it('counts the spin: a corner swinging down reaches lower than the center alone says', () => {
+    const still = lowestPointAhead(upright(0));
+    const spinning = lowestPointAhead(upright(0, 20));
+    expect(spinning).toBeGreaterThan(still + 0.01);
+  });
+
+  it('releases within the margin of the tabletop, and not above it', () => {
+    expect(shouldReleaseWater(TABLE_TOP_Y - 1)).toBe(false);
+    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN - 0.001)).toBe(false);
+    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN)).toBe(true);
+    expect(shouldReleaseWater(TABLE_TOP_Y + 0.5)).toBe(true); // below the top: off the table
   });
 });

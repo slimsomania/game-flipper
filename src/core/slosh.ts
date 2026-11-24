@@ -1,6 +1,7 @@
 import { Polygon, PrismaticJoint, Vec2, type Body, type World } from 'planck';
 import { BOTTLE_BODY_HEIGHT, BOTTLE_WALL, waterVertices } from './bottleShape';
-import { SIM_DT } from './constants';
+import { GRAVITY, SIM_DT } from './constants';
+import { bottleExtent } from './outcome';
 import { TABLE_TOP_Y } from './table';
 import type { Tuning } from './tuning';
 
@@ -18,19 +19,56 @@ import type { Tuning } from './tuning';
  */
 
 /**
- * Pinned water is released once the bottle's lowest point, moved on by two steps of its falling
- * speed, comes within this many meters of the tabletop. It is a margin, not a feel: the release
- * comes before any table contact (tests/unit/slosh.test.ts checks this at every level and power),
- * and in free flight released water would stay on the base anyway.
+ * Pinned water is released once the bottle's lowest point, now or anywhere along the next
+ * `SLOSH_LOOKAHEAD_STEPS` steps of free flight (its travel, its fall and its spin), comes within
+ * this many meters of the tabletop. It is a numerical safety margin, not a feel (like the solver's
+ * iteration counts): the release comes before any table contact, whatever the spin
+ * (tests/unit/slosh.test.ts checks every level and power, also with no damping), and in free flight
+ * released water would stay on the base anyway.
  */
 export const SLOSH_RELEASE_MARGIN = 0.05;
+/** How many steps ahead the release looks, sampled every quarter step (a corner can swing down fast). */
+export const SLOSH_LOOKAHEAD_STEPS = 2;
+const SAMPLES_PER_STEP = 4;
+
+/** A bottle in free flight, as planck moves it: center of mass, angle and velocities (y down). */
+export interface FlightState {
+  /** World position of the center of mass, and its position in the bottle's own frame. */
+  center: { x: number; y: number };
+  localCenter: { x: number; y: number };
+  angle: number;
+  /** Velocity of the center of mass, and the spin (clockwise positive). */
+  vx: number;
+  vy: number;
+  omega: number;
+}
 
 /**
- * Should pinned water be released now? `lowestY` is the bottle's lowest point (the largest y) and
- * `vy` the vertical speed of its center (positive is down), in meters and m/s.
+ * The lowest point (the largest y) the bottle reaches from now through the next
+ * `SLOSH_LOOKAHEAD_STEPS` steps of free flight: the center of mass moves on with gravity and the
+ * bottle turns about it, as the physics does, sampled every quarter step.
  */
-export function shouldReleaseWater(lowestY: number, vy: number): boolean {
-  return lowestY + Math.max(0, vy) * 2 * SIM_DT + SLOSH_RELEASE_MARGIN >= TABLE_TOP_Y;
+export function lowestPointAhead(state: FlightState): number {
+  let lowest = -Infinity;
+  const samples = SLOSH_LOOKAHEAD_STEPS * SAMPLES_PER_STEP;
+  for (let k = 0; k <= samples; k++) {
+    const t = (k / SAMPLES_PER_STEP) * SIM_DT;
+    const angle = state.angle + state.omega * t;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const cx = state.center.x + state.vx * t;
+    const cy = state.center.y + state.vy * t + 0.5 * GRAVITY * t * t;
+    // The base center (the body's origin) sits at the rotated local center back from the center of mass.
+    const x = cx - (state.localCenter.x * cos - state.localCenter.y * sin);
+    const y = cy - (state.localCenter.x * sin + state.localCenter.y * cos);
+    lowest = Math.max(lowest, bottleExtent(x, y, angle).maxY);
+  }
+  return lowest;
+}
+
+/** Should pinned water be released now? `lowestAhead` is `lowestPointAhead` of the bottle, in meters. */
+export function shouldReleaseWater(lowestAhead: number): boolean {
+  return lowestAhead + SLOSH_RELEASE_MARGIN >= TABLE_TOP_Y;
 }
 
 /** Is the sloshing switch on? The switch is a number (0 off, 1 on) so every tuning field is a number. */
