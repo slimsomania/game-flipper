@@ -1,14 +1,14 @@
 {
   "models": {
-    "planner": null,
+    "planner": "opus",
     "builder": "sonnet",
-    "reviewer": null,
+    "reviewer": "opus",
     "maintainer": "sonnet"
   },
   "effort": {
-    "planner": null,
+    "planner": "high",
     "builder": null,
-    "reviewer": null,
+    "reviewer": "high",
     "maintainer": null
   },
   "permissionMode": "acceptEdits",
