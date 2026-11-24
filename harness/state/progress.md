@@ -1903,3 +1903,25 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) The water moves only on side or cap landings: in all 92 upright landings of the probe the offset stayed exactly 0 (a base-first landing presses it onto the base), so on a good throw the player never sees it slosh. That is consistent with D35's model and the human accepted "no motion in flight" in the Copilot review, but if the design wants visible sloshing on good throws it needs a different water model (a new feature). (2) The expected rates sit about 0.2 points inside their limits (D35), so F035 must score margins. (3) Polish: at 1024x576 the panel's `sloshing` number field wraps under its checkbox. (4) `scripts/retune-search.ts` is a scratch tool (hard-coded 17 levels, `any` types, writes to `coverage/`); fine as a dev script, but it could reuse the shared level list if it stays.
 
 > [harness] session 102 · reviewer F025 · needs_review → done · ok · 1 commit(s) · 49 tool calls · 24m 45s · ~$2.04 API-equivalent
+
+## Session 103 · builder · F035 Slim the bottle toward real proportions now that the water sloshes
+- Did: searched slimmer shapes with sloshing on. Height fixed at 1.48 m (shoulder 0.28, neck 0.25 by 0.12, cap 0.30 by 0.13 as before), body width 1.48/ratio, so the ratio is the whole height over the body width. Each ratio started from the F025 tuning and was hill-climbed 10 to 12 minutes over 11 tuning numbers (scratch `coverage/f035-search.ts`, a penalty on window widths, rising centers, doubles, fixed-power shares, exact expected rates and points; shape read from a temporary `--shape=` argument in bottleShape.ts, reverted). No slimmer shape passes, so F034's 1.85:1 stays and no tuning changed. Only the comment in `bottleShape.ts` and D23/D33 in docs/ARCHITECTURE.md were updated; the shape test already locks 1.8 (kept, neck and cap minimums too).
+- Table (best found; expected rates, any seed):
+
+| Ratio | Narrowest single | Full-to-empty center ratio | Double at all 17 levels | Practiced | New | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1.85 (F034, default) | 10 | 2.63 | yes | 60.2% | 44.8% | pass (0 failed checks) |
+| 1.9 | 10 | 2.52 | yes | 59.1% | 44.3% | fail (practiced under 60%) |
+| 2.0 | 9 | 2.94 | yes | 54.4% | 42.1% | fail (windows 9, a 2-wide double) |
+| 2.1 | 8 | 2.84 | yes | 54.9% | 42.6% | fail (8 wide, doubles 1-2 wide) |
+| 2.2 | 8 | 2.56 | yes | 52.8% | 42.5% | fail |
+| 2.3 | 8 | 3.00 | yes | 51.2% | 41.3% | fail |
+| 2.4 | 6 | 3.55 | yes | 46.5% | 38.8% | fail |
+| 2.5 | 7 | 3.28 | yes | 50.1% | 40.2% | fail |
+| 2.6 | 5 | 3.65 | yes | 41.9% | 35.9% | fail |
+
+  The tuning of each row is in coverage/f035-r<ratio>.json (gitignored). The searches barely improved 2.0 and up from the F025 tuning, which already sits on the frontier; the sloshing water stays on the base in flight (D35), so it does not widen the catch band.
+- Verified: snaps at 1280x720, ?seed=7, 50% water: held, mid-flight, standing after a power-39 throw ("Nailed it! +1") and lying after a power-12 throw ("Down!"), all on screen, water visible in the bottle, no console errors. The 10/50/90% window-center throws are covered by tests/e2e/calibration.spec.ts. `npm run verify`: format, typecheck, unit, build green; e2e 272 of 273, the one failure (awkward.spec.ts:81, wall-clock pause test) passes alone (9 of 9) and ran next to my search processes.
+- Status: F035 → needs_review (outcome: keep F034's shape, as the feature allows)
+- Issues / follow-ups: the practiced floor (60%) with a 0.2-point margin is the binding limit for any slimmer bottle; a slimmer look would need the human to relax the 60% target or the water model to change in flight. The search was 10 to 12 minutes per ratio, not exhaustive.
+- Next: reviewer F035; M7 (phones) follows.

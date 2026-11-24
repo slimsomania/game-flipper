@@ -23,7 +23,10 @@ export interface Point {
  * base from a much larger landing angle than a tall thin one, which is what gives a single flip a
  * window of powers; it looked like a jar. F034 (D23) made it 0.80 m wide and 1.48 m tall (1.85:1)
  * with a real neck and retuned the throw to the same targets. The F002 shape (0.66 by 1.74 m,
- * 2.6:1) gives single windows only 3 to 4 powers wide. Change the proportions only together with
+ * 2.6:1) gives single windows only 3 to 4 powers wide. F035 tried 1.9 to 2.6:1 again with the
+ * water sloshing (height fixed at 1.48 m, width 1.48 / ratio, each retuned): the practiced rate
+ * falls from 60.2% (1.85:1) to 59.1% (1.9:1), 54% (2.0:1) and 42% (2.6:1), below the 60% target,
+ * and the single windows shrink to 5 to 10 wide, so 1.85:1 stays the slimmest that passes. Change the proportions only together with
  * a look at the flip-windows table (`npx tsx scripts/flip-windows.ts`) and `calibration.test.ts`.
  */
 
