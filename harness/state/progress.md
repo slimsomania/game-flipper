@@ -1835,3 +1835,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F025 stays todo (notes updated; attempt 2 of 3)
 - Issues / follow-ups: none new.
 - Next: raise total rotation at high power (throwAngularImpulse and throwSpinGrowth up, with the shell density/impulse adjusted) so the 30% level reaches 4pi+ before power 97, then rerun scripts/retune-search.ts from that start; the 17-level test edit is in the session 95 entry. If it fails, the human fallback is relaxing the fixed-power landing limit.
+
+> [harness] session 100 · builder F025 · todo → todo · ok · verify passed · 2 commit(s) · 14 tool calls · 1m 32s · ~$0.26 API-equivalent

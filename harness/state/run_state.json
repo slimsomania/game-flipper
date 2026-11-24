@@ -1,5 +1,5 @@
 {
-  "sessions": 99,
+  "sessions": 100,
   "doneAtLastMaintenance": 33,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -38,9 +38,9 @@
     "F025": "ba9dd37fc251f25f7cd386444dbe94b188859768"
   },
   "lastGate": {
-    "session": 99,
-    "ok": false,
-    "tail": "    Expected: > 0.05\n    Received:   0.020212696298489985\n\n      41 |     expect(state!.bottle.waterOffset).toBeLessThanOrEqual(0.825);\n      42 |   }\n    > 43 |   expect(max).toBeGreaterThan(0.05);\n         |               ^\n      44 |   expect(errors).toEqual([]);\n      45 | });\n      46 |\n        at C:\\Projects\\Game-flipper\\tests\\e2e\\slosh.spec.ts:43:15\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\slosh-with-sloshing-on-the-1a9e5--and-stays-within-its-limit\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\slosh-with-sloshing-on-the-1a9e5--and-stays-within-its-limit\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\slosh-with-sloshing-on-the-1a9e5--and-stays-within-its-limit\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\slosh-with-sloshing-on-the-1a9e5--and-stays-within-its-limit\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2) tests\\e2e\\slosh.spec.ts:47:1 › with sloshing on, the water stays at the base in the air, shifts as the bottle comes down and lands, and is back at rest \n\n    Error: expect(received).toBeGreaterThan(expected)\n\n    Expected: > 0.03\n    Received:   0\n\n      72 |   expect(trace.slice(0, 50).every((t) => t.offset === 0)).toBe(true);\n      73 |   // Coming down, landing and tipping move it toward the cap, by a visible amount.\n    > 74 |   expect(Math.max(...trace.map((t) => t.offset))).toBeGreaterThan(0.03);\n         |                                                   ^\n      75 |   // After the first table contact there is a step with the water shifted.\n      76 |   expect(trace.some((t) => t.contact && t.offset > 0)).toBe(true);\n      77 |   // At rest on the table it is back at the base.\n        at C:\\Projects\\Game-flipper\\tests\\e2e\\slosh.spec.ts:74:51\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\slosh-with-sloshing-on-the-01be5-d-lands-and-is-back-at-rest\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\slosh-with-sloshing-on-the-01be5-d-lands-and-is-back-at-rest\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\slosh-with-sloshing-on-the-01be5-d-lands-and-is-back-at-rest\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\slosh-with-sloshing-on-the-01be5-d-lands-and-is-back-at-rest\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2 failed\n    tests\\e2e\\slosh.spec.ts:25:1 › with sloshing on, the water slides toward the cap in a spinning throw and stays within its limit \n    tests\\e2e\\slosh.spec.ts:47:1 › with sloshing on, the water stays at the base in the air, shifts as the bottle comes down and lands, and is back at rest \n  270 passed (21.6m)"
+    "session": 100,
+    "ok": true,
+    "tail": ""
   },
   "lastViolations": []
 }
