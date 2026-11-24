@@ -686,9 +686,9 @@
       "depends_on": [
         "F025"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Searched 1.9 to 2.6:1 with sloshing on (height 1.48 m, width 1.48/ratio, 10 to 12 minute hill-climb each, exact expected rates): none passes (1.9:1 practiced 59.1% < 60%, 2.0:1 54%, 2.6:1 42%; singles shrink to 5-10 wide), so F034's 1.85:1 shape and the test minimum 1.8 stay; no tuning changed. Updated the comment in bottleShape.ts and D23/D33 in docs/ARCHITECTURE.md with the table; snaps of the held, flying, standing and lying bottle look right.",
+      "notes": "Searched 1.9 to 2.6:1 with sloshing on (height 1.48 m, width 1.48/ratio, 10 to 12 minute hill-climb each, exact expected rates): none passes (1.9:1 practiced 59.1% < 60%, 2.0:1 54%, 2.6:1 42%; singles shrink to 5-10 wide), so F034's 1.85:1 shape and the test minimum 1.8 stay; no tuning changed. Updated the comment in bottleShape.ts and D23/D33 in docs/ARCHITECTURE.md with the table; snaps of the held, flying, standing and lying bottle look right.\nReviewed: verify format/typecheck/899 unit/build green, e2e 272/273 (awkward.spec.ts:144 failed under search CPU load, passes 27/27 alone with --repeat-each=3); reproduced the 1.85, 1.9 and 2.0 rows exactly with a real-limit scorer, and three own 15-min searches at 1.9:1 scored by the real test limits topped out at practiced 59.56% (the only failing check); snaps at seed 7 (held, flight, Nailed it, Down) and at 1024x576 the 10%/20 and 90%/52 throws land upright on screen, also after R; no console errors.",
       "review_feedback": ""
     },
     {
