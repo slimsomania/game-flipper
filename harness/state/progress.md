@@ -1987,3 +1987,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) The doc comment of `bindGameInput` (src/game/gameInput.ts) still says "keyboard, wheel and mouse input" and "Left button down"; it could mention that a finger is the same grab. (2) The phone spec checks the live bar only once, at the end of the held push; my midway check is not in the suite. (3) A real-time CDP touch push gives a low power (10) because the samples arrive at the machine's pace; tests that need an exact power should keep using the virtual-clock helpers.
 
 > [harness] session 107 · reviewer F037 · needs_review → done · ok · 1 commit(s) · 41 tool calls · 22m 25s · ~$1.38 API-equivalent
+
+## Session 108 · builder · F038 Snap the game as a phone sees it
+- Did: `--phone` (740x360) and `--portrait` (360x740) in scripts/snap.ts, using the new `PORTRAIT_DEVICE` beside `PHONE_DEVICE` in tests/e2e/phoneDevice.ts (the module playwright.config.ts reads); touch actions `tap`, `touchdown`, `touchmove`, `touchup` parsed in scripts/snapActions.ts and sent as real touches via CDP `Input.dispatchTouchEvent`; shots use `scale: css`, so they are 740x360 despite the 3x pixel density. Parser fix: an empty coordinate (`tap:1;`) used to read as 0, now rejected. ARCHITECTURE snap row updated.
+- Verified: snap `--phone` with Enter, pause, touchdown 280;386, touchmove 280;286;100, shot, state, touchup: shot is 740x360 with the power bar at 14%, state dragging true, then lastThrow.source touch, no console errors; `--portrait` shot is 360x740; new unit tests in tests/harness/snapActions.test.ts; npm run verify run after the final edit.
+- Status: F038 → needs_review
+- Issues / follow-ups: the first verify failed on my own new unit test (empty coordinate), fixed in the parser. Touch actions without --phone/--portrait fail with a clear message.
+- Next: use `--phone` snaps for the later M7 layout checks; touchmove runs in real time, so do a short touchmove right before touchup if the release should throw.

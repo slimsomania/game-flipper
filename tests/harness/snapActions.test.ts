@@ -73,3 +73,25 @@ describe('snap call: action', () => {
     expect(() => parseAction('bogus:1')).toThrow(/Unknown action/);
   });
 });
+
+describe('snap touch actions (F038)', () => {
+  it('parses tap, touchdown, touchmove and touchup', () => {
+    expect(parseAction('tap:640;360')).toEqual({ kind: 'tap', x: 640, y: 360 });
+    expect(parseAction('touchdown:280;386')).toEqual({ kind: 'touchdown', x: 280, y: 386 });
+    expect(parseAction('touchmove:280;286;100')).toEqual({
+      kind: 'touchmove',
+      x: 280,
+      y: 286,
+      ms: 100,
+    });
+    expect(parseAction('touchup')).toEqual({ kind: 'touchup' });
+  });
+
+  it('rejects malformed ones', () => {
+    expect(() => parseAction('tap:640')).toThrow();
+    expect(() => parseAction('touchdown:1;')).toThrow();
+    expect(() => parseAction('touchmove:1;2')).toThrow();
+    expect(() => parseAction('touchmove:1;2;-5')).toThrow(/negative/);
+    expect(() => parseAction('touchmove:a;2;5')).toThrow();
+  });
+});

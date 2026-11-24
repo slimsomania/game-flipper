@@ -17,5 +17,14 @@ export const PHONE_DEVICE = {
     'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
 } as const;
 
+/** The same phone held upright (F038: `npm run snap -- --portrait`). */
+export const PORTRAIT_VIEWPORT = { width: PHONE_VIEWPORT.height, height: PHONE_VIEWPORT.width };
+
+export const PORTRAIT_DEVICE = {
+  ...PHONE_DEVICE,
+  viewport: PORTRAIT_VIEWPORT,
+  screen: PORTRAIT_VIEWPORT,
+} as const;
+
 /** The phone's tests live here; the desktop project skips the folder. */
 export const PHONE_TEST_DIR = 'phone';

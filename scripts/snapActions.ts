@@ -8,6 +8,10 @@ export type Action =
   | { kind: 'mousedown'; x: number; y: number }
   | { kind: 'mousemove'; x: number; y: number; ms: number }
   | { kind: 'mouseup' }
+  | { kind: 'tap'; x: number; y: number }
+  | { kind: 'touchdown'; x: number; y: number }
+  | { kind: 'touchmove'; x: number; y: number; ms: number }
+  | { kind: 'touchup' }
   | { kind: 'scene'; key: string }
   | { kind: 'pause' | 'resume' }
   | { kind: 'step'; frames: number }
@@ -31,8 +35,10 @@ export function parseAction(token: string): Action {
   const kind = colon === -1 ? token : token.slice(0, colon);
   const arg = colon === -1 ? '' : token.slice(colon + 1);
   const numbers = (count: number): number[] => {
-    const parts = arg.split(';').map((p) => Number(p.trim()));
-    if (parts.length !== count || parts.some((p) => !Number.isFinite(p))) {
+    const raw = arg.split(';').map((p) => p.trim());
+    const parts = raw.map(Number);
+    // An empty part would otherwise read as 0, so "tap:1;" must be rejected here.
+    if (parts.length !== count || raw.includes('') || parts.some((p) => !Number.isFinite(p))) {
       throw new Error(`"${token}": expected ${count} number(s) separated by ";"`);
     }
     return parts;
@@ -67,7 +73,18 @@ export function parseAction(token: string): Action {
       return { kind, x, y, ms };
     }
     case 'mouseup':
+    case 'touchup':
       return { kind };
+    case 'tap':
+    case 'touchdown': {
+      const [x, y] = numbers(2);
+      return { kind, x, y };
+    }
+    case 'touchmove': {
+      const [x, y, ms] = numbers(3);
+      if (ms < 0) throw new Error(`"${token}": the time can't be negative`);
+      return { kind, x, y, ms };
+    }
     case 'scene':
       return { kind, key: text() };
     case 'pause':

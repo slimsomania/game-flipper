@@ -8,9 +8,10 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { chromium, type Page } from '@playwright/test';
+import { chromium, type CDPSession, type Page } from '@playwright/test';
 import { createServer } from 'vite';
 import { GAME_HEIGHT, GAME_WIDTH } from '../src/core/constants';
+import { PHONE_DEVICE, PORTRAIT_DEVICE } from '../tests/e2e/phoneDevice';
 import { parseAction, type Action } from './snapActions';
 
 const USAGE = `Usage: npm run snap -- [options]
@@ -20,7 +21,10 @@ Options:
   --url <path>       Page to open, e.g. "/?seed=7". Default "/".
   --width <px>       Viewport width. Default ${GAME_WIDTH}.
   --height <px>      Viewport height. Default ${GAME_HEIGHT}.
-  --out <dir>        Output folder (emptied first). Default harness/artifacts/snap.
+  --phone            Emulate the phone of the e2e "phone" project: 740x360 landscape, touch.
+                     Shots are saved at CSS size (740x360). Overrides --width/--height.
+  --portrait         The same phone held upright, 360x740 (implies --phone).
+  --out <dir>      Output folder (emptied first). Default harness/artifacts/snap.
 
 Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} logical canvas):
   wait:<ms>                         wait in real time
@@ -40,7 +44,14 @@ Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} lo
                                     value of the last mouse move while you take the shot. The
                                     held bottle fills about x 240 to 320 and y 312 to 460 on the
                                     canvas (its middle is at about 280;386).
-  scene:<Key>                       jump to a scene (window.__FLIPPER__.startScene)
+  tap:<x>;<y>                       touch the screen there and lift the finger (needs --phone or
+                                    --portrait, like the other touch actions)
+  touchdown:<x>;<y>                 put a finger down there
+  touchmove:<x>;<y>;<ms>            slide the finger in a straight line from where it is, taking
+                                    <ms> (0 jumps). The finger carries over, so a push can be
+                                    photographed halfway: touchdown, touchmove, shot, touchup.
+  touchup                           lift the finger where it is (throws if it was moving up)
+  scene:<Key>                   jump to a scene (window.__FLIPPER__.startScene)
   pause / resume                    freeze / unfreeze the real-time simulation clock
   step:<frames>                     advance the simulation by exactly <frames> fixed steps
   call:<method>;<arg>;...           call window.__FLIPPER__.<method>(args); each arg is a number,
@@ -101,12 +112,46 @@ async function glide(page: Page, from: MouseState, to: MouseState, ms: number): 
   }
 }
 
+/** One touch event through the browser's own input pipeline, as a real finger makes it. */
+async function touch(
+  cdp: CDPSession,
+  page: Page,
+  type: 'touchStart' | 'touchMove' | 'touchEnd',
+  at: MouseState,
+): Promise<void> {
+  const p = await toPage(page, at.x, at.y);
+  await cdp.send('Input.dispatchTouchEvent', {
+    type,
+    touchPoints: type === 'touchEnd' ? [] : [{ x: p.x, y: p.y }],
+  });
+}
+
+async function slide(
+  cdp: CDPSession,
+  page: Page,
+  from: MouseState,
+  to: MouseState,
+  ms: number,
+): Promise<void> {
+  const moves = ms > 0 ? Math.max(2, Math.round(ms / 16)) : 1;
+  for (let i = 1; i <= moves; i++) {
+    const t = i / moves;
+    await touch(cdp, page, 'touchMove', {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t,
+    });
+    if (ms > 0) await page.waitForTimeout(ms / moves);
+  }
+}
+
 async function perform(
   page: Page,
   action: Action,
   shot: (name: string) => Promise<void>,
   report: Report,
   mouse: MouseState,
+  finger: MouseState,
+  getCdp: () => Promise<CDPSession>,
 ): Promise<void> {
   switch (action.kind) {
     case 'wait':
@@ -152,6 +197,25 @@ async function perform(
     case 'mouseup':
       await page.mouse.up();
       break;
+    case 'tap':
+    case 'touchdown':
+    case 'touchmove':
+    case 'touchup': {
+      const cdp = await getCdp();
+      if (action.kind === 'touchup') {
+        await touch(cdp, page, 'touchEnd', finger);
+        break;
+      }
+      const to = { x: action.x, y: action.y };
+      if (action.kind === 'touchmove') {
+        await slide(cdp, page, finger, to, action.ms);
+      } else {
+        await touch(cdp, page, 'touchStart', to);
+        if (action.kind === 'tap') await touch(cdp, page, 'touchEnd', to);
+      }
+      Object.assign(finger, to);
+      break;
+    }
     case 'scene':
       await page.evaluate((key) => window.__FLIPPER__!.startScene(key), action.key);
       await page.waitForFunction(
@@ -203,6 +267,8 @@ async function main(): Promise<number> {
       url: { type: 'string', default: '/' },
       width: { type: 'string', default: String(GAME_WIDTH) },
       height: { type: 'string', default: String(GAME_HEIGHT) },
+      phone: { type: 'boolean', default: false },
+      portrait: { type: 'boolean', default: false },
       out: { type: 'string', default: 'harness/artifacts/snap' },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -217,7 +283,10 @@ async function main(): Promise<number> {
     .map((token) => token.trim())
     .filter(Boolean)
     .map(parseAction);
-  const viewport = { width: Number(values.width), height: Number(values.height) };
+  const device = values.portrait ? PORTRAIT_DEVICE : values.phone ? PHONE_DEVICE : null;
+  const viewport = device
+    ? { ...device.viewport }
+    : { width: Number(values.width), height: Number(values.height) };
   const outDir = resolve(values.out);
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
@@ -246,7 +315,8 @@ async function main(): Promise<number> {
   let failed = false;
 
   try {
-    const page = await browser.newPage({ viewport });
+    const context = await browser.newContext(device ? { ...device } : { viewport });
+    const page = await context.newPage();
     page.on('pageerror', (err) => report.errors.push(`pageerror: ${err.message}`));
     page.on('console', (msg) => {
       if (msg.type() === 'error') report.errors.push(`console: ${msg.text()}`);
@@ -255,7 +325,7 @@ async function main(): Promise<number> {
     let count = 0;
     const shot = async (name: string): Promise<void> => {
       const file = join(outDir, `${String(++count).padStart(2, '0')}-${safeName(name)}.png`);
-      await page.screenshot({ path: file });
+      await page.screenshot({ path: file, scale: 'css' });
       report.shots.push(rel(file));
     };
 
@@ -267,7 +337,14 @@ async function main(): Promise<number> {
       });
       await page.waitForTimeout(300); // let the first frames render
       const mouse: MouseState = { x: 0, y: 0 };
-      for (const action of actions) await perform(page, action, shot, report, mouse);
+      const finger: MouseState = { x: 0, y: 0 };
+      let cdp: CDPSession | null = null;
+      const getCdp = async (): Promise<CDPSession> => {
+        if (!device) throw new Error('touch actions need --phone or --portrait');
+        return (cdp ??= await context.newCDPSession(page));
+      };
+      for (const action of actions)
+        await perform(page, action, shot, report, mouse, finger, getCdp);
       await page.waitForTimeout(100);
     } catch (err) {
       failed = true;
