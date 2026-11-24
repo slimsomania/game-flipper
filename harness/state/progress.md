@@ -1925,3 +1925,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F035 → needs_review (outcome: keep F034's shape, as the feature allows)
 - Issues / follow-ups: the practiced floor (60%) with a 0.2-point margin is the binding limit for any slimmer bottle; a slimmer look would need the human to relax the 60% target or the water model to change in flight. The search was 10 to 12 minutes per ratio, not exhaustive.
 - Next: reviewer F035; M7 (phones) follows.
+
+> [harness] session 103 · builder F035 · todo → needs_review · ok · verify passed · 1 commit(s) · 61 tool calls · 50m 38s · ~$0.88 API-equivalent

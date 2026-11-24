@@ -687,7 +687,7 @@
         "F025"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Searched 1.9 to 2.6:1 with sloshing on (height 1.48 m, width 1.48/ratio, 10 to 12 minute hill-climb each, exact expected rates): none passes (1.9:1 practiced 59.1% < 60%, 2.0:1 54%, 2.6:1 42%; singles shrink to 5-10 wide), so F034's 1.85:1 shape and the test minimum 1.8 stay; no tuning changed. Updated the comment in bottleShape.ts and D23/D33 in docs/ARCHITECTURE.md with the table; snaps of the held, flying, standing and lying bottle look right.",
       "review_feedback": ""
     },
