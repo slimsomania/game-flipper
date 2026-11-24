@@ -1828,3 +1828,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: print the 30% sweep above power 60, find why no 2-turn success exists, then rerun the search from coverage/best-11.json-style start (growth 0.02, angular impulse 12.88). The 17-level calibration test edit is still described in the session 95 entry.
 
 > [harness] session 99 · builder F025 · todo → todo · ok · verify FAILED · 1 commit(s) · 35 tool calls · 22m 6s · ~$0.62 API-equivalent
+
+## Session 100 · builder · F025 Turn sloshing on by default and recalibrate
+- Did: fixed the red gate from session 99: tests/e2e/slosh.spec.ts threw at power 40, which after the damping fix lands upright or barely moves the water; the throws now use power 50 (10% water, seed 7) and 70 (30% water), assertions unchanged. Then the diagnosis session 99 asked for: the 30% sweep with sloshing on. Rotation at landing is quantized: 2pi (success) up to power 52, 2.5pi side fails from 54 to 88, 3pi cap landings at 90 and 98, and 3.5pi (11.0 rad) fails at 94-100. The spin tops out near 11 rad at power 100, so a two-turn landing never happens at 20-50% water. This is a spin-range problem (not a landing or table problem). Default stays sloshing 0; no tuning value changed; the 17-level calibration test is still not committed.
+- Verified: `npx playwright test tests/e2e/slosh.spec.ts` (3 passed), prettier check. Full verify not run (about 20 min, and no retune change was made).
+- Status: F025 stays todo (notes updated; attempt 2 of 3)
+- Issues / follow-ups: none new.
+- Next: raise total rotation at high power (throwAngularImpulse and throwSpinGrowth up, with the shell density/impulse adjusted) so the 30% level reaches 4pi+ before power 97, then rerun scripts/retune-search.ts from that start; the 17-level test edit is in the session 95 entry. If it fails, the human fallback is relaxing the fixed-power landing limit.
