@@ -47,13 +47,13 @@ describe('sloshing switch', () => {
 
 describe('sloshing water', () => {
   it('slides toward the cap during a spinning throw', () => {
-    const { offsets } = fly(0.1, 40, SLOSH);
+    const { offsets } = fly(0.1, 50, SLOSH);
     expect(Math.max(...offsets)).toBeGreaterThan(0.05);
   });
 
   it('returns to the base within 1 s once the bottle stands at rest', () => {
-    // 0.3 water at power 80 lands upright (slosh on), and the result stays up for 60 steps.
-    const { sim, offsets } = fly(0.3, 80, SLOSH, 55);
+    // 0.3 water at power 50 lands upright (slosh on), and the result stays up for 60 steps.
+    const { sim, offsets } = fly(0.3, 50, SLOSH, 55);
     const snap = sim.snapshot();
     expect(snap.outcome?.result).toBe('success');
     expect(Math.max(...offsets)).toBeGreaterThanOrEqual(0);

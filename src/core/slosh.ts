@@ -1,5 +1,6 @@
 import { Polygon, PrismaticJoint, Vec2, type Body, type World } from 'planck';
 import { BOTTLE_BODY_HEIGHT, BOTTLE_WALL, waterVertices } from './bottleShape';
+import { SIM_DT } from './constants';
 import type { Tuning } from './tuning';
 
 /*
@@ -69,6 +70,8 @@ export class WaterSlosh {
   private readonly stiffness: number;
   private readonly damping: number;
   private readonly limit: number;
+  private readonly linearDamping: number;
+  private readonly angularDamping: number;
 
   /** Build the water at `level` (> 0, with real water) on `shell`, resting on the base. */
   constructor(
@@ -105,6 +108,8 @@ export class WaterSlosh {
       ),
     )!;
     const omega = 2 * Math.PI * tuning.sloshFrequency;
+    this.linearDamping = tuning.bottleLinearDamping;
+    this.angularDamping = tuning.bottleAngularDamping;
     this.stiffness = this.body.getMass() * omega * omega;
     this.damping = 2 * tuning.sloshDamping * this.body.getMass() * omega;
   }
@@ -129,6 +134,39 @@ export class WaterSlosh {
     const f = { x: axis.x * force, y: axis.y * force };
     this.body.applyForceToCenter(f, true);
     this.shell.applyForceToCenter({ x: -f.x, y: -f.y }, true);
+    this.applyRigidDamping();
+  }
+
+  /**
+   * Damp the shell and the water as one rigid body, as if they were a single body with the
+   * bottle's damping: the shell's own damping is off while the water is a body of its own (an
+   * undamped water would keep the spin of a full bottle). Like Box2D's damping, a velocity is
+   * scaled by 1 / (1 + dt * damping): the combined center's velocity by the linear damping, the
+   * spin and the velocity it causes by the angular damping. The water's slide along the bottle
+   * is left alone.
+   */
+  private applyRigidDamping(): void {
+    const bodies = [this.shell, this.body];
+    const { mass, center } = summarize(bodies);
+    const omega = this.shell.getAngularVelocity();
+    let vx = 0;
+    let vy = 0;
+    for (const b of bodies) {
+      const v = b.getLinearVelocityFromWorldPoint(center);
+      vx += (v.x * b.getMass()) / mass;
+      vy += (v.y * b.getMass()) / mass;
+    }
+    const linear = 1 / (1 + SIM_DT * this.linearDamping) - 1;
+    const angular = 1 / (1 + SIM_DT * this.angularDamping) - 1;
+    for (const b of bodies) {
+      const c = b.getWorldCenter();
+      const v = b.getLinearVelocity();
+      b.setLinearVelocity({
+        x: v.x + vx * linear - omega * (c.y - center.y) * angular,
+        y: v.y + vy * linear + omega * (c.x - center.x) * angular,
+      });
+      b.setAngularVelocity(b.getAngularVelocity() * (1 + angular));
+    }
   }
 
   /** Move the water with the shell to a new pose, resting on the base (call right after the shell's setTransform). */

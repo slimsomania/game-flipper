@@ -80,3 +80,30 @@ describe('bottle damping', () => {
     expect(bottle.body.getAngle()).toBe(0);
   });
 });
+
+describe('bottle damping with sloshing water', () => {
+  /** Spin decay rate (1/s) over 20 free-flight steps after a power 35 throw. */
+  function decay(level: number, sloshing: number): number {
+    const tuning = resolveTuning({ sloshing });
+    const world = new World({ gravity: { x: 0, y: GRAVITY } });
+    createTable(world);
+    const bottle = new Bottle(world, tuning, level);
+    bottle.launch(throwImpulse(35, tuning));
+    const start = bottle.body.getAngularVelocity();
+    for (let i = 0; i < 20; i++) {
+      bottle.beforeStep();
+      world.step(SIM_DT);
+    }
+    return -Math.log(bottle.body.getAngularVelocity() / start) / (20 * SIM_DT);
+  }
+
+  it('decays the spin at nearly the same rate at every water level, close to solid water', () => {
+    // Before the water was damped with the shell, the rate fell from 4.3/s (10% water) to 2.3/s
+    // (90%) while solid water decays at 4.8/s at every level. What is left (4.9 to 5.4/s) is the
+    // water's own slide changing the bottle's inertia, which is real.
+    const solid = decay(0.5, 0);
+    const rates = [0.1, 0.3, 0.5, 0.7, 0.9].map((level) => decay(level, 1));
+    for (const rate of rates) expect(Math.abs(rate - solid) / solid).toBeLessThan(0.15);
+    expect((Math.max(...rates) - Math.min(...rates)) / solid).toBeLessThan(0.15);
+  });
+});

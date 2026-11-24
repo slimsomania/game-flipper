@@ -126,8 +126,13 @@ export class Bottle {
     this.slosh = null;
     const vertices = waterVertices(this.level);
     if (!vertices) return;
+    this.body.setAngularDamping(this.tuning.bottleAngularDamping);
+    this.body.setLinearDamping(this.tuning.bottleLinearDamping);
     if (isSloshing(this.tuning)) {
       this.slosh = new WaterSlosh(this.world, this.body, this.level, this.tuning);
+      // The slosh damps shell and water together (as forces); the shell's own damping would count twice.
+      this.body.setAngularDamping(0);
+      this.body.setLinearDamping(0);
       return;
     }
     this.waterFixture = this.body.createFixture({
