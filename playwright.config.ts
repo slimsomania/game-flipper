@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { PHONE_DEVICE, PHONE_TEST_DIR } from './tests/e2e/phoneDevice';
 
 // E2E tests get their own dev server on a fixed port, so they never collide with `npm run dev` (5173).
 const PORT = 5199;
@@ -14,13 +15,27 @@ export default defineConfig({
   expect: { timeout: 5_000 },
   reporter: [['list']],
   use: {
-    ...devices['Desktop Chrome'],
     baseURL: `http://localhost:${PORT}`,
-    // Desktop landscape viewport, the same size as the game's 1280×720 logical canvas.
-    viewport: { width: 1280, height: 720 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
+  projects: [
+    {
+      name: 'desktop',
+      testIgnore: `**/${PHONE_TEST_DIR}/**`,
+      use: {
+        ...devices['Desktop Chrome'],
+        // Desktop landscape viewport, the same size as the game's 1280×720 logical canvas.
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      // A small phone held sideways, driven by touch (tests/e2e/phoneDevice.ts).
+      name: 'phone',
+      testDir: `tests/e2e/${PHONE_TEST_DIR}`,
+      use: { browserName: 'chromium', ...PHONE_DEVICE },
+    },
+  ],
   webServer: [
     {
       command: `npx vite --port ${PORT} --strictPort`,

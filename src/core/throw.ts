@@ -14,7 +14,7 @@ export const MIN_POWER = 0;
 export const MAX_POWER = 100;
 
 /** Where a throw came from. The physics treats every source the same. */
-export type ThrowSource = 'keyboard' | 'mouse';
+export type ThrowSource = 'keyboard' | 'mouse' | 'touch';
 
 /** What a throw gives the bottle, applied at its center of mass. */
 export interface ThrowImpulse {

@@ -10,6 +10,9 @@ import type { Tuning } from './tuning';
  * ordinary `throwBottle`.
  */
 
+/** The kind of pointer that holds the bottle: it is only recorded, the physics treats both alike. */
+export type PointerSource = 'mouse' | 'touch';
+
 /** What the mouse control needs from the simulation it belongs to. */
 export interface MouseHost {
   phase(): Phase;
@@ -18,12 +21,13 @@ export interface MouseHost {
   readonly powerMeter: PowerMeter;
   /** Where the held bottle is. */
   bottle(): BottlePosition;
-  /** Throw the held bottle with `power`, as a mouse throw. Returns whether it threw. */
-  throwWithMouse(power: number): boolean;
+  /** Throw the held bottle with `power`, as a throw from `source`. Returns whether it threw. */
+  throwWithPointer(power: number, source: PointerSource): boolean;
 }
 
 export class MouseControl {
   private readonly grabbing = new Grab();
+  private source: PointerSource = 'mouse';
 
   constructor(private readonly host: MouseHost) {}
 
@@ -45,10 +49,12 @@ export class MouseControl {
    * The left button goes down at (`x`, `y`) at time `t` (seconds: the browser's event time). Grabs
    * the bottle if `canGrab` says the press is on it, and returns whether it did. The power bar then
    * shows the live push, which starts at 0. The bottle stays in the hand: only the push matters.
+   * `source` is the kind of pointer (a finger is `touch`): the throw records it, nothing else changes.
    */
-  grab(x: number, y: number, t: number): boolean {
+  grab(x: number, y: number, t: number, source: PointerSource = 'mouse'): boolean {
     if (this.grabbing.active || !this.canGrab(x, y)) return false;
     if (!this.grabbing.begin(y, t, this.host.powerMeter.value)) return false;
+    this.source = source;
     this.showPush();
     return true;
   }
@@ -74,7 +80,7 @@ export class MouseControl {
       return false;
     }
     this.host.powerMeter.set(power);
-    return this.host.throwWithMouse(power);
+    return this.host.throwWithPointer(power, this.source);
   }
 
   /** Drop the grab without throwing (the window lost focus): the bar goes back to what it was. */

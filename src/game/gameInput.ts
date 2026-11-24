@@ -77,7 +77,12 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
       // A press on a button (the speaker) belongs to the button: it grabs nothing and skips nothing.
       if (currentlyOver.length > 0) return;
       // Grabbing only works while aiming and skipping only during a result, so at most one happens.
-      if (isLeftButton(pointer) && sim.mouse.grab(pointer.x, pointer.y, eventSeconds(pointer))) {
+      // The scene tells core what kind of pointer it is (a finger or a mouse); the physics doesn't care.
+      const source = pointer.wasTouch ? 'touch' : 'mouse';
+      if (
+        isLeftButton(pointer) &&
+        sim.mouse.grab(pointer.x, pointer.y, eventSeconds(pointer), source)
+      ) {
         moves.begin(eventMillis(pointer));
         return;
       }

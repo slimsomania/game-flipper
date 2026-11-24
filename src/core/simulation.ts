@@ -81,7 +81,7 @@ export class Simulation {
         const { x, y } = this.bottle.body.getPosition();
         return { x, y, angle: this.bottle.body.getAngle() };
       },
-      throwWithMouse: (power) => this.throwBottle(power, 'mouse'),
+      throwWithPointer: (power, source) => this.throwBottle(power, source),
     });
     this.water = new WaterSupply(
       createRng(this.seed),
