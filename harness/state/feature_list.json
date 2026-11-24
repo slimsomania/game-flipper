@@ -812,7 +812,7 @@
         "F037"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Added --phone / --portrait and the touch actions tap, touchdown, touchmove, touchup to scripts/snap.ts (real touches through CDP Input.dispatchTouchEvent) and their parser to scripts/snapActions.ts; the device settings come from tests/e2e/phoneDevice.ts (new PORTRAIT_DEVICE), shared with playwright.config.ts. Verified by snaps: --phone push shows 740x360 with the live power bar, dragging true mid-push, lastThrow.source 'touch' after touchup; --portrait shots are 360x740. Unit tests in tests/harness/snapActions.test.ts; the parser now also rejects an empty coordinate such as tap:1;.",
       "review_feedback": ""
     },
