@@ -1844,3 +1844,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F025 -> blocked (attempt 3 of 3; notes updated)
 - Issues / follow-ups: the 17-level calibration test and default flip are still uncommitted (see the session 95 entry). Lower damping makes windows narrow and the fixed-power landing worse, so the targets conflict under this model.
 - Next: human decision: relax the fixed-power landing limit and points rule (the stated fallback), or change the flight/spin model; then reuse the damping x0.4 start.
+
+> [harness] session 101 · builder F025 · todo → blocked · ok · verify passed · 1 commit(s) · 15 tool calls · 10m 15s · ~$0.26 API-equivalent
