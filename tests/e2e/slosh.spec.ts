@@ -53,7 +53,7 @@ test('with sloshing on, the water stays at the base in the air, shifts as the bo
     // A boolean works too (snap passes `true`), and turns sloshing on.
     window.__FLIPPER__!.setTuningValue('sloshing', true);
     window.__FLIPPER__!.setWater(0.3);
-    window.__FLIPPER__!.throwBottle(70);
+    window.__FLIPPER__!.throwBottle(60);
   });
   const trace = await page.evaluate(() => {
     const out: { y: number; offset: number; contact: boolean }[] = [];

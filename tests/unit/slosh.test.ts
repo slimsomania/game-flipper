@@ -2,13 +2,18 @@ import { World } from 'planck';
 import { describe, expect, it } from 'vitest';
 import { Bottle } from '../../src/core/bottle';
 import { bottleMassProperties } from '../../src/core/bottleShape';
-import { sloshLimit } from '../../src/core/slosh';
+import { GRAVITY, SIM_DT } from '../../src/core/constants';
+import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindow';
+import { SLOSH_RELEASE_MARGIN, shouldReleaseWater, sloshLimit } from '../../src/core/slosh';
 import { Simulation } from '../../src/core/simulation';
+import { TABLE_LEFT_X, TABLE_TOP_Y, createTable } from '../../src/core/table';
+import { throwImpulse } from '../../src/core/throw';
 import { DEFAULT_TUNING, resolveTuning } from '../../src/core/tuning';
 
 /*
  * Sloshing water (F023): the water as a separate body on a prismatic joint, behind the `sloshing`
- * tuning switch (0 = solid water, the default).
+ * tuning switch (0 = solid water, the default). Since F025 the water is pinned to the base through
+ * the free flight and becomes the sliding body only as the bottle comes down to the table.
  */
 
 const SLOSH = { sloshing: 1 };
@@ -52,8 +57,11 @@ describe('sloshing water', () => {
   });
 
   it('returns to the base within 1 s once the bottle stands at rest', () => {
-    // 0.3 water at power 50 lands upright (slosh on), and the result stays up for 60 steps.
-    const { sim, offsets } = fly(0.3, 50, SLOSH, 55);
+    // A throw at the center of the 30% bottle's single-flip window lands upright (slosh on), and
+    // the result stays up for 60 steps.
+    const single = widestWindow(findWindows(sweepPowers(0.3, SLOSH)), 1);
+    expect(single).not.toBeNull();
+    const { sim, offsets } = fly(0.3, Math.round(single!.center), SLOSH, 55);
     const snap = sim.snapshot();
     expect(snap.outcome?.result).toBe('success');
     expect(Math.max(...offsets)).toBeGreaterThanOrEqual(0);
@@ -124,5 +132,134 @@ describe('sloshing water', () => {
     expect(wet.placeBottle({ x: 1, y: 2, angle: 0, omega: 3 })).toBe(true);
     for (let i = 0; i < 30; i++) wet.step();
     expect(Number.isFinite(wet.snapshot().bottle.y)).toBe(true);
+  });
+});
+
+describe('sloshing water is pinned to the base in the air (F025)', () => {
+  /** A bottle thrown at `power` from the hand, in a world with the table; `step` runs one sim step. */
+  function thrown(level: number, power: number, overrides: object) {
+    const tuning = resolveTuning(overrides);
+    const world = new World({ gravity: { x: 0, y: GRAVITY } });
+    const table = createTable(world);
+    const bottle = new Bottle(world, tuning, level);
+    bottle.launch(throwImpulse(power, tuning));
+    const step = (): void => {
+      bottle.beforeStep();
+      world.step(SIM_DT);
+    };
+    return { bottle, table, step };
+  }
+
+  const pose = (bottle: Bottle) => {
+    const p = bottle.body.getPosition();
+    const v = bottle.body.getLinearVelocity();
+    return {
+      x: p.x,
+      y: p.y,
+      angle: bottle.body.getAngle(),
+      vx: v.x,
+      vy: v.y,
+      omega: bottle.body.getAngularVelocity(),
+    };
+  };
+
+  it('flies exactly like solid water until it nears the table, then is released', () => {
+    for (const level of [0.1, 0.5, 0.9]) {
+      for (const power of [20, 50, 80, 100]) {
+        const solid = thrown(level, power, { sloshing: 0 });
+        const wet = thrown(level, power, SLOSH);
+        let steps = 0;
+        while (wet.bottle.isWaterPinned && steps < 400) {
+          expect(pose(wet.bottle), `${level} water, power ${power}`).toEqual(pose(solid.bottle));
+          expect(wet.bottle.waterOffset).toBe(0);
+          solid.step();
+          wet.step();
+          steps++;
+        }
+        expect(wet.bottle.isWaterPinned, `${level} water, power ${power}`).toBe(false);
+        expect(steps).toBeGreaterThan(20); // a real flight, not a release at the hand
+      }
+    }
+  });
+
+  it('keeps the spin in free flight: no damping means no loss', () => {
+    // Two bodies on a joint lost about 40% of the angular momentum in five steps at power 80.
+    // Power 60 keeps every level under planck's cap of a quarter turn per step (94 rad/s), which
+    // would clamp the spin of solid water just the same.
+    for (const level of [0.1, 0.5, 0.9]) {
+      const { bottle, step } = thrown(level, 60, {
+        ...SLOSH,
+        bottleAngularDamping: 0,
+        bottleLinearDamping: 0,
+      });
+      const start = bottle.body.getAngularVelocity();
+      for (let i = 0; i < 40; i++) step();
+      expect(bottle.isWaterPinned).toBe(true);
+      expect(bottle.body.getAngularVelocity()).toBeCloseTo(start, 9);
+    }
+  });
+
+  it('is released before the bottle first touches the table, at every level and power', () => {
+    for (let tenth = 1; tenth <= 9; tenth++) {
+      for (let power = 0; power <= 100; power += 10) {
+        const { bottle, table, step } = thrown(tenth / 10, power, SLOSH);
+        let steps = 0;
+        while (!bottle.touches(table) && steps < 400) {
+          step();
+          steps++;
+        }
+        if (!bottle.touches(table)) continue; // off the end of the table: nothing to check
+        expect(bottle.isWaterPinned, `${tenth * 10}% water, power ${power}`).toBe(false);
+      }
+    }
+  }, 60_000);
+
+  it('releases the water without changing the bottle’s motion', () => {
+    // No damping, so the one beforeStep() that releases the water changes nothing else.
+    const tuning = resolveTuning({ ...SLOSH, bottleAngularDamping: 0, bottleLinearDamping: 0 });
+    const world = new World({ gravity: { x: 0, y: GRAVITY } });
+    createTable(world);
+    const bottle = new Bottle(world, tuning, 0.4);
+    const mass = (() => {
+      bottle.release();
+      return bottle.totalMass;
+    })();
+    bottle.place({
+      x: TABLE_LEFT_X + 2,
+      y: TABLE_TOP_Y - 0.02,
+      angle: 0.3,
+      vx: 1,
+      vy: 2,
+      omega: -4,
+    });
+    const center = bottle.body.getWorldCenter().clone();
+    const before = pose(bottle);
+    bottle.beforeStep();
+    expect(bottle.isWaterPinned).toBe(false);
+    expect(bottle.totalMass).toBeCloseTo(mass, 9);
+    // The shell's own center moved (the water is a body of its own now), but it turns with the same
+    // spin, and its velocity is the rigid motion of the old center: v + omega x (c - center).
+    const c = bottle.body.getWorldCenter();
+    const v = bottle.body.getLinearVelocity();
+    expect(bottle.body.getAngularVelocity()).toBeCloseTo(before.omega, 9);
+    expect(v.x).toBeCloseTo(before.vx - before.omega * (c.y - center.y), 9);
+    expect(v.y).toBeCloseTo(before.vy + before.omega * (c.x - center.x), 9);
+    expect(bottle.waterOffset).toBe(0);
+  });
+});
+
+describe('shouldReleaseWater', () => {
+  it('waits while the bottle is high up, and releases within the margin of the tabletop', () => {
+    expect(shouldReleaseWater(TABLE_TOP_Y - 1, 0)).toBe(false);
+    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN - 0.001, 0)).toBe(false);
+    expect(shouldReleaseWater(TABLE_TOP_Y - SLOSH_RELEASE_MARGIN, 0)).toBe(true);
+    expect(shouldReleaseWater(TABLE_TOP_Y + 0.5, 0)).toBe(true); // below the top: off the table
+  });
+
+  it('looks two steps ahead when falling, and not when rising', () => {
+    const y = TABLE_TOP_Y - SLOSH_RELEASE_MARGIN - 0.1;
+    expect(shouldReleaseWater(y, 3)).toBe(true); // 3 m/s down covers 0.1 m in two steps
+    expect(shouldReleaseWater(y, 2)).toBe(false);
+    expect(shouldReleaseWater(y, -3)).toBe(false);
   });
 });

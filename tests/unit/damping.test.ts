@@ -2,7 +2,7 @@ import { World } from 'planck';
 import { describe, expect, it } from 'vitest';
 import { Bottle } from '../../src/core/bottle';
 import { GRAVITY, SIM_DT } from '../../src/core/constants';
-import { createTable } from '../../src/core/table';
+import { TABLE_LEFT_X, TABLE_TOP_Y, createTable } from '../../src/core/table';
 import { throwImpulse } from '../../src/core/throw';
 import { resolveTuning, type Tuning } from '../../src/core/tuning';
 
@@ -97,13 +97,38 @@ describe('bottle damping with sloshing water', () => {
     return -Math.log(bottle.body.getAngularVelocity() / start) / (20 * SIM_DT);
   }
 
-  it('decays the spin at nearly the same rate at every water level, close to solid water', () => {
-    // Before the water was damped with the shell, the rate fell from 4.3/s (10% water) to 2.3/s
-    // (90%) while solid water decays at 4.8/s at every level. What is left (4.9 to 5.4/s) is the
-    // water's own slide changing the bottle's inertia, which is real.
-    const solid = decay(0.5, 0);
-    const rates = [0.1, 0.3, 0.5, 0.7, 0.9].map((level) => decay(level, 1));
-    for (const rate of rates) expect(Math.abs(rate - solid) / solid).toBeLessThan(0.15);
-    expect((Math.max(...rates) - Math.min(...rates)) / solid).toBeLessThan(0.15);
+  it('decays the spin in flight exactly like solid water, at every water level', () => {
+    // History: before the water was damped with the shell, the rate fell from 4.3/s (10% water) to
+    // 2.3/s (90%). After that fix it was 4.9 to 5.4/s against solid water's 4.8/s; the rest was not
+    // the water's slide (the water never left the base) but spin leaking out of the joint between
+    // the two bodies. Since F025 the water is pinned to the base in the air, so the bottle flies as
+    // one body and decays exactly like solid water.
+    for (const level of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+      expect(decay(level, 1), `${level * 100}% water`).toBeCloseTo(decay(level, 0), 9);
+    }
+  });
+
+  it('once the water is released near the table, damps shell and water as one body', () => {
+    // A slow spin, placed with its base 2 cm above the tabletop and moving up, so the water is
+    // released at once and the bottle is then in free flight for the steps measured.
+    const damping = 2.5;
+    const tuning = resolveTuning({ sloshing: 1, bottleAngularDamping: damping });
+    const world = new World({ gravity: { x: 0, y: GRAVITY } });
+    createTable(world);
+    const bottle = new Bottle(world, tuning, 0.5);
+    bottle.place({ x: TABLE_LEFT_X + 2, y: TABLE_TOP_Y - 0.02, angle: 0, vy: -3, omega: 2 });
+    bottle.beforeStep();
+    expect(bottle.isWaterPinned).toBe(false);
+    world.step(SIM_DT);
+    const start = bottle.body.getAngularVelocity();
+    const steps = 10;
+    for (let i = 0; i < steps; i++) {
+      bottle.beforeStep();
+      world.step(SIM_DT);
+    }
+    expect(bottle.body.getAngularVelocity() / start).toBeCloseTo(
+      Math.pow(1 + SIM_DT * damping, -steps),
+      2,
+    );
   });
 });

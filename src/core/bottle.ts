@@ -1,8 +1,8 @@
 import { Polygon, type Body, type Fixture, type World } from 'planck';
 import { BOTTLE_PARTS, waterVertices, type Point } from './bottleShape';
-import type { LandingSample } from './outcome';
+import { bottleExtent, type LandingSample } from './outcome';
 import type { Rng } from './rng';
-import { WaterSlosh, isSloshing, setRigidVelocity, summarize } from './slosh';
+import { WaterSlosh, isSloshing, setRigidVelocity, shouldReleaseWater, summarize } from './slosh';
 import { TABLE_LEFT_X, TABLE_TOP_Y } from './table';
 import type { ThrowImpulse } from './throw';
 import type { Tuning } from './tuning';
@@ -65,8 +65,14 @@ export class Bottle {
   private shellFixtures: Fixture[] = [];
   private waterFixture: Fixture | null = null;
   private level = 0;
-  /** The water as a body of its own, when the tuning's sloshing switch is on (and there is water). */
+  /**
+   * The water as a body of its own, once a sloshing bottle comes down to the table (see
+   * `releaseWater`). Until then a sloshing bottle's water is pinned: it rides as the water fixture,
+   * like solid water.
+   */
   private slosh: WaterSlosh | null = null;
+  /** Sloshing is on and the water is still pinned to the base as a fixture of the shell. */
+  private waterPinned = false;
 
   /**
    * Creates the bottle held in the hand: upright, still and unaffected by gravity (a kinematic
@@ -124,17 +130,13 @@ export class Bottle {
     this.waterFixture = null;
     this.slosh?.destroy(this.world);
     this.slosh = null;
-    const vertices = waterVertices(this.level);
-    if (!vertices) return;
+    this.waterPinned = false;
     this.body.setAngularDamping(this.tuning.bottleAngularDamping);
     this.body.setLinearDamping(this.tuning.bottleLinearDamping);
-    if (isSloshing(this.tuning)) {
-      this.slosh = new WaterSlosh(this.world, this.body, this.level, this.tuning);
-      // The slosh damps shell and water together (as forces); the shell's own damping would count twice.
-      this.body.setAngularDamping(0);
-      this.body.setLinearDamping(0);
-      return;
-    }
+    const vertices = waterVertices(this.level);
+    if (!vertices) return;
+    // Sloshing water starts pinned to the base, as the same fixture as solid water: see `releaseWater`.
+    this.waterPinned = isSloshing(this.tuning);
     this.waterFixture = this.body.createFixture({
       shape: new Polygon(toVec(vertices)),
       density: this.tuning.waterDensity,
@@ -161,21 +163,11 @@ export class Bottle {
    */
   place(pose: BottlePose): void {
     this.body.setTransform({ x: pose.x, y: pose.y }, pose.angle);
-    this.slosh?.follow();
     this.release();
-    this.setRigidMotion({ x: pose.vx ?? 0, y: pose.vy ?? 0 }, pose.omega ?? 0);
+    // Any water is still a fixture of the body here: sloshing water stays pinned until it nears the table.
+    this.body.setLinearVelocity({ x: pose.vx ?? 0, y: pose.vy ?? 0 });
+    this.body.setAngularVelocity(pose.omega ?? 0);
     this.body.setAwake(true);
-  }
-
-  /** Start the whole bottle (shell and any sloshing water) moving as one rigid body: its center of mass moving at `v` and spinning at `omega`. */
-  private setRigidMotion(v: { x: number; y: number }, omega: number): void {
-    if (!this.slosh) {
-      this.body.setLinearVelocity(v);
-      this.body.setAngularVelocity(omega);
-      return;
-    }
-    const bodies = [this.body, this.slosh.body];
-    setRigidVelocity(bodies, summarize(bodies).center, v, omega);
   }
 
   /** Meters the sloshing water has slid from the base toward the cap: 0 for solid water and at rest. */
@@ -188,9 +180,43 @@ export class Bottle {
     return this.body.getMass() + (this.slosh?.body.getMass() ?? 0);
   }
 
-  /** Call before each world step: the water's spring and damper act. */
+  /** Call before each world step: pinned water is released near the table, then the water's spring and damper act. */
   beforeStep(): void {
+    if (this.waterPinned && this.body.isDynamic()) {
+      const p = this.body.getPosition();
+      const { maxY } = bottleExtent(p.x, p.y, this.body.getAngle());
+      if (shouldReleaseWater(maxY, this.body.getLinearVelocity().y)) this.releaseWater();
+    }
     this.slosh?.applyForces();
+  }
+
+  /**
+   * Turn the pinned water into the sliding body (F025), keeping the bottle's motion: the water body
+   * starts on the base, and shell and water go on as one rigid body with the same center of mass,
+   * speed and spin. Riding with the shell until now is exact, not a shortcut: in free flight nothing
+   * moves the water off the base (its center is always nearer the base than the bottle's center of
+   * mass, so the spin presses it down, and gravity moves shell and water alike); only the table
+   * can. It also keeps the spin from leaking: two bodies on a joint that turn up to a radian per
+   * step lose angular momentum in planck's solver (about 40% in five steps at power 80), while one
+   * body keeps it exactly.
+   */
+  private releaseWater(): void {
+    this.waterPinned = false;
+    const v = this.body.getLinearVelocity().clone(); // of the center of mass of shell and water
+    const omega = this.body.getAngularVelocity();
+    if (this.waterFixture) this.body.destroyFixture(this.waterFixture);
+    this.waterFixture = null;
+    this.slosh = new WaterSlosh(this.world, this.body, this.level, this.tuning);
+    // The slosh damps shell and water together (as forces); the shell's own damping would count twice.
+    this.body.setAngularDamping(0);
+    this.body.setLinearDamping(0);
+    const bodies = [this.body, this.slosh.body];
+    setRigidVelocity(bodies, summarize(bodies).center, v, omega);
+  }
+
+  /** True while sloshing water is still pinned to the base (before the bottle nears the table). */
+  get isWaterPinned(): boolean {
+    return this.waterPinned;
   }
 
   /** True while the bottle's shell is touching `other`. */
@@ -222,18 +248,7 @@ export class Bottle {
    */
   launch(impulse: ThrowImpulse): void {
     this.release(); // a kinematic body reports no mass, so it must be dynamic first
-    if (this.slosh) {
-      // The same launch as the solid bottle (same total mass, center and inertia), shared by both bodies.
-      const bodies = [this.body, this.slosh.body];
-      const { mass, center, inertia } = summarize(bodies);
-      setRigidVelocity(
-        bodies,
-        center,
-        { x: impulse.linear.x / mass, y: impulse.linear.y / mass },
-        impulse.angular / inertia,
-      );
-      return;
-    }
+    // Any water is still a fixture here: sloshing water stays pinned until the bottle nears the table.
     this.body.applyLinearImpulse(impulse.linear, this.body.getWorldCenter(), true);
     this.body.applyAngularImpulse(impulse.angular, true);
   }

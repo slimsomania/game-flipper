@@ -1,6 +1,7 @@
 import { Polygon, PrismaticJoint, Vec2, type Body, type World } from 'planck';
 import { BOTTLE_BODY_HEIGHT, BOTTLE_WALL, waterVertices } from './bottleShape';
 import { SIM_DT } from './constants';
+import { TABLE_TOP_Y } from './table';
 import type { Tuning } from './tuning';
 
 /*
@@ -9,7 +10,28 @@ import type { Tuning } from './tuning';
  * the base up to the end of the empty space above the water, and a spring and a damper pull it
  * back to the base. It is built only when the tuning's `sloshing` switch is on; otherwise the
  * water is a fixture of the bottle's own body (bottle.ts) and nothing here runs.
+ *
+ * F025: even with sloshing on, the water rides as a fixture of the shell (pinned to the base)
+ * through the throw and the free flight, and becomes this body only as the bottle comes down to
+ * the table (`shouldReleaseWater`, called by `Bottle.beforeStep`). In free flight nothing can move
+ * it, and a fast-spinning pair of bodies on a joint loses angular momentum in the solver.
  */
+
+/**
+ * Pinned water is released once the bottle's lowest point, moved on by two steps of its falling
+ * speed, comes within this many meters of the tabletop. It is a margin, not a feel: the release
+ * comes before any table contact (tests/unit/slosh.test.ts checks this at every level and power),
+ * and in free flight released water would stay on the base anyway.
+ */
+export const SLOSH_RELEASE_MARGIN = 0.05;
+
+/**
+ * Should pinned water be released now? `lowestY` is the bottle's lowest point (the largest y) and
+ * `vy` the vertical speed of its center (positive is down), in meters and m/s.
+ */
+export function shouldReleaseWater(lowestY: number, vy: number): boolean {
+  return lowestY + Math.max(0, vy) * 2 * SIM_DT + SLOSH_RELEASE_MARGIN >= TABLE_TOP_Y;
+}
 
 /** Is the sloshing switch on? The switch is a number (0 off, 1 on) so every tuning field is a number. */
 export const isSloshing = (tuning: Pick<Tuning, 'sloshing'>): boolean => tuning.sloshing >= 0.5;
@@ -73,7 +95,7 @@ export class WaterSlosh {
   private readonly linearDamping: number;
   private readonly angularDamping: number;
 
-  /** Build the water at `level` (> 0, with real water) on `shell`, resting on the base. */
+  /** Build the water at `level` (> 0, with real water) on `shell`, resting on the base at the shell's current pose. */
   constructor(
     world: World,
     private readonly shell: Body,
@@ -167,12 +189,6 @@ export class WaterSlosh {
       });
       b.setAngularVelocity(b.getAngularVelocity() * (1 + angular));
     }
-  }
-
-  /** Move the water with the shell to a new pose, resting on the base (call right after the shell's setTransform). */
-  follow(): void {
-    this.body.setTransform(this.shell.getPosition(), this.shell.getAngle());
-    this.body.setAwake(true);
   }
 
   destroy(world: World): void {
