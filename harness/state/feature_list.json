@@ -811,9 +811,9 @@
       "depends_on": [
         "F037"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added --phone / --portrait and the touch actions tap, touchdown, touchmove, touchup to scripts/snap.ts (real touches through CDP Input.dispatchTouchEvent) and their parser to scripts/snapActions.ts; the device settings come from tests/e2e/phoneDevice.ts (new PORTRAIT_DEVICE), shared with playwright.config.ts. Verified by snaps: --phone push shows 740x360 with the live power bar, dragging true mid-push, lastThrow.source 'touch' after touchup; --portrait shots are 360x740. Unit tests in tests/harness/snapActions.test.ts; the parser now also rejects an empty coordinate such as tap:1;.",
+      "notes": "Added --phone / --portrait and the touch actions tap, touchdown, touchmove, touchup to scripts/snap.ts (real touches through CDP Input.dispatchTouchEvent) and their parser to scripts/snapActions.ts; the device settings come from tests/e2e/phoneDevice.ts (new PORTRAIT_DEVICE), shared with playwright.config.ts. Verified by snaps: --phone push shows 740x360 with the live power bar, dragging true mid-push, lastThrow.source 'touch' after touchup; --portrait shots are 360x740. Unit tests in tests/harness/snapActions.test.ts; the parser now also rejects an empty coordinate such as tap:1;. Reviewed: npm run verify green (920 unit, 278/278 e2e); --phone snap tapping Play at 640;360 then a 100 game px push gave a 740x360 PNG with the bar at 11% = state power 11.1, dragging true, then lastThrow.source 'touch', no console errors; --portrait title and Game shots are 360x740 PNGs (tap converted correctly); paused push with step works; touch without --phone and touchmove with a negative time fail with clear messages; desktop mouse snap at 1024x576 unchanged.",
       "review_feedback": ""
     },
     {
