@@ -1846,3 +1846,34 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: human decision: relax the fixed-power landing limit and points rule (the stated fallback), or change the flight/spin model; then reuse the damping x0.4 start.
 
 > [harness] session 101 · builder F025 · todo → blocked · ok · verify passed · 1 commit(s) · 15 tool calls · 10m 15s · ~$0.26 API-equivalent
+
+## Human session · 2026-11-24 · F025 done: the sloshing spin leak fixed, sloshing on by default, recalibrated
+- Root cause of sessions 95-101 (and of the human sessions' damping theories): the water as a second body on a prismatic joint leaked angular momentum in planck at high spin. With every damping at 0 and the water never leaving the base, a power-80 throw at 50% kept 59% of its spin after 5 steps and 31% after 40 (solid water: 100%); more iterations changed nothing, 16 substeps still lost 20%. The leak grows with spin, so rotation stopped growing with power: no doubles, bunched centers, one fixed power landing 80%+. A split in-air/contact damping probe (scratch, not committed) gave doubles back but singles 5 to 11 wide (practiced 45 to 55%), because it was still fighting the leak.
+- Fix (7b5dbd2, D35): a sloshing bottle keeps its water as the solid fixture through the throw and the flight, and `Bottle.beforeStep` releases it into the sliding body when `shouldReleaseWater` says the lowest point is near the tabletop (0.05 m plus two steps of fall). This is exact for the model: the water's center is nearer the base than the bottle's center of mass at every level, and in the old model the water first moved on the step of first table contact too. Tests: flight identical to solid until release, spin kept with no damping, release before the first contact at every level and power, release keeps the motion; damping.test.ts now wants the sloshing decay equal to solid's (it allowed 15%: the leak).
+- Retune and default (8fe4a80): `sloshing` 0 -> 1. Old -> new: shellDensity 0.3353956 -> 0.3309721, throwLinearImpulse 6.7033068 -> 6.9259249, throwAngularImpulse 8.5868222 -> 8.7514641, throwSpinExponent 0.0342130 -> 0.0323858, throwSpinGrowth 0.0142491 -> 0.0153780, bottleAngularDamping 5.0115218 -> 5.0366878, bottleFriction 0.1411787 -> 0.1465280, bottleLinearDamping 0.2487038 -> 0.2400720, sloshFrequency 3 -> 3.0564694, sloshDamping 0.5 -> 0.5364722; bottleRestitution 0.0239780 and throwAngleDeg 13.9 unchanged. calibration.test.ts covers all 17 levels (derived from the tuning). The old solid tuning failed one 17-level check (15% double 2 wide); the leaky sloshing model failed 25.
+- `npx tsx scripts/flip-windows.ts` (now 17 rows, `--solid` for solid water):
+```
+       single flip (1 turn)         double flip (2 turns)
+ water   low  high  center  width     low  high  center  width
+   10%    15    25      20     10      60    65    62.5      5
+   15%    20    31    25.5     11      66    71    68.5      5
+   20%    23    35      29     12      69    76    72.5      7
+   25%    26    38      32     12      72    78      75      6
+   30%    27    40    33.5     13      74    80      77      6
+   35%    29    42    35.5     13      75    82    78.5      7
+   40%    30    43    36.5     13      77    83      80      6
+   45%    31    44    37.5     13      78    84      81      6
+   50%    32    45    38.5     13      79    85      82      6
+   55%    33    46    39.5     13      80    86      83      6
+   60%    34    47    40.5     13      81    87      84      6
+   65%    36    49    42.5     13      82    89    85.5      7
+   70%    37    50    43.5     13      84    90      87      6
+   75%    39    52    45.5     13      86    92      89      6
+   80%    41    54    47.5     13      88    94      91      6
+   85%    44    56      50     12      90    96      93      6
+   90%    46    59    52.5     13      93    99      96      6
+```
+- Benchmark: seed 1 (200 bottles): practiced 62.5%, new 38.5% (aim 37.7), best fixed power 39 lands 56.5%, best-scoring fixed power 82 (no error) 37.0% / 7.4 points. Expected (any seed): practiced 60.2%, new 44.8% (aim 38.2); points 6.02 for reading the water against 5.11 for the best fixed aim (83). Margins on the expected rates are about 0.2 points; three 20-minute searches scored by the real targets found no more (the slim bottle's frontier, same as F034's 60.9/44.1).
+- Verified: `npm run verify` green on the final tree (format, typecheck, 897 unit, build, 273 e2e, 17.8 min). A first run had two e2e failures: tests/e2e/mouse.spec.ts:47 (the known wall-clock test, passes alone) and my slosh.spec.ts landing throw at power 60, which was still rolling at step 150; it now uses 55. Test changes, all where a test stated the old default or a throw tied to the leaky physics: slosh.test.ts, slosh.spec.ts, tuningPanel.spec.ts (switch starts checked; a throw after unchecking shows no offset), flipWindowsScript.test.ts (17 rows, `--solid`; the default run is shared, 93 s -> 27 s).
+- Status: F025 -> needs_review, attempts 0, notes replaced by a short summary.
+- Next: reviewer F025; then F035 (its slimmer bottle starts from this tuning; the expected rates sit on the frontier, so it needs the same exact-rate scoring).
