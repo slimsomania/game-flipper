@@ -1961,3 +1961,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Why: the human skipped a result before the replay and saw the water of the new bottle in the hand slosh. Cause: the jump from the table to the hand was read as a motion, because the start-over test wanted a jump over 1.5 m and the hand is only about 1 m above the tabletop.
 - Did: a pose moving faster than 25 m/s between two steps, or a change of water level, now starts the water over (on the base). Also a small sideways nudge when the water is pulled straight away from where it lies (exactly upside down), so it cannot get stuck in that balance. Unit test: a bottle appearing 1 m from where the last one lay keeps its water still.
 - Verified: `npm run snap` (seed 7, 50%, power 75, Space during the result): the next bottle's water is flat on the base 30 ms and 180 ms after it appears.
+
+## Session 105 · builder · F037 Run e2e tests on an emulated phone and throw with a finger
+- Did: `playwright.config.ts` now has `desktop` (ignores tests/e2e/phone/) and `phone` projects; device settings in `tests/e2e/phoneDevice.ts`; `tests/e2e/phone/touchHelpers.ts` (virtual-clock touch events) and `touch.spec.ts` (4 tests). Core: `PointerSource`, `MouseControl.grab(..., source)`, `throwWithPointer`, `ThrowSource` gains `touch`; `gameInput.ts` passes `pointer.wasTouch`. Unit: `tests/unit/touchThrow.test.ts`. ARCHITECTURE.md updated. The work began in an interrupted session and was saved as a wip commit; this session finished verification.
+- Verified: `npm run verify` passed (format, typecheck, unit, build, e2e 278 of 278 including the 4 phone tests; about 19 minutes). No snap taken: the change has no visual part.
+- Status: F037 → needs_review
+- Issues / follow-ups: none
+- Next: F038 reuses `tests/e2e/phoneDevice.ts`; verify takes over 10 minutes, so run it in the background with a long timeout.

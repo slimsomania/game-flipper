@@ -791,9 +791,9 @@
         "F035",
         "F036"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the emulated phone is 740×360 CSS px (a 6-inch Android phone held sideways), the smallest common landscape phone screen, so the readability and button checks are conservative; at that size the canvas is drawn at exactly half scale. Phone work waits until M6 is done (design section 12), hence the dependency on F035.",
+      "notes": "Added the `phone` Playwright project (tests/e2e/phoneDevice.ts holds the device settings; the desktop project ignores tests/e2e/phone/) and touchHelpers.ts (touch events in the page on a virtual clock). A finger grabs through sim.mouse with source `touch` (gameInput.ts passes pointer.wasTouch; MouseControl.grab takes a PointerSource; ThrowSource gains `touch`). Verified by npm run verify (278 e2e incl. 4 phone tests) and tests/unit/touchThrow.test.ts.",
       "review_feedback": ""
     },
     {
