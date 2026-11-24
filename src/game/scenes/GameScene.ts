@@ -97,7 +97,7 @@ export class GameScene extends Phaser.Scene {
     if (this.pauseRequested) return;
     if (!testControls.paused) this.stepper.advance(delta, () => this.sim.step());
     const snapshot = this.sim.snapshot();
-    this.draw(snapshot);
+    this.draw(snapshot, delta / 1000);
     // What happened since the last frame (core never plays or draws anything): heard and seen.
     const events = this.sim.drainEvents();
     this.playSounds(events);
@@ -140,7 +140,7 @@ export class GameScene extends Phaser.Scene {
     this.scene.pause();
   }
 
-  private draw(snapshot: SimSnapshot): void {
+  private draw(snapshot: SimSnapshot, dt = 0): void {
     // During the replay the bottle view draws the recorded pose instead of the live bottle.
     const { replay } = snapshot;
     const shown = replay
@@ -152,7 +152,7 @@ export class GameScene extends Phaser.Scene {
           waterOffset: replay.waterOffset,
         }
       : snapshot.bottle;
-    this.bottleView.update(shown);
+    this.bottleView.update(shown, dt);
     this.shadowView.update(shown);
     this.offscreenMarkerView.update(shown);
     this.replayLabelView.update(replay !== null);
