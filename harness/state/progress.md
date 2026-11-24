@@ -1837,3 +1837,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: raise total rotation at high power (throwAngularImpulse and throwSpinGrowth up, with the shell density/impulse adjusted) so the 30% level reaches 4pi+ before power 97, then rerun scripts/retune-search.ts from that start; the 17-level test edit is in the session 95 entry. If it fails, the human fallback is relaxing the fixed-power landing limit.
 
 > [harness] session 100 · builder F025 · todo → todo · ok · verify passed · 2 commit(s) · 14 tool calls · 1m 32s · ~$0.26 API-equivalent
+
+## Session 101 · builder · F025 Turn sloshing on by default and recalibrate
+- Did: no code change. Found why 20-50% water had no double window: with the damping fix, total rotation is capped near omega0/bottleAngularDamping (about 11 rad). Probe (sloshing on, scripts/retune-search.ts score): bottleAngularDamping x0.6/x0.4/x0.3 with throwAngularImpulse x0.7/x0.55/x0.45 gives doubles at all 17 levels (x0.4: 55-88). A 9-minute search from x0.4/x0.55 reached penalty 804: singles 7-12 wide (target 10-28), practiced 54%, new 41%, best fixed power lands 74% (limit 65%), fixed-aim points 7.7 vs 5.4 for reading the water. Not within targets.
+- Verified: scratch probes only (coverage/ is untracked); tree otherwise unchanged.
+- Status: F025 -> blocked (attempt 3 of 3; notes updated)
+- Issues / follow-ups: the 17-level calibration test and default flip are still uncommitted (see the session 95 entry). Lower damping makes windows narrow and the fixed-power landing worse, so the targets conflict under this model.
+- Next: human decision: relax the fixed-power landing limit and points rule (the stated fallback), or change the flight/spin model; then reuse the damping x0.4 start.
