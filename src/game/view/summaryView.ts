@@ -26,7 +26,7 @@ export interface SummaryView {
 export function createSummaryView(
   scene: Phaser.Scene,
   state: SummaryState,
-  onPlayAgain: () => void,
+  onPlayAgain: (pointer?: Phaser.Input.Pointer) => void,
   onTitle: () => void,
 ): SummaryView {
   const layout = SUMMARY_LAYOUT;

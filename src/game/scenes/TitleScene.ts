@@ -3,6 +3,7 @@ import { markReady } from '../../debug/testHooks';
 import { detectInputKind } from '../inputKind';
 import { requestPhoneFullscreen } from '../pageGuards';
 import { saveStore } from '../storage';
+import { createFullscreenControl } from '../view/fullscreenButtonView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createTitleView, type TitleView } from '../view/titleView';
 import { titleTexts } from '../view/titleText';
@@ -35,6 +36,7 @@ export class TitleScene extends Phaser.Scene {
       (pointer) => this.play(pointer),
     );
     createMuteControl(this);
+    createFullscreenControl(this);
 
     const keyboard = this.input.keyboard;
     if (keyboard) {

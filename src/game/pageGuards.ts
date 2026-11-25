@@ -34,3 +34,37 @@ export function requestPhoneFullscreen(): void {
     // a browser that throws instead of rejecting: nothing to do
   }
 }
+
+/** Whether the page is fullscreen now (the browser's own answer). */
+export function isFullscreen(): boolean {
+  return document.fullscreenElement != null;
+}
+
+/** Whether this browser can make the page fullscreen (not so on any browser on an iPhone). */
+export function fullscreenSupported(): boolean {
+  return (
+    document.fullscreenEnabled === true &&
+    typeof document.documentElement.requestFullscreen === 'function'
+  );
+}
+
+/** Enter fullscreen when the page isn't, leave it when it is. `touch`: also try the landscape lock. */
+export function toggleFullscreen(touch: boolean): void {
+  try {
+    if (isFullscreen()) {
+      void Promise.resolve(document.exitFullscreen?.()).catch(() => undefined);
+    } else if (touch) {
+      requestPhoneFullscreen();
+    } else {
+      void Promise.resolve(document.documentElement.requestFullscreen?.()).catch(() => undefined);
+    }
+  } catch {
+    // a browser that throws instead of rejecting: nothing to do
+  }
+}
+
+/** Calls `listener` whenever the page enters or leaves fullscreen, however that happened. Returns the stop function. */
+export function onFullscreenChange(listener: () => void): () => void {
+  document.addEventListener('fullscreenchange', listener);
+  return () => document.removeEventListener('fullscreenchange', listener);
+}

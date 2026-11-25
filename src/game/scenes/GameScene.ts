@@ -16,6 +16,7 @@ import { intParam } from '../urlParams';
 import { createBottleShadowView, type BottleShadowView } from '../view/bottleShadowView';
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
+import { createFullscreenControl } from '../view/fullscreenButtonView';
 import { createHudView, type HudView } from '../view/hudView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createOffscreenMarkerView, type OffscreenMarkerView } from '../view/offscreenMarkerView';
@@ -90,6 +91,7 @@ export class GameScene extends Phaser.Scene {
     this.effectsView = createEffectsView(this);
     createPauseButton(this, 'pause', () => this.openPause());
     createMuteControl(this);
+    createFullscreenControl(this);
 
     bindGameInput(this, this.sim);
     bindPauseKeys(this, () => this.openPause());

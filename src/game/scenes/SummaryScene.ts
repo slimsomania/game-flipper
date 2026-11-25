@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
 import { saveStore } from '../storage';
+import { isFullscreen, requestPhoneFullscreen } from '../pageGuards';
+import { createFullscreenControl } from '../view/fullscreenButtonView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createSummaryView, type SummaryView } from '../view/summaryView';
 import { quitToTitle } from './toTitle';
@@ -41,12 +43,13 @@ export class SummaryScene extends Phaser.Scene {
     this.view = createSummaryView(
       this,
       { ...snapshot, best, isNewBest },
-      () => this.playAgain(),
+      (pointer) => this.playAgain(pointer),
       () => this.toTitle(),
     );
     // The Game scene's own speaker and M are deaf while it is paused underneath, so the summary
     // carries its own, in the top-right corner beside the card (not over it).
     createMuteControl(this);
+    createFullscreenControl(this);
 
     const keyboard = this.input.keyboard;
     if (keyboard) {
@@ -64,8 +67,10 @@ export class SummaryScene extends Phaser.Scene {
     if (this.sim.phase !== 'roundOver') this.close();
   }
 
-  private playAgain(): void {
+  private playAgain(pointer?: Phaser.Input.Pointer): void {
     if (this.closing) return;
+    // Like the first Play tap: inside the tap, which the browser needs, and only if not fullscreen.
+    if (pointer?.wasTouch && !isFullscreen()) requestPhoneFullscreen();
     if (this.sim.phase === 'roundOver') this.sim.restartRound();
     this.close();
   }

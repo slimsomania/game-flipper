@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
 import { detectInputKind } from '../inputKind';
 import { bindPauseKeys } from '../pauseKeys';
+import { createFullscreenControl } from '../view/fullscreenButtonView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createPauseButton } from '../view/pauseButtonView';
 import { createPauseView } from '../view/pauseView';
@@ -44,6 +45,7 @@ export class PauseScene extends Phaser.Scene {
     });
     createPauseButton(this, 'resume', () => this.resume());
     createMuteControl(this);
+    createFullscreenControl(this);
     bindPauseKeys(this, () => this.resume());
   }
 

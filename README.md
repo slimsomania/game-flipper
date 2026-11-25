@@ -24,6 +24,7 @@ Mouse and keyboard, in a desktop browser. Set the power, then throw: the bottle 
 | Restart the round | Restart button on the pause overlay | R |
 | Pause | Pause button in the corner | Esc or P |
 | Mute | Speaker button | M |
+| Fullscreen | Corner button left of Pause (on iPhone it explains Add to Home Screen) | F |
 
 To play the production build:
 

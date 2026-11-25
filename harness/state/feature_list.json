@@ -983,9 +983,9 @@
         "F040",
         "F045"
       ],
-      "status": "todo",
-      "attempts": 0,
-      "notes": "Added by hand (human session, 2026-11-25) after the M7 stop, with design sections 6, 7, 10 and 13 updated the same day. Revised the same day: on an iPhone the button shows how to add the game to the home screen instead of being hidden (the human checked a real iPhone).",
+      "status": "needs_review",
+      "attempts": 1,
+      "notes": "Built createFullscreenControl (src/game/view/fullscreenButtonView.ts, layout/icons beside it, helpers in pageGuards.ts) on Title, Game, Pause and Summary: button left of Pause plus the F key, icon following fullscreenchange, and a home-screen card with a full-canvas blocker where fullscreen is unsupported. Summary Play again asks for fullscreen on touch when not fullscreen. Verified by tests/e2e/fullscreenButton.spec.ts (18, stubbed API), phone/fullscreenButton.spec.ts (4) and screenshots at 1280x720 and phone size (the card snap was made through a temporary Playwright spec because npm run snap cannot stub the API).",
       "review_feedback": ""
     },
     {

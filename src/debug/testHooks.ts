@@ -13,6 +13,7 @@ import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
 import { visibleButtons, type ButtonArea } from './visibleButtons';
+import { visibleFullscreenButton, type FullscreenButtonView } from './visibleFullscreenButton';
 import { visibleMuteButton, type MuteButtonView } from './visibleMuteButton';
 import { visibleTextBounds, visibleTexts, type TextBounds } from './visibleTexts';
 
@@ -110,6 +111,12 @@ export interface FlipperTestApi {
    * what the scene last drew: wait a frame after changing the state.
    */
   muteButton(): MuteButtonView | null;
+  /**
+   * The fullscreen button the player sees: the icon it last drew (`fullscreen` true is the "leave"
+   * icon), whether the home-screen card is open, and its clickable area in game pixels. It reads
+   * document.fullscreenElement through the button; it adds no rule. Null when no scene has one.
+   */
+  fullscreenButton(): FullscreenButtonView | null;
   /**
    * Every button that can be pressed now (the shown scenes that aren't paused), each with the middle
    * and size of its clickable area in game pixels. Like `texts()` it shows what the scene last drew.
@@ -244,6 +251,7 @@ export function installTestHooks(game: Phaser.Game): void {
     muted: () => sharedSfx().muted,
     setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),
     muteButton: () => visibleMuteButton(game.scene.getScenes(true)),
+    fullscreenButton: () => visibleFullscreenButton(game.scene.getScenes(true)),
     buttons: () => visibleButtons(game.scene.getScenes(true)),
     gamePaused: () => game.scene.isActive('Pause'),
     rotateMessage: () => rotateMessageShowing(),
