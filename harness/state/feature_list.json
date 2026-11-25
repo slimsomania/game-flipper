@@ -935,9 +935,9 @@
       "depends_on": [
         "F038"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Assumption: the human reaches the game from a phone through a server on the home network rather than a hosted page (hosting stays a later idea in design section 10). No test starts a server on the network: on Windows that raises a firewall prompt in an unattended run.\nBuilt: dev:phone and preview:phone scripts in package.json; a gear button #tuning-toggle (src/debug/tuningPanel.ts, shown when detectInputKind() is touch) plus a tp-touch panel style that scrolls as a whole (tuningPanelStyle.ts); the README 'On a phone' part. Verified by tests/unit/phoneScripts.test.ts, tests/e2e/phone/tuningButton.spec.ts (dev server with ?debug, and the production build with and without ?debug), tests/e2e/tuningButtonDesktop.spec.ts and a --phone snap.",
+      "notes": "Assumption: the human reaches the game from a phone through a server on the home network rather than a hosted page (hosting stays a later idea in design section 10). No test starts a server on the network: on Windows that raises a firewall prompt in an unattended run.\nBuilt: dev:phone and preview:phone scripts in package.json; a gear button #tuning-toggle (src/debug/tuningPanel.ts, shown when detectInputKind() is touch) plus a tp-touch panel style that scrolls as a whole (tuningPanelStyle.ts); the README 'On a phone' part. Verified by tests/unit/phoneScripts.test.ts, tests/e2e/phone/tuningButton.spec.ts (dev server with ?debug, and the production build with and without ?debug), tests/e2e/tuningButtonDesktop.spec.ts and a --phone snap.\nReviewed: session 125, verify green (unit 938/938, e2e 325/325 incl. the 4 new F044 tests); --phone snaps: the gear opens the panel, real CDP finger swipes scroll it to the lower fields (despite body touch-action:none), three rapid gear taps on the Title leave it open without starting the game, a gear tap during a result doesn't skip it; desktop 1024x576 has no gear and Backquote opens the unchanged panel; README part checked by hand.",
       "review_feedback": ""
     },
     {
