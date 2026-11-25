@@ -1,6 +1,7 @@
 import { isSloshing } from '../core/slosh';
 import { DEFAULT_TUNING } from '../core/tuning';
 import { currentSimulation } from './currentSimulation';
+import { detectInputKind } from '../game/inputKind';
 import { panelEnabled } from './debugMode';
 import { tuningControl, type TuningControl } from './tuningControl';
 import { PANEL_CSS } from './tuningPanelStyle';
@@ -27,6 +28,7 @@ import { TUNING_KEYS, parseNumber, stepFor, tuningJson, type TuningKey } from '.
  */
 
 export const PANEL_ID = 'tuning-panel';
+export const TOGGLE_ID = 'tuning-toggle';
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -246,6 +248,22 @@ export function installTuningPanel(control: TuningControl = tuningControl()): vo
   const { panel, toggle } = buildPanel(control);
   document.head.append(el('style', { textContent: PANEL_CSS }));
   document.body.append(panel);
+  // On a phone there is no Backquote: a small corner button shows and hides the panel (F044).
+  if (detectInputKind() === 'touch') {
+    panel.classList.add('tp-touch');
+    const button = el('button', {
+      id: TOGGLE_ID,
+      type: 'button',
+      textContent: '⚙',
+      title: 'Tuning panel',
+    });
+    button.setAttribute('aria-label', 'Tuning panel');
+    for (const type of ['keydown', 'keyup', 'mousedown', 'mouseup', 'touchstart', 'touchend']) {
+      button.addEventListener(type, (event) => event.stopPropagation());
+    }
+    button.addEventListener('click', toggle);
+    document.body.append(button);
+  }
   // In the capture phase, so Backquote also works with the focus in a field (and types no backtick).
   window.addEventListener(
     'keydown',

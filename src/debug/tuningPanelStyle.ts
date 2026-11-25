@@ -46,4 +46,15 @@ export const PANEL_CSS = `
 #tuning-panel .tp-row.changed { border-left-color: #2f7fd6; background: #eef5fd; }
 #tuning-panel .tp-row.changed label { font-weight: 600; }
 #tuning-panel .tp-row.changed .tp-default { display: block; }
+#tuning-toggle {
+  position: fixed; left: 4px; bottom: 4px; z-index: 1001; width: 44px; height: 44px; padding: 0;
+  font: 24px/1 system-ui, sans-serif; color: #243040; cursor: pointer;
+  background: rgba(255, 255, 255, 0.85); border: 1px solid #9aa9bd; border-radius: 8px;
+}
+/* On a phone the whole panel scrolls (its top part alone could fill a 360 px screen), with fields big enough for a finger. */
+#tuning-panel.tp-touch { overflow-y: auto; width: min(300px, 62vw); }
+#tuning-panel.tp-touch .tp-top, #tuning-panel.tp-touch .tp-list { flex: none; }
+#tuning-panel.tp-touch .tp-list { overflow: visible; }
+#tuning-panel.tp-touch input[type="number"] { height: 36px; font-size: 16px; }
+#tuning-panel.tp-touch button { min-height: 36px; }
 `;

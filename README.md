@@ -34,6 +34,26 @@ npm run preview   # serves dist/ at http://localhost:4173
 
 `dist/` is static, so any static host can serve it.
 
+### On a phone
+
+To try the game on a real Android phone or iPhone, serve it from your PC to the home network:
+
+1. Put the phone on the same Wi-Fi as the PC.
+2. On the PC run one of:
+
+   ```bash
+   npm run dev:phone       # the dev server on the network (port 5173)
+   npm run preview:phone   # builds, then serves the production build on the network (port 4173)
+   ```
+
+3. Find the PC's address: run `ipconfig` in a terminal and read the "IPv4 Address" of the Wi-Fi adapter (for example `192.168.1.23`).
+4. On the phone open `http://<that address>:5173` (`dev:phone`) or `http://<that address>:4173` (`preview:phone`). Hold the phone sideways.
+5. The first time, Windows asks whether to allow Node.js through the firewall: allow it on private networks. If the page doesn't load, check that setting in Windows Security, Firewall & network protection, Allow an app through firewall.
+
+Add `?debug` to the address (for example `http://192.168.1.23:4173/?debug`) to get the tuning panel: on a touch device a small gear button in the bottom-left corner opens and closes it, and the panel scrolls.
+
+Agents never run these commands: they don't exit.
+
 ## Building the game with agents
 
 1. Describe the game in [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md), then change `status: draft` to `status: ready` at the top. Commit.

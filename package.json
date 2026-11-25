@@ -12,6 +12,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "dev:phone": "vite --host",
+    "preview:phone": "vite build && vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/canonical-cwd.mjs vitest/vitest.mjs run",
     "test:watch": "node scripts/canonical-cwd.mjs vitest/vitest.mjs",
