@@ -62,12 +62,12 @@ export function createPauseView(
   line(layout.titleY, texts.title, layout.titleSize, COLORS.text);
 
   type Spot = { x: number; y: number; width: number; height: number };
-  const button = (spot: Spot, label: string, onActivate: () => void) =>
-    createButton(scene, { ...spot, label, fontSize: 38, depth: TEXT_DEPTH, onActivate });
+  const button = (spot: Spot, name: string, label: string, onActivate: () => void) =>
+    createButton(scene, { ...spot, name, label, fontSize: 38, depth: TEXT_DEPTH, onActivate });
   const view = {
-    resume: button(layout.resume, texts.resumeLabel, actions.onResume),
-    restart: button(layout.restart, texts.restartLabel, actions.onRestart),
-    quit: button(layout.quit, texts.quitLabel, actions.onQuit),
+    resume: button(layout.resume, 'resumeButton', texts.resumeLabel, actions.onResume),
+    restart: button(layout.restart, 'restartButton', texts.restartLabel, actions.onRestart),
+    quit: button(layout.quit, 'quitButton', texts.quitLabel, actions.onQuit),
   };
   line(layout.hintY, texts.keyHint, 24, COLORS.muted, false);
   return view;

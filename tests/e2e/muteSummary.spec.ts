@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { hitBox } from '../../src/game/view/buttonView';
 import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import { SUMMARY_LAYOUT } from '../../src/game/view/summaryLayout';
 import { FLIPPED } from '../shared';
@@ -123,9 +124,12 @@ test.describe('on the round summary', () => {
     const box = await muteButtonBox(page);
     const { card, playAgain, title } = SUMMARY_LAYOUT;
 
-    expect(box).toMatchObject({ x: MUTE_BUTTON.x, width: MUTE_BUTTON.width });
-    expect(box.x + box.width / 2).toBe(1280 - MUTE_BUTTON.margin);
-    expect(box.y - box.height / 2).toBe(MUTE_BUTTON.margin);
+    // The hook reports the clickable area (F042), which is bigger than the drawn face.
+    const area = hitBox(MUTE_BUTTON);
+    expect(box).toMatchObject({ x: MUTE_BUTTON.x, width: MUTE_BUTTON.hitWidth });
+    expect(box.x + box.width / 2).toBe(area.right);
+    expect(box.y - box.height / 2).toBe(area.top);
+    expect(MUTE_BUTTON.x + MUTE_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
     expect(box.x - box.width / 2).toBeGreaterThan(card.x + card.width / 2);
     for (const button of [playAgain, title]) {
       expect(box.x - box.width / 2).toBeGreaterThan(button.x + button.width / 2);

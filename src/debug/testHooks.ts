@@ -12,6 +12,7 @@ import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
+import { visibleButtons, type ButtonArea } from './visibleButtons';
 import { visibleMuteButton, type MuteButtonView } from './visibleMuteButton';
 import { visibleTextBounds, visibleTexts, type TextBounds } from './visibleTexts';
 
@@ -109,6 +110,11 @@ export interface FlipperTestApi {
    * what the scene last drew: wait a frame after changing the state.
    */
   muteButton(): MuteButtonView | null;
+  /**
+   * Every button that can be pressed now (the shown scenes that aren't paused), each with the middle
+   * and size of its clickable area in game pixels. Like `texts()` it shows what the scene last drew.
+   */
+  buttons(): ButtonArea[];
   /**
    * Whether the player has paused the game: the pause overlay is open (Esc, P or the corner button)
    * and the Game scene waits underneath, not stepping the simulation or hearing input. This is the
@@ -238,6 +244,7 @@ export function installTestHooks(game: Phaser.Game): void {
     muted: () => sharedSfx().muted,
     setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),
     muteButton: () => visibleMuteButton(game.scene.getScenes(true)),
+    buttons: () => visibleButtons(game.scene.getScenes(true)),
     gamePaused: () => game.scene.isActive('Pause'),
     rotateMessage: () => rotateMessageShowing(),
     pause: () => {

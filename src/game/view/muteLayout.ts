@@ -9,12 +9,17 @@ import { BUTTON_LIP } from './buttonView';
  */
 const SIZE = 56;
 const MARGIN = 24;
+/** The clickable area of a corner button: 88 game px is 44 CSS px on the half-scale phone. */
+export const CORNER_HIT_SIZE = 88;
 
 export const MUTE_BUTTON = {
   x: GAME_WIDTH - MARGIN - SIZE / 2,
   y: MARGIN + SIZE / 2,
   width: SIZE,
   height: SIZE,
+  /** The clickable area is bigger than the drawn face (`hitBox()` centers it on face and lip). */
+  hitWidth: CORNER_HIT_SIZE,
+  hitHeight: CORNER_HIT_SIZE,
   /** Corner radius of the face and lip. */
   radius: 14,
   /** Distance from the canvas's top and right edges to the button's face. */

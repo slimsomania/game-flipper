@@ -24,12 +24,14 @@ const BUTTON_DEPTH = 20;
  */
 export function createMuteControl(scene: Phaser.Scene): ButtonView {
   const sfx = sharedSfx();
-  const { x, y, width, height, radius } = MUTE_BUTTON;
+  const { x, y, width, height, hitWidth, hitHeight, radius } = MUTE_BUTTON;
   const button = createButton(scene, {
     x,
     y,
     width,
     height,
+    hitWidth,
+    hitHeight,
     radius,
     depth: BUTTON_DEPTH,
     name: MUTE_BUTTON_NAME,

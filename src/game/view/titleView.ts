@@ -41,6 +41,7 @@ export function createTitleView(
     y: play.y,
     width: play.width,
     height: play.height,
+    name: 'playButton',
     label: texts.playLabel,
     fontSize: 48,
     onActivate: onPlay,

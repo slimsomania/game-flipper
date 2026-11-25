@@ -8,20 +8,23 @@ import { MUTE_BUTTON } from './muteLayout';
  * The pause button is the speaker's twin, in the same row and to its left. The overlay dims the
  * whole canvas and puts a white card in the middle with the three buttons stacked in it.
  */
-const BUTTON_GAP = 16;
+/** Between the two clickable areas (not the faces, which are smaller): they never overlap. */
+const HIT_GAP = 4;
 
 /** The corner button: pauses the game in play, and resumes it from the overlay. `x`, `y` are the middle of its face. */
 export const PAUSE_BUTTON = {
-  x: MUTE_BUTTON.x - MUTE_BUTTON.width - BUTTON_GAP,
+  x: MUTE_BUTTON.x - MUTE_BUTTON.hitWidth - HIT_GAP,
   y: MUTE_BUTTON.y,
   width: MUTE_BUTTON.width,
   height: MUTE_BUTTON.height,
+  hitWidth: MUTE_BUTTON.hitWidth,
+  hitHeight: MUTE_BUTTON.hitHeight,
   radius: MUTE_BUTTON.radius,
 } as const;
 
 const CARD_WIDTH = 520;
 const BUTTON_WIDTH = 400;
-const BUTTON_HEIGHT = 84;
+const BUTTON_HEIGHT = 88;
 const CENTER_X = GAME_WIDTH / 2;
 
 /** A stacked button: centered on the canvas, `y` the middle of its face. */

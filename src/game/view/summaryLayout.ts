@@ -13,7 +13,7 @@ const PLAY_AGAIN_WIDTH = 330;
 const TITLE_WIDTH = CARD_WIDTH - 2 * MARGIN - GAP - PLAY_AGAIN_WIDTH;
 const ROW_LEFT = (GAME_WIDTH - CARD_WIDTH) / 2 + MARGIN;
 const ROW_Y = 488;
-const ROW_HEIGHT = 84;
+const ROW_HEIGHT = 88;
 
 export const SUMMARY_LAYOUT = {
   card: { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2, width: CARD_WIDTH, height: 560, radius: 28 },

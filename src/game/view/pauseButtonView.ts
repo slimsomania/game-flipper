@@ -20,12 +20,14 @@ export function createPauseButton(
   shows: 'pause' | 'resume',
   onActivate: () => void,
 ): ButtonView {
-  const { x, y, width, height, radius } = PAUSE_BUTTON;
+  const { x, y, width, height, hitWidth, hitHeight, radius } = PAUSE_BUTTON;
   return createButton(scene, {
     x,
     y,
     width,
     height,
+    hitWidth,
+    hitHeight,
     radius,
     depth: BUTTON_DEPTH,
     name: PAUSE_BUTTON_NAME,

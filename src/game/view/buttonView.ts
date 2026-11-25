@@ -30,12 +30,43 @@ export function buttonLook(state: ButtonState): ButtonLook {
   }
 }
 
-export interface ButtonSpec {
-  /** The middle of the face when it isn't pressed (game pixels). */
+/** What the clickable area of a button is made of: its face, and a bigger area if it asks for one. */
+export interface HitSource {
   x: number;
   y: number;
   width: number;
   height: number;
+  /** A clickable area wider/taller than the face (a small drawn face with a thumb-sized area). */
+  hitWidth?: number;
+  hitHeight?: number;
+}
+
+/** A clickable area as a box, in game pixels. */
+export interface HitBox {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * The clickable area of a button, as a box: centered on the face and the lip under it, at least as
+ * big as both (and as `hitWidth` x `hitHeight` when the button asks for more). Pure, so the layout
+ * tests check the same area the scene makes.
+ */
+export function hitBox(spec: HitSource): HitBox {
+  const width = Math.max(spec.width, spec.hitWidth ?? 0);
+  const height = Math.max(spec.height + BUTTON_LIP, spec.hitHeight ?? 0);
+  const centerY = spec.y + BUTTON_LIP / 2;
+  return {
+    left: spec.x - width / 2,
+    top: centerY - height / 2,
+    right: spec.x + width / 2,
+    bottom: centerY + height / 2,
+  };
+}
+
+export interface ButtonSpec extends HitSource {
   /** The text on the face. Leave it out for a button that shows an `icon` instead. */
   label?: string;
   /** Font size of the label, in pixels. */
@@ -98,10 +129,12 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
     : null;
   const icon = spec.icon ? scene.add.graphics().setDepth(depth + 1) : null;
   // The hit area covers the lip too: it is part of what the player sees.
+  const hit = hitBox(spec);
   const zone = scene.add
-    .zone(x, y + BUTTON_LIP / 2, width, height + BUTTON_LIP)
+    .zone(x, (hit.top + hit.bottom) / 2, hit.right - hit.left, hit.bottom - hit.top)
     .setDepth(depth + 2)
     .setInteractive();
+  zone.setData('button', true);
   if (spec.name) zone.setName(spec.name);
 
   let hover = false;

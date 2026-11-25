@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { hitBox } from '../../src/game/view/buttonView';
 import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import { FLIPPED } from '../shared';
 import { gameState, openGame, recordKeydownRepeats, settleInput } from './helpers';
@@ -81,9 +82,13 @@ test.describe('the M key and the button', () => {
     await openGame(page, '?seed=7');
     const box = await muteButtonBox(page);
 
-    expect(box).toMatchObject({ x: MUTE_BUTTON.x, width: MUTE_BUTTON.width });
-    expect(box.x + box.width / 2).toBe(1280 - MUTE_BUTTON.margin);
-    expect(box.y - box.height / 2).toBe(MUTE_BUTTON.margin);
+    // The hook reports the clickable area (F042), which is bigger than the drawn face.
+    const area = hitBox(MUTE_BUTTON);
+    expect(box).toMatchObject({ x: MUTE_BUTTON.x, width: MUTE_BUTTON.hitWidth });
+    expect(box.x + box.width / 2).toBe(area.right);
+    expect(box.y - box.height / 2).toBe(area.top);
+    expect(area.right).toBeLessThanOrEqual(1280);
+    expect(MUTE_BUTTON.x + MUTE_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
     // Far from the round HUD on the left.
     expect(box.x).toBeGreaterThan(1280 * 0.75);
     expect(box.y).toBeLessThan(720 / 6);

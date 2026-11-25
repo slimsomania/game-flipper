@@ -67,18 +67,19 @@ export function createSummaryView(
   }
 
   type Spot = { x: number; y: number; width: number; height: number };
-  const button = (spot: Spot, label: string, onActivate: () => void) =>
+  const button = (spot: Spot, name: string, label: string, onActivate: () => void) =>
     createButton(scene, {
       x: spot.x,
       y: spot.y,
       width: spot.width,
       height: spot.height,
+      name,
       label,
       depth: TEXT_DEPTH,
       onActivate,
     });
-  const playAgain = button(layout.playAgain, texts.playAgainLabel, onPlayAgain);
-  const title = button(layout.title, texts.toTitleLabel, onTitle);
+  const playAgain = button(layout.playAgain, 'playAgainButton', texts.playAgainLabel, onPlayAgain);
+  const title = button(layout.title, 'titleButton', texts.toTitleLabel, onTitle);
   line(layout.keyHintY, texts.keyHint, 24, COLORS.muted).setFontStyle('normal');
 
   return { playAgain, title };

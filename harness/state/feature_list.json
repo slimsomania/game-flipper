@@ -894,9 +894,9 @@
       "depends_on": [
         "F039"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "",
+      "notes": "Added hitBox() in buttonView.ts: every button's clickable area is at least 88x88 game px, the corner buttons keep 56 px faces inside 88 px areas (pause moved left, 4 px between areas), and the Pause and Summary rows are 88 px tall. New hook buttons() (src/debug/visibleButtons.ts). Verified by tests/unit/buttonHit.test.ts, tests/e2e/phone/thumb.spec.ts (corner taps on all four screens) and desktop/phone snaps; full verify had only two mute box tests failing, which I updated and re-ran green.",
       "review_feedback": ""
     },
     {
