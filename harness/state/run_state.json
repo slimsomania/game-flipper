@@ -1,5 +1,5 @@
 {
-  "sessions": 110,
+  "sessions": 111,
   "doneAtLastMaintenance": 33,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -42,11 +42,9 @@
     "F039": "65b8316770f7e5f24877da7a29fae7e9c782e4d3"
   },
   "lastGate": {
-    "session": 110,
+    "session": 111,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": [
-    "F042 was changed, but this session may only change F039 (reverted)"
-  ]
+  "lastViolations": []
 }

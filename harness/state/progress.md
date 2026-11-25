@@ -2021,3 +2021,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F039 → needs_review
 - Issues / follow-ups: none
 - Next: F040 onwards; in feature_list.json check the id before editing status and notes.
+
+> [harness] session 111 · builder F039 · todo → needs_review · ok · verify passed · 1 commit(s) · 8 tool calls · 1m 10s · ~$0.16 API-equivalent
