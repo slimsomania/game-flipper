@@ -2130,3 +2130,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F044 → needs_review
 - Issues / follow-ups: the dev server always installs the panel (and so the button on a phone) even without ?debug; the "no button without ?debug" check is made on the production build. The panel header still says "` shows or hides this panel" on a phone. Nothing starts a network server in tests.
 - Next: reviewer: check the panel on the 740x360 snap with the keyboard of a real phone in mind (16 px fields avoid iOS zoom); open it with `--phone --url "/?debug"` and `tap:-70;650`.
+
+> [harness] session 124 · builder F044 · todo → needs_review · ok · verify passed · 1 commit(s) · 33 tool calls · 19m 2s · ~$0.55 API-equivalent
