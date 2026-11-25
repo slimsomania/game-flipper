@@ -2113,3 +2113,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F043 → needs_review
 - Issues / follow-ups: the title start hint ("or press Enter or Space") is also hidden on touch, which goes slightly beyond the criteria. Text shrunk by setScale to fit (long lines) could fall under 24 px, but none do on the phone.
 - Next: reviewer: run full verify, and look at a --phone Summary snap.
+
+> [harness] session 122 · builder F043 · todo → needs_review · ok · verify passed · 1 commit(s) · 58 tool calls · 25m 47s · ~$0.57 API-equivalent
