@@ -2072,3 +2072,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F041 → needs_review
 - Issues / follow-ups: the covering check compares against the viewport because the canvas is still sized for the old window for a frame after a resize. Orientation behavior on a real phone (address-bar resizes) isn't testable headless.
 - Next: F042; `onRotateMessageChange` in rotateMessage.ts is the hook for anything else that must react to the upright state.
+
+> [harness] session 117 · builder F041 · todo → needs_review · ok · verify passed · 1 commit(s) · 40 tool calls · 27m 55s · ~$0.66 API-equivalent
