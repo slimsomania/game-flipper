@@ -53,7 +53,7 @@ export interface ButtonSpec {
   /** Draw order: the face and lip at this depth, the label and icon one above (default 0). */
   depth?: number;
   /** What a click does. */
-  onActivate: () => void;
+  onActivate: (pointer?: Phaser.Input.Pointer) => void;
 }
 
 export interface ButtonView {
@@ -140,7 +140,7 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
     if (pointer.button !== 0 || !pressed) return;
     pressed = false;
     show();
-    spec.onActivate();
+    spec.onActivate(pointer);
   });
   // A paused scene hears no pointer events, so a button under the pointer when it pauses would stay
   // lit (its pointerout never comes) until the first mouse move after the scene resumes.
@@ -156,5 +156,5 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
   });
 
   show();
-  return { activate: spec.onActivate, refresh: show, zone };
+  return { activate: () => spec.onActivate(), refresh: show, zone };
 }

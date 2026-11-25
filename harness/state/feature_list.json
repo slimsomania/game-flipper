@@ -853,9 +853,9 @@
       "depends_on": [
         "F038"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: fullscreen is requested by the Play tap (browsers require a user gesture) rather than at load or by a button of its own; a refusal is silent, and leaving fullscreen is left to the browser.",
+      "notes": "Page CSS, viewport meta and 100dvh in index.html; the safe-area padding sits on a wrapper #safe around #game because Phaser sizes the canvas to its parent's border box. src/game/pageGuards.ts prevents contextmenu and gesture events, rescales on container resize (ResizeObserver) and requests fullscreen plus a landscape lock from the Play touch tap only (the button passes its pointer to onActivate). Verified by tests/e2e/phone/page.spec.ts (4 tests), tests/e2e/fullscreen.spec.ts (desktop) and --phone snaps of Title and Play.",
       "review_feedback": ""
     },
     {

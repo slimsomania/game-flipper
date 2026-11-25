@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { markReady } from '../../debug/testHooks';
+import { requestPhoneFullscreen } from '../pageGuards';
 import { saveStore } from '../storage';
 import { createMuteControl } from '../view/muteButtonView';
 import { createTitleView, type TitleView } from '../view/titleView';
@@ -27,7 +28,9 @@ export class TitleScene extends Phaser.Scene {
     this.starting = false;
     // Read afresh each time the title opens, so a round just played (the Summary's Title button)
     // shows its best score.
-    this.view = createTitleView(this, titleTexts(saveStore().load().best), () => this.play());
+    this.view = createTitleView(this, titleTexts(saveStore().load().best), (pointer) =>
+      this.play(pointer),
+    );
     createMuteControl(this);
 
     const keyboard = this.input.keyboard;
@@ -43,9 +46,10 @@ export class TitleScene extends Phaser.Scene {
   }
 
   /** Start a round: the Game scene replaces this one. */
-  private play(): void {
+  private play(pointer?: Phaser.Input.Pointer): void {
     if (this.starting) return;
     this.starting = true;
+    if (pointer?.wasTouch) requestPhoneFullscreen(); // inside the tap, which the browser needs
     this.scene.start('Game');
   }
 }

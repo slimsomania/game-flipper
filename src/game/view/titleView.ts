@@ -18,7 +18,7 @@ export interface TitleView {
 export function createTitleView(
   scene: Phaser.Scene,
   texts: TitleTexts,
-  onPlay: () => void,
+  onPlay: (pointer?: Phaser.Input.Pointer) => void,
 ): TitleView {
   const layout = TITLE_LAYOUT;
   const line = (y: number, content: string, size: number, color: string, bold = true) => {
