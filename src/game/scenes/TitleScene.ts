@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { markReady } from '../../debug/testHooks';
+import { detectInputKind } from '../inputKind';
 import { requestPhoneFullscreen } from '../pageGuards';
 import { saveStore } from '../storage';
 import { createMuteControl } from '../view/muteButtonView';
@@ -28,8 +29,10 @@ export class TitleScene extends Phaser.Scene {
     this.starting = false;
     // Read afresh each time the title opens, so a round just played (the Summary's Title button)
     // shows its best score.
-    this.view = createTitleView(this, titleTexts(saveStore().load().best), (pointer) =>
-      this.play(pointer),
+    this.view = createTitleView(
+      this,
+      titleTexts(saveStore().load().best, detectInputKind()),
+      (pointer) => this.play(pointer),
     );
     createMuteControl(this);
 

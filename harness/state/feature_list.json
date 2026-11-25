@@ -915,9 +915,9 @@
       "depends_on": [
         "F042"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: \"readable on a 6-inch phone\" is checked as at least 12 CSS px of text height on the 740×360 phone. A device counts as touch-only when no fine pointer is present, so a touchscreen laptop keeps the desktop hints.",
+      "notes": "Assumption: \"readable on a 6-inch phone\" is checked as at least 12 CSS px of text height on the 740×360 phone. A device counts as touch-only when no fine pointer is present, so a touchscreen laptop keeps the desktop hints. Built: src/game/inputKind.ts (detectInputKind), titleTexts/pauseTexts/summaryTexts take the kind and return null hints (and a finger controls line) on touch; views skip null hints; the power bar's POWER caption went 16 to 24 px. Verified by tests/unit/touchText.test.ts, tests/e2e/phone/readable.spec.ts, tests/e2e/keyHintsDesktop.spec.ts and --phone snaps.",
       "review_feedback": ""
     },
     {

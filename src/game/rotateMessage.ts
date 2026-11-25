@@ -1,3 +1,4 @@
+import { detectInputKind } from './inputKind';
 import { COLORS, FONT_FAMILY } from './theme';
 
 /**
@@ -23,7 +24,7 @@ export function onRotateMessageChange(fn: (showing: boolean) => void): () => voi
 }
 
 /** A touch device is one with no fine pointer; a touchscreen laptop keeps the desktop behavior. */
-const isTouchDevice = (): boolean => !window.matchMedia('(any-pointer: fine)').matches;
+const isTouchDevice = (): boolean => detectInputKind() === 'touch';
 const isUpright = (): boolean => window.innerHeight > window.innerWidth;
 
 const ICON = `<svg id="rotate-icon" width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">

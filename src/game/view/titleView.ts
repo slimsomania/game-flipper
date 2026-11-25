@@ -46,7 +46,7 @@ export function createTitleView(
     fontSize: 48,
     onActivate: onPlay,
   });
-  line(layout.startHintY, texts.startHint, 24, COLORS.muted, false);
+  if (texts.startHint !== null) line(layout.startHintY, texts.startHint, 24, COLORS.muted, false);
   line(layout.bestY, texts.bestLine, 40, COLORS.text);
   line(layout.controlsHintY, texts.controlsHint, 26, COLORS.text, false);
 

@@ -2106,3 +2106,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Debt left: (1) buttonHit.test.ts's "clear of the HUD and power bar" check uses stand-in bounds; HUD_X and BAR_* are private in hudView.ts and powerBarView.ts and would need exporting to make it real. (2) src/core/simulation.ts (340 lines) and difficulty.ts (315) are just over the ~300 line guideline. (3) The `#safe` padding strip has no contextmenu guard. (4) ARCHITECTURE.md rows are very long single lines, hard to review.
 
 > [harness] session 121 · maintainer · ok · verify passed · 1 commit(s) · 17 tool calls · 43s · ~$0.23 API-equivalent
+
+## Session 122 · builder · F043 Readable text and finger hints on a phone
+- Did: `src/game/inputKind.ts` (`detectInputKind()`: touch when `(any-pointer: fine)` doesn't match; rotateMessage.ts uses it too). `titleTexts(best, kind)`, `pauseTexts(kind)`, `summaryTexts(state, kind)` take the kind (default keyboard); on touch the title's controls line is "Touch the bottle and push it up to throw", and the title start hint, pause key hint and summary key hint are null and not drawn. The power bar's POWER caption went from 16 to 24 px; every other text was already >= 24. Tests: `tests/unit/touchText.test.ts`, `tests/e2e/phone/readable.spec.ts` (Title, Play aiming and with "Nailed it! +1", Pause, Summary: height >= 24, inside canvas, no overlaps, no key words), `tests/e2e/keyHintsDesktop.spec.ts`.
+- Verified: format, typecheck, the new unit and e2e files green (7/7 e2e); `--phone` snaps of Title, Play and Pause looked at: everything readable, no overlap or cut-off. The Summary is covered by the e2e test, not a snap. Full `npm run verify` green (exit 0).
+- Status: F043 → needs_review
+- Issues / follow-ups: the title start hint ("or press Enter or Space") is also hidden on touch, which goes slightly beyond the criteria. Text shrunk by setScale to fit (long lines) could fall under 24 px, but none do on the phone.
+- Next: reviewer: run full verify, and look at a --phone Summary snap.

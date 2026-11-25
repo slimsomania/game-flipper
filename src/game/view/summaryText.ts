@@ -1,3 +1,5 @@
+import type { InputKind } from '../inputKind';
+
 /** What the round summary needs from the simulation's snapshot and from the saved best score. */
 export interface SummaryState {
   /** The round's points. */
@@ -22,7 +24,8 @@ export interface SummaryTexts {
   playAgainLabel: string;
   /** The button that goes back to the title screen. */
   toTitleLabel: string;
-  keyHint: string;
+  /** The keys for Play again; null on a touch device (no keys). */
+  keyHint: string | null;
 }
 
 /**
@@ -30,7 +33,7 @@ export interface SummaryTexts {
  * throws (a double is worth 2 points but is still one landing); "Best: 14" is the best round score
  * and "New best!" says this round just set it: the words are the design's (section 6).
  */
-export function summaryTexts(state: SummaryState): SummaryTexts {
+export function summaryTexts(state: SummaryState, kind: InputKind = 'keyboard'): SummaryTexts {
   return {
     title: 'Round over',
     scoreLine: `Score: ${state.score}`,
@@ -39,6 +42,6 @@ export function summaryTexts(state: SummaryState): SummaryTexts {
     newBestLine: state.isNewBest ? 'New best!' : null,
     playAgainLabel: 'Play again',
     toTitleLabel: 'Title',
-    keyHint: 'or press Enter or Space',
+    keyHint: kind === 'touch' ? null : 'or press Enter or Space',
   };
 }

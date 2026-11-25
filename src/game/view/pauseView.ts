@@ -69,6 +69,6 @@ export function createPauseView(
     restart: button(layout.restart, 'restartButton', texts.restartLabel, actions.onRestart),
     quit: button(layout.quit, 'quitButton', texts.quitLabel, actions.onQuit),
   };
-  line(layout.hintY, texts.keyHint, 24, COLORS.muted, false);
+  if (texts.keyHint !== null) line(layout.hintY, texts.keyHint, 24, COLORS.muted, false);
   return view;
 }

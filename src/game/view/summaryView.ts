@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import { detectInputKind } from '../inputKind';
 import { COLORS, FONT_FAMILY } from '../theme';
 import { createButton, type ButtonView } from './buttonView';
 import { SUMMARY_LAYOUT } from './summaryLayout';
@@ -29,7 +30,7 @@ export function createSummaryView(
   onTitle: () => void,
 ): SummaryView {
   const layout = SUMMARY_LAYOUT;
-  const texts = summaryTexts(state);
+  const texts = summaryTexts(state, detectInputKind());
 
   // An opaque camera background hides the paused Game scene (table, last bottle, HUD) completely.
   scene.cameras.main.setBackgroundColor(COLORS.background);
@@ -80,7 +81,9 @@ export function createSummaryView(
     });
   const playAgain = button(layout.playAgain, 'playAgainButton', texts.playAgainLabel, onPlayAgain);
   const title = button(layout.title, 'titleButton', texts.toTitleLabel, onTitle);
-  line(layout.keyHintY, texts.keyHint, 24, COLORS.muted).setFontStyle('normal');
+  if (texts.keyHint !== null) {
+    line(layout.keyHintY, texts.keyHint, 24, COLORS.muted).setFontStyle('normal');
+  }
 
   return { playAgain, title };
 }

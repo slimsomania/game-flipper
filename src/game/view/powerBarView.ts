@@ -48,7 +48,7 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
   scene.add
     .text(BAR_X, BAR_TOP - 10, 'POWER', {
       fontFamily: FONT_FAMILY,
-      fontSize: '16px',
+      fontSize: '24px',
       fontStyle: 'bold',
       color: COLORS.muted,
     })

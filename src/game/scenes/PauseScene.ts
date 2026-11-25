@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { Simulation } from '../../core/simulation';
+import { detectInputKind } from '../inputKind';
 import { bindPauseKeys } from '../pauseKeys';
 import { createMuteControl } from '../view/muteButtonView';
 import { createPauseButton } from '../view/pauseButtonView';
@@ -36,7 +37,7 @@ export class PauseScene extends Phaser.Scene {
   create(data: PauseData): void {
     this.sim = data.sim;
     this.closing = false;
-    createPauseView(this, pauseTexts(), {
+    createPauseView(this, pauseTexts(detectInputKind()), {
       onResume: () => this.resume(),
       onRestart: () => this.restart(),
       onQuit: () => this.quit(),
