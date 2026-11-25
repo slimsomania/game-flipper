@@ -1,5 +1,5 @@
 {
-  "sessions": 125,
+  "sessions": 126,
   "doneAtLastMaintenance": 41,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -44,12 +44,13 @@
     "F041": "8e7a0dfa09b210669faab43c00782c93220cc404",
     "F042": "4301f62a7b118eb547f320b6045f6da85d1934f6",
     "F043": "75770bd0b9ef3a6bd8850ad7b6027604548633f4",
-    "F044": "8e7f72af2b24d977654f603abe8fc71d3b11e3e9"
+    "F044": "8e7f72af2b24d977654f603abe8fc71d3b11e3e9",
+    "F045": "80bb1a6bac57fafb5498621f820f42b19c2ae568"
   },
   "lastGate": {
-    "session": 124,
-    "ok": true,
-    "tail": ""
+    "session": 126,
+    "ok": false,
+    "tail": "    Call Log:\n    - Timeout 15000ms exceeded while waiting on the predicate\n\n      91 |     await expect\n      92 |       .poll(async () => (await gameState(page)).outcome, { timeout: 15_000 })\n    > 93 |       .not.toBeNull();\n         |            ^\n      94 |     // Mid-result.\n      95 |     await pauseWith(page);\n      96 |     const inResult = await gameState(page);\n        at C:\\Projects\\Game-flipper\\tests\\e2e\\awkward.spec.ts:93:12\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\awkward-awkward-play-pausi-ef729-nd-mid-result-then-resuming-desktop\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\awkward-awkward-play-pausi-ef729-nd-mid-result-then-resuming-desktop\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\awkward-awkward-play-pausi-ef729-nd-mid-result-then-resuming-desktop\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\awkward-awkward-play-pausi-ef729-nd-mid-result-then-resuming-desktop\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2) [phone] › tests\\e2e\\phone\\tap.spec.ts:145:1 › a second finger changes nothing and the first finger still throws \n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: \"flying\"\n    Received: \"aiming\"\n\n      184 |   const after = await gameState(page);\n      185 |   expect(after.dragging).toBe(false);\n    > 186 |   expect(after.phase).toBe('flying');\n          |                       ^\n      187 |   expect(after.lastThrow!.source).toBe('touch');\n      188 | });\n      189 |\n        at C:\\Projects\\Game-flipper\\tests\\e2e\\phone\\tap.spec.ts:186:23\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\tap-a-second-finger-change-047c2-e-first-finger-still-throws-phone\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\tap-a-second-finger-change-047c2-e-first-finger-still-throws-phone\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\tap-a-second-finger-change-047c2-e-first-finger-still-throws-phone\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\tap-a-second-finger-change-047c2-e-first-finger-still-throws-phone\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2 failed\n    [desktop] › tests\\e2e\\awkward.spec.ts:81:3 › awkward play › pausing mid-flight and mid-result, then resuming \n    [phone] › tests\\e2e\\phone\\tap.spec.ts:145:1 › a second finger changes nothing and the first finger still throws \n  325 passed (28.5m)"
   },
   "lastViolations": []
 }
