@@ -40,13 +40,22 @@ export function isFullscreen(): boolean {
   return document.fullscreenElement != null;
 }
 
-/** Whether the game runs as a home-screen app, which already fills the screen (F047). */
-export function isHomeScreenApp(): boolean {
+function detectHomeScreenApp(): boolean {
   if (typeof matchMedia !== 'function') return false;
+  // Chromium also reports display-mode fullscreen while the page itself is fullscreen.
+  if (typeof document !== 'undefined' && document.fullscreenElement != null) return false;
   return (
     matchMedia('(display-mode: fullscreen)').matches ||
     matchMedia('(display-mode: standalone)').matches
   );
+}
+
+/** Decided once, when the page loads, before the game can request fullscreen itself. */
+const HOME_SCREEN_APP = detectHomeScreenApp();
+
+/** Whether the game was launched as a home-screen app, which already fills the screen (F047). */
+export function isHomeScreenApp(): boolean {
+  return HOME_SCREEN_APP;
 }
 
 /** Whether this browser can make the page fullscreen (not so on any browser on an iPhone). */

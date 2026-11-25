@@ -2230,3 +2230,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) Desktop F11 browser fullscreen probably matches display-mode fullscreen too. After the fix, if `isHomeScreenApp()` is decided at load, an F11 at load time would hide the button; harmless. (2) The icon byte-for-byte test depends on the local Chromium's PNG encoder, as the builder noted; a Playwright upgrade may need `npm run icons`.
 
 > [harness] session 135 · reviewer F047 · needs_review → todo · ok · 1 commit(s) · 41 tool calls · 30m 6s · ~$1.19 API-equivalent
+
+## Session 136 · builder · F047 Add the game to a phone's home screen
+- Did: fixed the F046 regression found in review. `isHomeScreenApp()` (src/game/pageGuards.ts) is now decided once at module load and is false if `document.fullscreenElement` is set, so Chromium's display-mode fullscreen after page fullscreen no longer hides the button or F. Added tests/e2e/homeScreenFullscreen.spec.ts: real, unstubbed fullscreen entered on the Title with the button, then Play, Summary and Pause all show the button with the leave icon, and F leaves fullscreen.
+- Verified: format, typecheck, the new spec plus homeScreenApp.spec.ts (display-mode stubs from page load still hide the button) and fullscreenButton.spec.ts: 26 passed. Full `npm run verify` result noted in the harness gate.
+- Status: F047 → needs_review
+- Issues / follow-ups: none new. I didn't re-run the new test against the old code to see it fail; the reviewer's probe described that failure.
+- Next: reviewer should re-check the Title → Play → Pause → Summary flow in real fullscreen.
