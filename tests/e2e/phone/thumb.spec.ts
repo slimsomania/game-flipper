@@ -105,6 +105,8 @@ for (const screen of Object.keys(setups) as Screen[]) {
     test(`${screen}: a tap ${INSET} CSS px inside each corner of ${name} activates it`, async ({
       page,
     }) => {
+      // The setup runs once per corner, and the Summary's plays a whole round, so 30 s is tight under load.
+      test.setTimeout(120_000);
       for (let corner = 0; corner < 4; corner++) {
         await setups[screen](page);
         const area = (await buttons(page)).find((b) => b.name === name)!;
