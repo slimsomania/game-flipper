@@ -2203,3 +2203,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F046 → needs_review
 - Issues / follow-ups: none
 - Next: reviewer: check Esc/P still pause with the card open, and the keys with the card on a phone keyboard.
+
+> [harness] session 132 · builder F046 · todo → needs_review · ok · verify passed · 1 commit(s) · 21 tool calls · 22m 47s · ~$0.28 API-equivalent
