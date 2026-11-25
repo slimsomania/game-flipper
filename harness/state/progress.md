@@ -2159,3 +2159,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F045 → needs_review
 - Issues / follow-ups: the suite is slow (about 28 min) and a few real-clock tests (thumb.spec summary tests at 35 to 43 s against a 60 s limit) are near their limits; they may flake again under load. Old and new touch values and the single-flip travel list are in the session 126 entry above.
 - Next: reviewer: run full verify with nothing else running; if thumb.spec flakes, raise its test timeout rather than touching the tuning.
+
+> [harness] session 127 · builder F045 · todo → todo · ok · verify FAILED · 1 commit(s) · 10 tool calls · 3m 33s · ~$0.20 API-equivalent
