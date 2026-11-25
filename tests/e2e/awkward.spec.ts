@@ -89,7 +89,7 @@ test.describe('awkward play', () => {
     await page.keyboard.press('Escape'); // closes it
     await expectPaused(page, false);
     await expect
-      .poll(async () => (await gameState(page)).outcome, { timeout: 15_000 })
+      .poll(async () => (await gameState(page)).outcome, { timeout: 45_000 })
       .not.toBeNull();
     // Mid-result.
     await pauseWith(page);

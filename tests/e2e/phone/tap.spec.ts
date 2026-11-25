@@ -146,7 +146,7 @@ test('a second finger changes nothing and the first finger still throws', async 
   await openGame(page, '?seed=7');
   await page.evaluate(() => window.__FLIPPER__!.pause());
   const at = await bottleCenterOnPage(page);
-  await dragTouchInPage(page, { at, rise: 30, ms: 60, end: 'hold' });
+  await dragTouchInPage(page, { at, rise: 120, ms: 60, end: 'hold' });
   const held = await gameState(page);
   expect(held.dragging).toBe(true);
 
@@ -156,7 +156,7 @@ test('a second finger changes nothing and the first finger still throws', async 
       const canvas = document.querySelector('canvas')!;
       const mk = (id: number, cy: number) =>
         new Touch({ identifier: id, target: canvas, clientX: x, clientY: cy, pageX: x, pageY: cy });
-      const first = mk(1, y - 30);
+      const first = mk(1, y - 120);
       const second = mk(2, y + 60);
       const fire = (type: string, touches: Touch[], changed: Touch[]) =>
         canvas.dispatchEvent(
@@ -180,7 +180,7 @@ test('a second finger changes nothing and the first finger still throws', async 
   expect(mid.phase).toBe('aiming');
   expect(mid.lastThrow).toBeNull();
 
-  await sendTouch(page, [{ type: 'end', x: at.x, y: at.y - 30, after: 0 }]);
+  await sendTouch(page, [{ type: 'end', x: at.x, y: at.y - 120, after: 0 }]);
   const after = await gameState(page);
   expect(after.dragging).toBe(false);
   expect(after.phase).toBe('flying');
