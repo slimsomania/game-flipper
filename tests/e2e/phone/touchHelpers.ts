@@ -25,42 +25,53 @@ export interface TouchStep {
  * than the one before (the first counts from the later of the previous call's last event and the
  * real time now).
  */
-export async function sendTouch(page: Page, steps: TouchStep[]): Promise<void> {
-  await page.evaluate((steps) => {
-    const clock = window as unknown as { __virtualNow?: number };
-    let now = Math.max(clock.__virtualNow ?? 0, performance.now());
-    const canvas = document.querySelector('canvas')!;
-    for (const step of steps) {
-      now += step.after;
-      const touch = new Touch({
-        identifier: 1,
-        target: canvas,
-        clientX: step.x,
-        clientY: step.y,
-        pageX: step.x,
-        pageY: step.y,
-        screenX: step.x,
-        screenY: step.y,
-      });
-      const down = step.type !== 'end' && step.type !== 'cancel';
-      const event = new TouchEvent(
-        { start: 'touchstart', move: 'touchmove', end: 'touchend', cancel: 'touchcancel' }[
-          step.type
-        ],
-        {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-          touches: down ? [touch] : [],
-          targetTouches: down ? [touch] : [],
-          changedTouches: [touch],
-        },
-      );
-      Object.defineProperty(event, 'timeStamp', { value: now }); // shadows the real time stamp
-      canvas.dispatchEvent(event);
-    }
-    clock.__virtualNow = now;
-  }, steps);
+export async function sendTouch(
+  page: Page,
+  steps: TouchStep[],
+  options: { chain?: boolean } = {},
+): Promise<void> {
+  await page.evaluate(
+    ([steps, chain]) => {
+      const clock = window as unknown as { __virtualNow?: number };
+      // With `chain` the first event counts from the previous call's last one exactly, so a slow
+      // machine's real delay between two calls does not slow a push that is still held.
+      let now = chain
+        ? (clock.__virtualNow ?? performance.now())
+        : Math.max(clock.__virtualNow ?? 0, performance.now());
+      const canvas = document.querySelector('canvas')!;
+      for (const step of steps) {
+        now += step.after;
+        const touch = new Touch({
+          identifier: 1,
+          target: canvas,
+          clientX: step.x,
+          clientY: step.y,
+          pageX: step.x,
+          pageY: step.y,
+          screenX: step.x,
+          screenY: step.y,
+        });
+        const down = step.type !== 'end' && step.type !== 'cancel';
+        const event = new TouchEvent(
+          { start: 'touchstart', move: 'touchmove', end: 'touchend', cancel: 'touchcancel' }[
+            step.type
+          ],
+          {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            touches: down ? [touch] : [],
+            targetTouches: down ? [touch] : [],
+            changedTouches: [touch],
+          },
+        );
+        Object.defineProperty(event, 'timeStamp', { value: now }); // shadows the real time stamp
+        canvas.dispatchEvent(event);
+      }
+      clock.__virtualNow = now;
+    },
+    [steps, options.chain === true] as const,
+  );
 }
 
 /** How a `dragTouchInPage` ends: finger lifted, or still down. */

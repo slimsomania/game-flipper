@@ -180,7 +180,7 @@ test('a second finger changes nothing and the first finger still throws', async 
   expect(mid.phase).toBe('aiming');
   expect(mid.lastThrow).toBeNull();
 
-  await sendTouch(page, [{ type: 'end', x: at.x, y: at.y - 120, after: 0 }]);
+  await sendTouch(page, [{ type: 'end', x: at.x, y: at.y - 120, after: 0 }], { chain: true });
   const after = await gameState(page);
   expect(after.dragging).toBe(false);
   expect(after.phase).toBe('flying');

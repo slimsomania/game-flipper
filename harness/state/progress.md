@@ -2161,3 +2161,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: reviewer: run full verify with nothing else running; if thumb.spec flakes, raise its test timeout rather than touching the tuning.
 
 > [harness] session 127 · builder F045 · todo → todo · ok · verify FAILED · 1 commit(s) · 10 tool calls · 3m 33s · ~$0.20 API-equivalent
+
+## Session 128 · builder · F045 Tune the finger push
+- Did: found the real cause of the repeating `phone/tap.spec.ts` "a second finger…" failure. `sendTouch` starts each call at `max(virtualNow, performance.now())`, so the real delay between the held push (`end: 'hold'`) and the final `touchend` (a few hundred ms on a loaded machine) became a pause in the finger's motion, the release speed fell and the power went under touchMinPower 10: no throw, phase `aiming`. Session 127's longer push did not remove that. Now `sendTouch` has an option `{ chain: true }` (continue exactly from the previous call's last virtual time) and that test's final `touchend` uses it. No change to `src/` or the touch numbers. Old and new touch values and the single-flip travel list are in the session 126 entry (full distance 300→450, full speed 2000→3000, min power 1→10, grab padding 12→48; mouse unchanged).
+- Verified: format, typecheck, phone e2e tap/touch/fingerPush (14 passed). The full `npm run verify` is the harness's run after this session.
+- Status: F045 → needs_review
+- Issues / follow-ups: other phone tests that hold a push across two `sendTouch` calls and then release (tap.spec touchcancel is fine, it throws nothing) could use `chain` the same way if they ever flake.
+- Next: reviewer: run full verify with nothing else running; if thumb.spec flakes, raise its test timeout rather than touching the tuning.
