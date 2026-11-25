@@ -46,6 +46,19 @@ test('a 1 s touch opens no menu and selects nothing; swipes never scroll or zoom
   await cdpTouch(page, 'touchEnd', spot.x, spot.y);
   const menus = await page.evaluate(() => (window as unknown as { __menus: boolean[] }).__menus);
   expect(menus.every(Boolean)).toBe(true);
+  // The headless touch may fire no contextmenu at all, so also dispatch our own on the canvas and
+  // on the letterbox: the guard must default-prevent both.
+  const synthetic = await page.evaluate(() =>
+    ['canvas', '#game'].map((sel) => {
+      const e = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+      document.querySelector(sel)!.dispatchEvent(e);
+      return e.defaultPrevented;
+    }),
+  );
+  expect(synthetic).toEqual([true, true]);
+  expect(
+    await page.evaluate(() => (window as unknown as { __menus: boolean[] }).__menus.length),
+  ).toBeGreaterThan(0);
   expect(await page.evaluate(() => getSelection()!.toString())).toBe('');
 
   // Swipes across the canvas and across the letterbox (the 50 px strip at the left).
@@ -104,6 +117,26 @@ test('the canvas stays inside the safe-area insets', async ({ page }) => {
     .poll(async () => {
       const b = await canvasBox(page);
       return b.left >= 44 && b.right <= 740 - 44 && b.bottom <= 360.5;
+    })
+    .toBe(true);
+  await page.evaluate(() => {
+    const s = document.documentElement.style;
+    s.setProperty('--safe-left', '0px');
+    s.setProperty('--safe-right', '0px');
+  });
+  await expect.poll(async () => (await canvasBox(page)).w).toBe(640);
+  expect((await canvasBox(page)).h).toBe(360);
+
+  // Insets that force a shrink: the canvas must follow them, and grow back afterwards.
+  await page.evaluate(() => {
+    const s = document.documentElement.style;
+    s.setProperty('--safe-left', '80px');
+    s.setProperty('--safe-right', '80px');
+  });
+  await expect
+    .poll(async () => {
+      const b = await canvasBox(page);
+      return b.w <= 580 && b.left >= 80 && b.right <= 660;
     })
     .toBe(true);
   await page.evaluate(() => {

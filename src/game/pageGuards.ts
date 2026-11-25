@@ -13,7 +13,10 @@ export function installPageGuards(game: Phaser.Game, container: HTMLElement): vo
     container.addEventListener(name, stop);
   }
   if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(() => game.scale.refresh()).observe(container);
+    // refresh() sizes the canvas from the cached parent size, so update that cache first.
+    new ResizeObserver(() => {
+      if (game.scale.getParentBounds()) game.scale.refresh();
+    }).observe(container);
   }
 }
 
