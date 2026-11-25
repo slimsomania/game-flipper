@@ -86,6 +86,7 @@ Screens, in order: **Title → Play → Round summary → Play again or Title**.
 - **Play:** the table, the bottle with its visible water level, the power bar, the throw number ("Throw 3 / 10"), the current score, the streak, and the result flash and message after each throw.
 - **Round summary:** the round's points ("Score: 14") and its landings ("Landed 7 / 10"), the best score (with a "New best!" note if beaten), a Play again button and a Title button.
 - **Pause overlay:** Resume and Quit to title.
+- **Fullscreen button (from M8):** a corner button next to the mute button on every screen, which switches fullscreen on and off. Its icon shows whether the game is fullscreen now. On a browser that can't make a page fullscreen (Safari on iPhone) the button isn't shown.
 
 ## 7. Controls
 
@@ -99,6 +100,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 | Restart the round | Restart button on the pause overlay | R |
 | Pause | Pause button in the corner | Esc or P |
 | Mute | Speaker button | M |
+| Fullscreen on / off (from M8) | Fullscreen button in the corner | F (Esc also leaves fullscreen: the browser does that itself, and the game pauses as usual) |
 
 **On a phone (from M7):**
 
@@ -106,6 +108,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **Power bar:** shows the live value while pushing, as with the mouse. There are no on-screen Up/Down buttons: on a phone the push is the only way to throw.
 - **Skip the wait:** tap anywhere.
 - **Pause, mute, restart, and the buttons on the title and summary screens:** tap the same on-screen buttons. Every button must be big enough to hit with a thumb.
+- **Fullscreen (from M8):** the first Play tap goes fullscreen (as built in M7). If the player leaves fullscreen, for example with the phone's back gesture, the fullscreen button brings it back, and so does the next Play or Play again tap.
 - Every action in the game must be possible without a keyboard.
 
 ## 8. Art direction
@@ -130,7 +133,9 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - Phone tests: automated tests also run in Chromium emulating a phone (touch input, a small landscape screen). The human checks a real Android phone and iPhone at the milestone stop. For that, the human needs a way to open the game on a phone: a dev server reachable on the home network, or a hosted page.
 - Performance target: a steady 60 fps on an ordinary laptop and on a mid-range phone from the last few years.
 - The logical canvas is **1280×720 landscape**, scaled to fit the window. The scaffold still has the old 720×1280 portrait values (`GAME_WIDTH` and `GAME_HEIGHT` in `src/core/constants.ts`, `docs/ARCHITECTURE.md`, the Playwright viewport in `playwright.config.ts`); the first feature must switch them over. We can change the orientation again later.
-- Later: itch.io or a hosted page, installable web app.
+- Fullscreen (from M8): on a desktop, the fullscreen button or F fills the whole monitor with the game, still at 16:9 with bars on the sides if the monitor's shape differs. On an Android phone, fullscreen hides the browser's bars, as in M7. Safari on iPhone can't make a web page fullscreen, so the iPhone way is the home-screen app below.
+- Home-screen app (from M8): the game can be added to a phone's home screen ("Add to Home Screen" in Safari, "Install app" or "Add to Home screen" in Chrome). Opened from its icon, it starts without the browser's address bar and tabs, held sideways, with the game's own name and icon. This needs a web app manifest and the iPhone's home-screen tags in index.html, and an icon drawn by the project itself. It is not an offline app: it still loads from the page's address.
+- Later: itch.io or a hosted page, an offline app.
 
 ## 11. Milestones
 
@@ -141,7 +146,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **M5, polish and tuning:** quicker result timing, tune difficulty so a good player can reach 6 to 8 out of 10 and reading the water matters, camera shake and small effects, the soft shading and readability of section 8, bug fixes.
 - **M6, sloshing and replay:** water that moves inside the bottle and affects the flip, and a short slow-motion replay of the landing after each throw (skippable).
 - **M7, phones:** play on a phone with touch, as in sections 7 and 10: the finger push and its tuning, taps for every button and for skipping, the sideways-only message, no scrolling or zooming, readable text and big enough buttons, phone e2e tests, and a way for the human to open the game on a real phone. It comes after M6 so the finger push is tuned once, against the final bottle and its sloshing water.
-- **M8, performance and release check:** the performance budget and the production-build check, measured on a phone as well as a laptop.
+- **M8, fullscreen, home-screen app, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, then the performance budget and the production-build check, measured on a phone as well as a laptop.
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
 ## 12. Out of scope
@@ -199,6 +204,10 @@ Decided on 2026-11-23:
 - **Phones too, not only desktop.** Most players are expected to try the game on a phone. The desktop version stays as it is, and the same game also works on a phone with touch (sections 7 and 10). This replaces "no touch or phone support for now".
 - **Phones come after M6 (M7).** The finger push has to be tuned against the bottle's final shape and its sloshing water, which M6 still changes, so tuning it earlier would mean tuning it twice. The performance budget and the production-build check (previously M7 in the plan) move to M8, so they are measured on a phone too.
 - **Landscape on phones as well.** The 1280×720 landscape canvas stays: a phone held sideways fits it, and an upright phone shows a message asking to turn it. A separate portrait layout is not planned.
+
+Decided at the M7 stop (2026-11-25):
+
+- **Fullscreen and home-screen app (2026-11-25).** The player can make the game fullscreen on a PC as well as a phone, with a corner button and the F key, and can add it to a phone's home screen to play without the browser's bars (the only way on an iPhone). Both come in M8, before the performance check. See sections 6, 7 and 10.
 
 Still open, to be settled by playtesting after M1:
 

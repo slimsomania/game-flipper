@@ -38,8 +38,8 @@
     },
     {
       "id": "M8",
-      "title": "Release readiness",
-      "goal": "The 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
+      "title": "Fullscreen and release readiness",
+      "goal": "The game can go fullscreen on a PC and an Android phone with a corner button and the F key, and can be added to a phone's home screen to play without the browser's bars (the iPhone way); then the 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
     }
   ],
   "features": [
@@ -964,6 +964,53 @@
       "review_feedback": ""
     },
     {
+      "id": "F046",
+      "milestone": "M8",
+      "category": "ui",
+      "title": "Fullscreen button and F key",
+      "description": "Design sections 6, 7 and 10: a corner button that switches fullscreen on and off on every screen (Title, Play, Pause overlay, Round summary), placed in the corner row next to the mute button (and the pause button on Play) with the same size, look and 88 game px hit area as those, and the F key doing the same. Its icon shows whether the game is fullscreen now and updates when the player leaves fullscreen another way (Esc, F11, the phone's back gesture), through the fullscreenchange event. Use the same fullscreen target as F040's `requestPhoneFullscreen` (document.documentElement) so the safe-area padding and Scale.FIT keep working; after entering fullscreen from a touch, also try the landscape lock as F040 does, ignoring a refusal. When the browser has no page fullscreen (document.fullscreenEnabled false or requestFullscreen missing, as on Safari on iPhone), the button isn't shown and F does nothing. On a touch device, the Play again tap on the summary also asks for fullscreen when the page isn't fullscreen, like the first Play tap. Esc keeps its pause meaning; leaving fullscreen with Esc is the browser's own doing. Expose the fullscreen state on window.__FLIPPER__ only if a test needs it; it reads document.fullscreenElement and adds no rule of its own. Mention the button and key wherever the other corner buttons and keys are listed, and update docs/ARCHITECTURE.md.",
+      "acceptance": [
+        "E2E (desktop): with requestFullscreen and exitFullscreen stubbed to record calls, toggle a fake fullscreenElement and fire fullscreenchange, a click on the fullscreen button on the Title, on Play, on the Pause overlay and on the Round summary each calls requestFullscreen once; a second click while fullscreen calls exitFullscreen once; the round state (phase, throw number, score) is the same before and after each click, and the click neither throws the bottle nor skips a wait.",
+        "E2E (desktop): pressing F on Play enters fullscreen, pressing F again leaves it, and neither changes the power or throws; F does the same on the Title and the Round summary.",
+        "E2E (desktop): after a fullscreenchange to not-fullscreen fired by the stub (as when the player presses Esc or F11), the button shows its not-fullscreen icon, and the next click calls requestFullscreen again.",
+        "E2E: with document.fullscreenEnabled stubbed to false, the fullscreen button is on no screen and F calls nothing; every other corner button keeps its position.",
+        "Phone E2E: the fullscreen button's hit area is at least 44×44 CSS px and doesn't overlap the mute or pause button's; a tap on it calls requestFullscreen once (stubbed); a Play again tap on the summary calls requestFullscreen when the page isn't fullscreen and doesn't when it is.",
+        "E2E: a rejected requestFullscreen leaves the game working and logs no console error.",
+        "Snaps at 1280×720 and with `--phone` of the Title, Play and the Round summary show the button beside the other corner buttons, covering neither the HUD nor any text, with both of its icons."
+      ],
+      "depends_on": [
+        "F040",
+        "F045"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Added by hand (human session, 2026-11-25) after the M7 stop, with design sections 6, 7, 10 and 13 updated the same day.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F047",
+      "milestone": "M8",
+      "category": "platform",
+      "title": "Add the game to a phone's home screen",
+      "description": "Design section 10: the game can be added to a phone's home screen and, opened from its icon, starts without the browser's bars, held sideways, with its own name and icon (the only way to play without Safari's bars on an iPhone). Add a web app manifest in public/ (name and short_name \"Flipper\", start_url and scope relative to the page so it works under any base path, display \"fullscreen\" with display_override [\"fullscreen\", \"standalone\"], orientation \"landscape\", background and theme colors from the art direction's palette, icons 192 and 512 px PNG plus a maskable 512 px one) and link it from index.html, with the iPhone's tags: apple-touch-icon (180 px), apple-mobile-web-app-capable and mobile-web-app-capable, apple-mobile-web-app-title, and apple-mobile-web-app-status-bar-style black-translucent so the safe-area padding of F040 handles the notch. The icon is the project's own: a simple bottle on the game's background, made from code (for example a small script that draws it on a canvas in Playwright and saves the PNGs; commit the script with the PNGs), and recorded in public/assets/CREDITS.md. No service worker and no offline caching. When the game runs as a home-screen app in fullscreen or standalone mode (matchMedia display-mode), the F046 fullscreen button is hidden, since the page already fills the screen. The production build must copy the manifest and icons, and every path in them must resolve. Update docs/ARCHITECTURE.md, and add a short 'Play from the home screen' note for the human to the doc that explains how to open the game on a phone.",
+      "acceptance": [
+        "E2E: index.html links a manifest that loads (200) and parses as JSON with name \"Flipper\", display \"fullscreen\", orientation \"landscape\", a relative start_url, and icons of 192 and 512 px including one with purpose maskable; every icon URL in the manifest and the apple-touch-icon loads with status 200 and content type image/png, and decodes to its stated size.",
+        "E2E: the head has apple-mobile-web-app-capable \"yes\", apple-mobile-web-app-title \"Flipper\" and apple-mobile-web-app-status-bar-style \"black-translucent\".",
+        "E2E: on the production build (served the way the production-build tests serve it), the manifest and icons load with status 200 as well.",
+        "E2E: with matchMedia('(display-mode: fullscreen)') or '(display-mode: standalone)' stubbed to match, the fullscreen button isn't shown; with neither matching it is (where the browser has page fullscreen).",
+        "Unit or E2E: the icon script is deterministic: a fresh render matches the committed PNGs byte for byte.",
+        "Looking at the 512 px icon and the maskable one with the Read tool shows a readable bottle that stays inside the maskable safe zone (the middle 80%).",
+        "public/assets/CREDITS.md lists the icons as made by the project."
+      ],
+      "depends_on": [
+        "F046"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Added by hand (human session, 2026-11-25) after the M7 stop, with design sections 6, 7, 10 and 13 updated the same day.",
+      "review_feedback": ""
+    },
+    {
       "id": "F028",
       "milestone": "M8",
       "category": "performance",
@@ -979,11 +1026,13 @@
       "depends_on": [
         "F025",
         "F027",
-        "F045"
+        "F045",
+        "F046",
+        "F047"
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project.",
+      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project. Made to depend on F046 and F047 by hand (human session, 2026-11-25) so the budget is measured with the fullscreen button in the scene.",
       "review_feedback": ""
     }
   ]
