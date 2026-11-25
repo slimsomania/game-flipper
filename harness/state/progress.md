@@ -2237,3 +2237,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F047 → needs_review
 - Issues / follow-ups: none new. I didn't re-run the new test against the old code to see it fail; the reviewer's probe described that failure.
 - Next: reviewer should re-check the Title → Play → Pause → Summary flow in real fullscreen.
+
+> [harness] session 136 · builder F047 · todo → needs_review · ok · verify passed · 1 commit(s) · 22 tool calls · 23m 18s · ~$0.37 API-equivalent
