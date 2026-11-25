@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { GAME_WIDTH } from '../../../src/core/constants';
+import { pushTuningFor } from '../../../src/core/mouseControl';
 import { pushPower } from '../../../src/core/push';
+import { DEFAULT_TUNING } from '../../../src/core/tuning';
 import { gameState, openGame, openTitle, stepUntilOutcome } from '../helpers';
 import { above, gamePoint } from '../mouseHelpers';
 import { PHONE_VIEWPORT } from '../phoneDevice';
@@ -39,6 +41,7 @@ test('a finger pushed up 50 CSS px in 100 ms on the bottle throws with source to
   // The bar follows the live push: 100 game px up in 100 ms.
   const live = pushPower(
     Array.from({ length: 11 }, (_, i) => ({ t: i / 100, y: 400 - (100 * i) / 10 })),
+    pushTuningFor(DEFAULT_TUNING, 'touch'), // F045: a finger reads its own numbers
   );
   expect(live).toBeGreaterThan(0);
   expect(held.power).toBeCloseTo(live, 0);

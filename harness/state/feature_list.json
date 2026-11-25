@@ -958,9 +958,9 @@
         "F037",
         "F044"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the targets (full power at 30 to 60 mm, nothing under 2 mm, windows at least 3 mm of travel) are best guesses at \"a natural finger flick\", to be judged on real phones; 5.5 CSS px per mm is about the average of common 6-inch phones. The difficulty targets hold on a phone by construction (they are measured in power), so only the push conversion is new.",
+      "notes": "Built: touchFullDistance 450, touchFullSpeed 3000, touchMinPower 10, touchGrabPadding 48 in src/core/tuning.ts; `pushTuningFor(tuning, source)` in src/core/mouseControl.ts swaps them in for touch grabs, push and release (mouse path unchanged). Verified by tests/unit/touchTuning.test.ts and tests/e2e/phone/fingerPush.spec.ts; touch.spec.ts now computes its expected live power with the touch numbers. Assumption: the targets (full power at 30 to 60 mm, nothing under 2 mm, windows at least 3 mm of travel) are best guesses at \"a natural finger flick\", to be judged on real phones; 5.5 CSS px per mm is about the average of common 6-inch phones.",
       "review_feedback": ""
     },
     {

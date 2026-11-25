@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { pushTuningFor } from '../../src/core/mouseControl';
 import { pushPower } from '../../src/core/push';
+import { DEFAULT_TUNING } from '../../src/core/tuning';
 import { Simulation } from '../../src/core/simulation';
 import { run } from './helpers';
 import { ON_BOTTLE, pushPath } from './mouseHelpers';
@@ -26,18 +28,26 @@ describe('a finger on the held bottle', () => {
     const sim = new Simulation({ seed: 7 });
     const water = sim.snapshot().bottle.water;
     const power = push(sim, 'touch');
-    expect(power).toBe(pushPower(pushPath(100, 0.1)));
+    // F045: a finger reads its own push numbers.
+    expect(power).toBe(pushPower(pushPath(100, 0.1), pushTuningFor(DEFAULT_TUNING, 'touch')));
     expect(power).toBeGreaterThan(0);
     expect(sim.snapshot().lastThrow).toEqual({ power, water, source: 'touch' });
   });
 
-  it('gives a mouse push and a touch push with the same samples the same power', () => {
+  it('gives a mouse push and a touch push with the same samples the same power when the touch numbers match the mouse’s', () => {
+    // F045 gave a finger its own numbers; with them set equal the conversion is the same one.
+    const same = {
+      touchFullDistance: DEFAULT_TUNING.pushFullDistance,
+      touchFullSpeed: DEFAULT_TUNING.pushFullSpeed,
+      touchMinPower: DEFAULT_TUNING.pushMinPower,
+      touchGrabPadding: DEFAULT_TUNING.grabPadding,
+    };
     for (const [rise, seconds] of [
       [100, 0.1],
       [250, 0.2],
       [40, 0.4],
     ]) {
-      expect(push(new Simulation({ seed: 7 }), 'touch', rise, seconds)).toBe(
+      expect(push(new Simulation({ seed: 7, tuning: same }), 'touch', rise, seconds)).toBe(
         push(new Simulation({ seed: 7 }), 'mouse', rise, seconds),
       );
     }

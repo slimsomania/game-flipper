@@ -25,6 +25,18 @@ export interface MouseHost {
   throwWithPointer(power: number, source: PointerSource): boolean;
 }
 
+/** The push numbers a pointer of this kind reads: a finger's own full distance, speed, minimum and padding. */
+export function pushTuningFor(tuning: Tuning, source: PointerSource): Tuning {
+  if (source !== 'touch') return tuning;
+  return {
+    ...tuning,
+    pushFullDistance: tuning.touchFullDistance,
+    pushFullSpeed: tuning.touchFullSpeed,
+    pushMinPower: tuning.touchMinPower,
+    grabPadding: tuning.touchGrabPadding,
+  };
+}
+
 export class MouseControl {
   private readonly grabbing = new Grab();
   private source: PointerSource = 'mouse';
@@ -40,9 +52,10 @@ export class MouseControl {
    * Whether a press at (`x`, `y`), in logical game pixels, would grab the bottle: the simulation is
    * `aiming` and the point is on the bottle (or within `grabPadding` of it). Also what the cursor asks.
    */
-  canGrab(x: number, y: number): boolean {
+  canGrab(x: number, y: number, source: PointerSource = 'mouse'): boolean {
     if (this.host.phase() !== 'aiming') return false;
-    return isOnBottle(x, y, this.host.bottle(), this.host.tuning().grabPadding);
+    const { grabPadding } = pushTuningFor(this.host.tuning(), source);
+    return isOnBottle(x, y, this.host.bottle(), grabPadding);
   }
 
   /**
@@ -52,7 +65,7 @@ export class MouseControl {
    * `source` is the kind of pointer (a finger is `touch`): the throw records it, nothing else changes.
    */
   grab(x: number, y: number, t: number, source: PointerSource = 'mouse'): boolean {
-    if (this.grabbing.active || !this.canGrab(x, y)) return false;
+    if (this.grabbing.active || !this.canGrab(x, y, source)) return false;
     if (!this.grabbing.begin(y, t, this.host.powerMeter.value)) return false;
     this.source = source;
     this.showPush();
@@ -73,7 +86,7 @@ export class MouseControl {
    */
   release(t: number, y?: number): boolean {
     if (!this.grabbing.active) return false;
-    const tuning = this.host.tuning();
+    const tuning = pushTuningFor(this.host.tuning(), this.source);
     const power = this.grabbing.finish(tuning, t, y);
     if (!(power >= tuning.pushMinPower)) {
       this.host.powerMeter.set(this.grabbing.barBefore);
@@ -110,6 +123,6 @@ export class MouseControl {
 
   /** The power bar shows what a release right now would throw with. */
   private showPush(): void {
-    this.host.powerMeter.set(this.grabbing.power(this.host.tuning()));
+    this.host.powerMeter.set(this.grabbing.power(pushTuningFor(this.host.tuning(), this.source)));
   }
 }

@@ -121,6 +121,16 @@ export interface Tuning {
    */
   grabPadding: number;
   /**
+   * F045: a finger's own push numbers, used instead of `pushFullDistance`, `pushFullSpeed`,
+   * `pushMinPower` and `grabPadding` when the bottle is grabbed by touch (the window, span and
+   * weights are shared). On the reference phone (0.5 CSS px per game px, about 5.5 CSS px per mm)
+   * 1 mm of finger travel is 11 game px.
+   */
+  touchFullDistance: number;
+  touchFullSpeed: number;
+  touchMinPower: number;
+  touchGrabPadding: number;
+  /**
    * Throws in a round (design section 2). Read as a whole number of at least 1; after the last
    * throw's result the phase is `roundOver`.
    */
@@ -232,6 +242,15 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   // the box around the bottle (80 px wide, 148 px tall since F034) still grabs it.
   pushMinPower: 1,
   grabPadding: 12,
+  // F045: on the reference phone 1 mm of finger is 11 game px. Full power at 450 px (about 41 mm)
+  // in 150 ms (3000 px/s), so a steady push reaches 100 at 41 mm and 2 mm gives about 5. No
+  // push of at most 2 mm can pass 10 (the speed part is capped by 2 mm in 50 ms), so it throws
+  // nothing. A touch up to 48 px (4.4 mm) outside the bottle's box grabs it. Before F045 a touch
+  // used the mouse numbers: 300 px, 2000 px/s, minimum 1, padding 12.
+  touchFullDistance: 450,
+  touchFullSpeed: 3000,
+  touchMinPower: 10,
+  touchGrabPadding: 48,
   // F013: design section 2, a round is 10 throws.
   throwsPerRound: 10,
   // F016: a thrown bottle first hits the table at 3 to 8 m/s, and its later bounces are 2 m/s or
