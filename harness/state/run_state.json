@@ -1,5 +1,5 @@
 {
-  "sessions": 129,
+  "sessions": 130,
   "doneAtLastMaintenance": 41,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -45,12 +45,15 @@
     "F042": "4301f62a7b118eb547f320b6045f6da85d1934f6",
     "F043": "75770bd0b9ef3a6bd8850ad7b6027604548633f4",
     "F044": "8e7f72af2b24d977654f603abe8fc71d3b11e3e9",
-    "F045": "80bb1a6bac57fafb5498621f820f42b19c2ae568"
+    "F045": "80bb1a6bac57fafb5498621f820f42b19c2ae568",
+    "F046": "278f4e44ef8a732e413e4454ea08d9e9496b961f"
   },
   "lastGate": {
-    "session": 128,
-    "ok": false,
-    "tail": "  ✓  326 [phone] › tests\\e2e\\phone\\tuningButton.spec.ts:57:1 › without ?debug the production build has no button and no panel (2.3s)\n  ✓  327 [phone] › tests\\e2e\\phone\\tuningButton.spec.ts:66:1 › with ?debug the production build shows the button (1.3s)\n\n\n  1) [phone] › tests\\e2e\\phone\\thumb.spec.ts:105:5 › summary: a tap 4 CSS px inside each corner of muteButton activates it \n\n    Tearing down \"context\" exceeded the test timeout of 30000ms.\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\thumb-summary-a-tap-4-CSS--49cf0--of-muteButton-activates-it-phone\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\thumb-summary-a-tap-4-CSS--49cf0--of-muteButton-activates-it-phone\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\thumb-summary-a-tap-4-CSS--49cf0--of-muteButton-activates-it-phone\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\thumb-summary-a-tap-4-CSS--49cf0--of-muteButton-activates-it-phone\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2) [phone] › tests\\e2e\\phone\\touch.spec.ts:29:1 › a finger pushed up 50 CSS px in 100 ms on the bottle throws with source touch \n\n    Error: expect(received).toBeCloseTo(expected, precision)\n\n    Expected: 27.77777777777778\n    Received: 25.011111111069756\n\n    Expected precision:    0\n    Expected difference: < 0.5\n    Received difference:   2.766666666708023\n\n      54 |   expect(after.lastThrow!.source).toBe('touch');\n      55 |   expect(after.lastThrow!.power).toBeGreaterThan(0);\n    > 56 |   expect(after.lastThrow!.power).toBeCloseTo(held.power, 0);\n         |                                  ^\n      57 |   expect(after.power).toBe(after.lastThrow!.power);\n      58 |   expect(errors).toEqual([]);\n      59 | });\n        at C:\\Projects\\Game-flipper\\tests\\e2e\\phone\\touch.spec.ts:56:34\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\touch-a-finger-pushed-up-5-f326d-le-throws-with-source-touch-phone\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\touch-a-finger-pushed-up-5-f326d-le-throws-with-source-touch-phone\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\touch-a-finger-pushed-up-5-f326d-le-throws-with-source-touch-phone\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\touch-a-finger-pushed-up-5-f326d-le-throws-with-source-touch-phone\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2 failed\n    [phone] › tests\\e2e\\phone\\thumb.spec.ts:105:5 › summary: a tap 4 CSS px inside each corner of muteButton activates it \n    [phone] › tests\\e2e\\phone\\touch.spec.ts:29:1 › a finger pushed up 50 CSS px in 100 ms on the bottle throws with source touch \n  325 passed (26.3m)"
+    "session": 130,
+    "ok": true,
+    "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "F046.attempts is counted by the harness (reverted)"
+  ]
 }

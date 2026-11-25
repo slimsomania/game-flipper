@@ -2185,3 +2185,6 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F046 → needs_review
 - Issues / follow-ups: on the Title and Summary the Pause slot is empty, so the fullscreen button sits with a gap beside the speaker (fixed position on every screen, by choice). The card has some blank space between its text and Close. The first baseline verify was not run before building (the harness's last verify had two load-related phone failures, fixed in session 129).
 - Next: reviewer: run full verify; check the card on a real iPhone and that Esc while the card is open pauses and closes it.
+
+> [harness] session 130 · builder F046 · todo → needs_review · ok · verify passed · 2 commit(s) · 85 tool calls · 37m 20s · ~$1.33 API-equivalent
+> [harness] corrected: F046.attempts is counted by the harness (reverted)
