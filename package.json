@@ -22,6 +22,7 @@
     "format:check": "prettier --check .",
     "verify": "npm run format:check && npm run typecheck && npm run test && npm run build && npm run test:e2e",
     "snap": "tsx scripts/snap.ts",
+    "icons": "tsx scripts/makeIcons.ts",
     "agents": "tsx harness/run.ts",
     "agents:status": "tsx harness/status.ts",
     "agents:check": "tsx harness/check.ts"

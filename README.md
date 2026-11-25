@@ -53,6 +53,10 @@ To try the game on a real Android phone or iPhone, serve it from your PC to the 
 
 Add `?debug` to the address (for example `http://192.168.1.23:4173/?debug`) to get the tuning panel: on a touch device a small gear button in the bottom-left corner opens and closes it, and the panel scrolls.
 
+### Play from the home screen
+
+Opened from its icon, the game starts without the browser's bars, held sideways, with its own name and icon. On an iPhone this is the only way to play without Safari's bars: open the game in Safari, tap Share, then Add to Home Screen. On Android Chrome use the menu, Install app (or Add to Home screen). The game still loads from its address; nothing works offline. The icons are redrawn with `npm run icons`.
+
 Agents never run these commands: they don't exit.
 
 ## Building the game with agents

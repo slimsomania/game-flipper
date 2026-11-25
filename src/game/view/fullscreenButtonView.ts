@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../../core/constants';
 import {
   fullscreenSupported,
   isFullscreen,
+  isHomeScreenApp,
   onFullscreenChange,
   toggleFullscreen,
 } from '../pageGuards';
@@ -30,7 +31,9 @@ const BLOCKER_DEPTH = 50;
  * round; its full-canvas blocker swallows presses, so a tap outside it closes it and does nothing
  * else, and the bottle can't be grabbed while it is open.
  */
-export function createFullscreenControl(scene: Phaser.Scene): ButtonView {
+export function createFullscreenControl(scene: Phaser.Scene): ButtonView | null {
+  // Run from the home screen the page already fills the screen: no button, no F key.
+  if (isHomeScreenApp()) return null;
   const { x, y, width, height, hitWidth, hitHeight, radius } = FULLSCREEN_BUTTON;
   let closeCard: (() => void) | null = null;
 

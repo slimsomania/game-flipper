@@ -1006,9 +1006,9 @@
       "depends_on": [
         "F046"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Added by hand (human session, 2026-11-25) after the M7 stop, with design sections 6, 7, 10 and 13 updated the same day.",
+      "notes": "Added manifest.webmanifest and the iPhone tags in index.html; icons in public/icons/ are drawn by scripts/iconRender.ts (npm run icons). isHomeScreenApp() in pageGuards.ts makes createFullscreenControl create no button when display-mode is fullscreen or standalone. Verified with tests/e2e/homeScreenApp.spec.ts and homeScreenIcons.spec.ts (26 desktop e2e incl. fullscreenButton pass), unit 950, typecheck, build copies manifest and icons; looked at both 512 icons. The full npm run verify was denied in this session, so the harness gate is the full check.",
       "review_feedback": ""
     },
     {
