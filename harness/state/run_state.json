@@ -1,5 +1,5 @@
 {
-  "sessions": 109,
+  "sessions": 110,
   "doneAtLastMaintenance": 33,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -38,12 +38,15 @@
     "F025": "ba9dd37fc251f25f7cd386444dbe94b188859768",
     "F035": "63b2878056832d9adc0fcb15e1cc5cc3b01b1d58",
     "F037": "cdb278d6dc5e6afbf38079ce2b9b698c2e8eb3a7",
-    "F038": "1f9d516ddada975eb5604bcf98c759bb8719ebdc"
+    "F038": "1f9d516ddada975eb5604bcf98c759bb8719ebdc",
+    "F039": "65b8316770f7e5f24877da7a29fae7e9c782e4d3"
   },
   "lastGate": {
-    "session": 108,
+    "session": 110,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": []
+  "lastViolations": [
+    "F042 was changed, but this session may only change F039 (reverted)"
+  ]
 }

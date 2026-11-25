@@ -833,7 +833,7 @@
         "F038"
       ],
       "status": "todo",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "",
       "review_feedback": ""
     },
@@ -894,9 +894,9 @@
       "depends_on": [
         "F039"
       ],
-      "status": "needs_review",
+      "status": "todo",
       "attempts": 0,
-      "notes": "Real-touch phone e2e tests in tests/e2e/phone/tap.spec.ts (page.touchscreen.tap, so the browser's compatibility mouse events are included) cover the whole tap visit, each button acting once, sound unlock, a second finger and touchcancel. Only one code change was needed: gameInput.ts now treats a pointerup with pointer.wasCanceled as a cancel (no throw). Phaser already suppresses compatibility mouse events and ignores a second finger. Verified with npm run verify.",
+      "notes": "",
       "review_feedback": ""
     },
     {
