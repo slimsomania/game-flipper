@@ -39,7 +39,7 @@
     {
       "id": "M8",
       "title": "Fullscreen and release readiness",
-      "goal": "The game can go fullscreen on a PC and an Android phone with a corner button and the F key, and can be added to a phone's home screen to play without the browser's bars (the iPhone way); then the 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
+      "goal": "The game can go fullscreen on a PC and an Android phone with a corner button and the F key, and can be added to a phone's home screen to play without the browser's bars (the iPhone way); a phone can also set the power by sliding a finger on the power bar and throw with a tap on the bottle; then the 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
     }
   ],
   "features": [
@@ -1012,6 +1012,32 @@
       "review_feedback": ""
     },
     {
+      "id": "F048",
+      "milestone": "M8",
+      "category": "input",
+      "title": "Set the power on the bar and tap the bottle to throw, on a phone",
+      "description": "Design section 7 (decided 2026-11-25): a phone gets the PC's 'set the power, then throw' as well as the finger push. (1) Bar: a touch that starts on the power bar (its touch area at least 44 CSS px wide on the reference phone, padded around the drawn 44×220 game px bar and its POWER caption and value label, and not overlapping the bottle's grab area; resolve any overlap in the bar's favor only where the bottle can't be grabbed) sets the power from the finger's height: 0 at the bar's bottom, 100 at its top, clamped outside, whole numbers, through the existing PowerMeter.set in src/core, and keeps following the finger while it moves, wherever it goes. Lifting the finger leaves the value; it stays between throws as a key-set value does. A bar touch never throws, never grabs the bottle and never skips a result. It works only while aiming (the phase in which Up/Down work). (2) Tap: in the aiming phase, a touch that starts on the bottle (same grab area as a push) and lifts within a short time with almost no movement (both thresholds in the tuning config in src/core, named touchTapMaxMs and touchTapMaxMove, for example 300 ms and 2 mm in game px on the reference phone) throws at the bar's current power with source 'tap' (or 'touch-tap'; pick one and use it in lastThrow), exactly as Space does: same throw call, same power, same result rules. A touch that moves more than the tap limit is a push, judged as now (touchMinPower and the rest unchanged), and gives no tap throw even if it ends under the push minimum. The tap/push decision belongs in src/core next to the push conversion (pure, unit-tested); src/game only feeds it pointer samples. A tap anywhere but the bottle doesn't throw: during a result it skips the wait as now; while aiming it does nothing. Desktop unchanged: the mouse can't drag the bar, and a mouse click on the bottle doesn't throw. (3) Words: the phone's title controls hint names both ways in one short line (for example 'Push the bottle up, or set the power bar and tap the bottle'), still fitting its layout. (4) Tests that encoded 'on a phone a still tap on the bottle throws nothing' (tests/e2e/phone/touch.spec.ts 'a touch away from the bottle, or a tap on it that does not move, throws nothing', tests/e2e/phone/fingerPush.spec.ts 'a 2 mm push throws nothing', and tests/unit/touchTuning.test.ts 'a touch lifted after at most 2 mm of upward jitter throws nothing, at any speed') now follow the new design: a quick still tap throws at the bar's power, and a slow (longer than the tap time) small movement or a touch away from the bottle still throws nothing; keep their jitter-versus-push checks and say in the progress entry why each changed. Update docs/ARCHITECTURE.md and window.__FLIPPER__ (only if a test needs more than the existing power and lastThrow).",
+      "acceptance": [
+        "Unit: the tap rule in src/core: a touch on the bottle lifted within touchTapMaxMs having moved at most touchTapMaxMove is a tap; one that moved more is judged as a push with the existing rules and is never a tap; one held longer than touchTapMaxMs without moving is neither (no throw).",
+        "Unit: the bar mapping: the bar's bottom gives 0, its top 100, the middle 50, points above and below clamp to 100 and 0, and the result is a whole number.",
+        "Phone E2E: while aiming, a touch on the power bar slid to 3/4 of its height sets power 75 (±1) and throws nothing, grabs nothing and keeps the phase aiming; sliding on to the bottom sets 0, and past the top sets 100; lifting the finger keeps the value.",
+        "Phone E2E: with the bar set to 62 by a slide, a quick still tap on the bottle throws with power 62 and the tap source in lastThrow, and the throw's outcome is the same as a Space throw at power 62 with the same seed.",
+        "Phone E2E: after that throw and its result, the bar still reads 62 on the next bottle, and a second tap throws at 62 again.",
+        "Phone E2E: a finger push on the bottle still throws with source touch and the same power as before this feature (the existing push tests pass unchanged apart from the three named in the description); a push that ends under touchMinPower throws nothing and is not a tap.",
+        "Phone E2E: a tap on the table, the background or the bar while aiming throws nothing; a tap during a result skips only that result and doesn't throw the next bottle; a tap on the bar during a result or the pause overlay changes nothing.",
+        "Phone E2E: the bar's touch area is at least 44 CSS px wide, and a touch inside the bottle's grab area never moves the bar.",
+        "Desktop E2E: a mouse drag on the power bar changes nothing, and a quick still click on the bottle throws nothing; Up/Down, the wheel, Space and the mouse push behave as before.",
+        "A `--phone` snap of the Title shows the new controls hint whole and readable; a `--phone` snap mid-slide on the bar shows the fill following the finger."
+      ],
+      "depends_on": [
+        "F045"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Added by hand (human session, 2026-11-25) after the human tried the game on a phone, with design sections 7, 11 and 13 updated the same day.",
+      "review_feedback": ""
+    },
+    {
       "id": "F028",
       "milestone": "M8",
       "category": "performance",
@@ -1029,11 +1055,12 @@
         "F027",
         "F045",
         "F046",
-        "F047"
+        "F047",
+        "F048"
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project. Made to depend on F046 and F047 by hand (human session, 2026-11-25) so the budget is measured with the fullscreen button in the scene.",
+      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project. Made to depend on F046, F047 and F048 by hand (human session, 2026-11-25) so the budget is measured with the fullscreen button in the scene.",
       "review_feedback": ""
     }
   ]

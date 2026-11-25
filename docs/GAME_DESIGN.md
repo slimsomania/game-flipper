@@ -105,7 +105,8 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 **On a phone (from M7):**
 
 - **Throw:** touch the bottle, push the finger upward and let go. It is the same push as the mouse, converted to the same power. A finger moves differently from a mouse and the phone screen is much smaller, so the push may need its own conversion numbers (in the config module) so that a natural finger flick covers the whole power range. The difficulty targets of section 3 apply on a phone too.
-- **Power bar:** shows the live value while pushing, as with the mouse. There are no on-screen Up/Down buttons: on a phone the push is the only way to throw.
+- **Power bar:** shows the live value while pushing, as with the mouse.
+- **Set the power, then tap to throw (from M8):** the phone's version of Up/Down and Space. Touch the power bar and slide the finger up or down: the bar's fill follows the finger's height, from 0 at the bottom to 100 at the top, and stays where the finger leaves it, between throws too, as a value set with the keys does. Then a tap on the bottle throws at that power. A tap is a touch that lifts quickly with almost no movement; a touch that moves is still a push, as above. A tap anywhere else doesn't throw: during a result it only skips the wait. The bar's touch area is big enough for a thumb and doesn't overlap the bottle's. On a desktop nothing changes: the keys and the wheel set the bar and Space throws.
 - **Skip the wait:** tap anywhere.
 - **Pause, mute, restart, and the buttons on the title and summary screens:** tap the same on-screen buttons. Every button must be big enough to hit with a thumb.
 - **Fullscreen (from M8):** the first Play tap goes fullscreen (as built in M7). If the player leaves fullscreen, for example with the phone's back gesture, the fullscreen button brings it back, and so does the next Play or Play again tap.
@@ -146,7 +147,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **M5, polish and tuning:** quicker result timing, tune difficulty so a good player can reach 6 to 8 out of 10 and reading the water matters, camera shake and small effects, the soft shading and readability of section 8, bug fixes.
 - **M6, sloshing and replay:** water that moves inside the bottle and affects the flip, and a short slow-motion replay of the landing after each throw (skippable).
 - **M7, phones:** play on a phone with touch, as in sections 7 and 10: the finger push and its tuning, taps for every button and for skipping, the sideways-only message, no scrolling or zooming, readable text and big enough buttons, phone e2e tests, and a way for the human to open the game on a real phone. It comes after M6 so the finger push is tuned once, against the final bottle and its sloshing water.
-- **M8, fullscreen, home-screen app, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, then the performance budget and the production-build check, measured on a phone as well as a laptop.
+- **M8, fullscreen, home-screen app, phone power bar, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, setting the power on the bar and tapping to throw on a phone (section 7), then the performance budget and the production-build check, measured on a phone as well as a laptop.
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
 ## 12. Out of scope
@@ -209,6 +210,7 @@ Decided at the M7 stop (2026-11-25):
 
 - **Fullscreen and home-screen app (2026-11-25).** The player can make the game fullscreen on a PC as well as a phone, with a corner button and the F key, and can add it to a phone's home screen to play without the browser's bars (the only way on an iPhone). Both come in M8, before the performance check. See sections 6, 7 and 10.
 - **The fullscreen button on iPhone explains the home screen (2026-11-25).** The human checked a real iPhone: Safari and the other iPhone browsers show their bars and offer no fullscreen. Instead of hiding the button there, it shows how to add the game to the home screen.
+- **Power bar and tap on a phone (2026-11-25).** The human found that a phone only had the finger push, while a PC can set an exact power and then throw. A phone now gets the same: slide a finger on the power bar to set it, then tap the bottle to throw at that power. The push stays. This replaces "on a phone the push is the only way to throw".
 
 Still open, to be settled by playtesting after M1:
 
