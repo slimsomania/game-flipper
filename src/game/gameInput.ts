@@ -34,6 +34,10 @@ const isLeftButton = (pointer: Phaser.Input.Pointer): boolean => pointer.button 
  *   forwarded too, each with its own time (`CoalescedMoves`). A release outside the canvas, which
  *   the game sees only as the button coming up, ends the grab the same way but without a position,
  *   and a window that loses focus drops the grab.
+ * - A finger is the same grab (Phaser's first touch pointer): a second finger has no pointer, so it
+ *   does nothing, and a touchcancel (`pointer.wasCanceled`) drops the grab without a throw. The
+ *   compatibility mouse events a browser sends after a tap are suppressed by Phaser's touch
+ *   handling, so a tap acts once (tests/e2e/phone/tap.spec.ts uses real touches to prove it).
  */
 export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
   const keyboard = scene.input.keyboard;
@@ -103,7 +107,10 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
   };
   canvas.addEventListener('pointermove', onNativeMove);
   scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-    if (isLeftButton(pointer)) sim.mouse.release(eventSeconds(pointer), pointer.y);
+    if (!isLeftButton(pointer)) return;
+    // A touchcancel (the system took the touch away) is not a release: end the grab, throw nothing.
+    if (pointer.wasCanceled) sim.mouse.cancel();
+    else sim.mouse.release(eventSeconds(pointer), pointer.y);
   });
   scene.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
     if (isLeftButton(pointer)) sim.mouse.release(eventSeconds(pointer));

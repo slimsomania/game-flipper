@@ -2004,3 +2004,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) Two rows of the `--help` text lost their alignment in the edit: `--out <dir>` and `scene:<Key>` now have shorter padding than their neighbours. (2) In snap, a touch action without --phone ends the run with a failure screenshot but no non-zero report beyond the error line; fine for agents, who read the errors list. (3) Real-time touchmove gives low powers (about 11-14 for a 100 game px push over 100 ms), as F037's review noted; use pause + step for repeatable shots.
 
 > [harness] session 109 · reviewer F038 · needs_review → done · ok · 1 commit(s) · 29 tool calls · 21m 12s · ~$0.82 API-equivalent
+
+## Session 110 · builder · F039 Tap every button and skip the wait with a finger
+- Did: new `tests/e2e/phone/tap.spec.ts` (8 tests) using real touches (`page.touchscreen.tap`) so the browser's compatibility mouse events are part of the test: the whole visit by taps and finger pushes (Title → Play → 10 throws each skipped by a tap → summary → Play again → pause → Restart → pause → Quit), the speaker once, Play, skip-only-that-result, Resume, audio unlock plus whoosh, a second finger, touchcancel. One code change: `src/game/gameInput.ts` pointerup with `pointer.wasCanceled` now calls `sim.mouse.cancel()` instead of releasing (a touchcancel used to throw). Doc comment updated.
+- Verified: tap.spec.ts 8 of 8 on the phone project; `npm run verify` run at the end (see the harness line). No snap: no visual change.
+- Status: F039 → needs_review
+- Issues / follow-ups: 7 of the 8 tests passed before any code change: Phaser's touch manager already preventDefaults touch events (no compatibility mouse events) and has only one touch pointer (a second finger is ignored).
+- Next: F040 onwards; use `tap()` in tap.spec.ts as the model for real-touch taps.
