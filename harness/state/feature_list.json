@@ -894,9 +894,9 @@
       "depends_on": [
         "F039"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added hitBox() in buttonView.ts: every button's clickable area is at least 88x88 game px, the corner buttons keep 56 px faces inside 88 px areas (pause moved left, 4 px between areas), and the Pause and Summary rows are 88 px tall. New hook buttons() (src/debug/visibleButtons.ts). Verified by tests/unit/buttonHit.test.ts, tests/e2e/phone/thumb.spec.ts (corner taps on all four screens) and desktop/phone snaps; full verify had only two mute box tests failing, which I updated and re-ran green.",
+      "notes": "Added hitBox() in buttonView.ts: every button's clickable area is at least 88x88 game px, the corner buttons keep 56 px faces inside 88 px areas (pause moved left, 4 px between areas), and the Pause and Summary rows are 88 px tall. New hook buttons() (src/debug/visibleButtons.ts). Verified by tests/unit/buttonHit.test.ts, tests/e2e/phone/thumb.spec.ts (corner taps on all four screens) and desktop/phone snaps; full verify had only two mute box tests failing, which I updated and re-ran green. Reviewed: npm run verify green (unit 930/930, e2e 314/314); with hitBox ignoring hitWidth/hitHeight, 5 buttonHit unit tests and the 4 thumb.spec size tests fail; desktop, 1024x576 and --phone snaps of Title/Play/Pause/Summary show every button whole with nothing overlapping; clicks and taps outside the 56 px faces but inside the 88 px areas pause, resume and mute, and a click in the 4 px gap does nothing.",
       "review_feedback": ""
     },
     {
