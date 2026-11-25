@@ -11,6 +11,7 @@ import { SoundPlanner } from '../audio/soundPlan';
 import { createEffectsView, type EffectsView } from '../effects/effectsView';
 import { bindGameInput } from '../gameInput';
 import { bindPauseKeys } from '../pauseKeys';
+import { onRotateMessageChange } from '../rotateMessage';
 import { intParam } from '../urlParams';
 import { createBottleShadowView, type BottleShadowView } from '../view/bottleShadowView';
 import { createBottleView, type BottleView } from '../view/bottleView';
@@ -67,8 +68,13 @@ export class GameScene extends Phaser.Scene {
       this.pauseRequested = false;
     };
     this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    // A phone turned upright covers the game with a message: pause so the round waits unseen.
+    const stopWatching = onRotateMessageChange((showing) => {
+      if (showing && this.scene.isActive()) this.openPause();
+    });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.RESUME, onResume);
+      stopWatching();
       registerSimulation(null);
     });
 

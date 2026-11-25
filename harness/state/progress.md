@@ -2065,3 +2065,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) As session 114 noted, the #safe padding strip outside #game has no contextmenu listener; CSS callout none covers it on iOS. (2) The "list is not empty" assertion in the long-press test is met by the test's own synthetic events, since a headless long touch fires no contextmenu. The defaultPrevented checks on those events are what actually test the guard. (3) Reviewers: don't run a snap or another Playwright process alongside `npm run verify`. They share test-results/, and the trace cleanup breaks the other run.
 
 > [harness] session 116 · reviewer F040 · needs_review → done · ok · 1 commit(s) · 37 tool calls · 22m 43s · ~$1.08 API-equivalent
+
+## Session 117 · builder · F041 Ask to turn the phone sideways when it is held upright
+- Did: new `src/game/rotateMessage.ts` (DOM overlay with icon and 26px text, shown when there is no fine pointer and innerHeight > innerWidth; listeners on resize/orientationchange; subscribe API), installed from `src/main.ts`; `GameScene` subscribes and calls `openPause()` when the message appears (no-op on the Title, Summary or when already paused); hook `rotateMessage()` in `src/debug/testHooks.ts`. Tests: `tests/e2e/phone/rotate.spec.ts` (5: show/hide and covers canvas, mid-flight pause and Resume, Title, Summary, opened upright) and `tests/e2e/rotateDesktop.spec.ts` (600x900 shows none).
+- Verified: `npm run verify` green (run before the Summary test was added); rotate.spec.ts 5 of 5 and typecheck after; `--portrait` snap shows the icon and text centered, 26px, no console errors.
+- Status: F041 → needs_review
+- Issues / follow-ups: the covering check compares against the viewport because the canvas is still sized for the old window for a frame after a resize. Orientation behavior on a real phone (address-bar resizes) isn't testable headless.
+- Next: F042; `onRotateMessageChange` in rotateMessage.ts is the hook for anything else that must react to the upright state.

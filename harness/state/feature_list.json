@@ -874,9 +874,9 @@
       "depends_on": [
         "F040"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the message is a DOM overlay (it has to fill a portrait screen, which the landscape canvas can't), and turning upright during a round pauses it through the existing pause overlay rather than a new pause state.",
+      "notes": "Built src/game/rotateMessage.ts: a DOM overlay (icon + 26px text, game palette) shown when there is no fine pointer (P14) and innerHeight > innerWidth, installed from main.ts; GameScene subscribes and calls openPause() when it appears; hook rotateMessage(). Tests: tests/e2e/phone/rotate.spec.ts (5) and tests/e2e/rotateDesktop.spec.ts; --portrait snap checked; verify green.",
       "review_feedback": ""
     },
     {

@@ -4,6 +4,7 @@ import type { ReplayFrame } from '../core/replay';
 import type { SimSnapshot, Simulation } from '../core/simulation';
 import type { Tuning } from '../core/tuning';
 import { setMute } from '../game/audio/mute';
+import { rotateMessageShowing } from '../game/rotateMessage';
 import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
 import { drawnShadow, type DrawnShadow } from '../game/view/bottleShadowView';
@@ -117,6 +118,8 @@ export interface FlipperTestApi {
    * overlay opens a frame after the key press, so poll this after pressing.
    */
   gamePaused(): boolean;
+  /** Whether the "Turn your phone sideways" message covers the page (a touch device held upright). */
+  rotateMessage(): boolean;
   /** Stop the real-time clock; the simulation then only advances through step(). */
   pause(): void;
   /** Resume real-time stepping. */
@@ -236,6 +239,7 @@ export function installTestHooks(game: Phaser.Game): void {
     setMuted: (muted) => (typeof muted === 'boolean' ? setMute(muted) : sharedSfx().muted),
     muteButton: () => visibleMuteButton(game.scene.getScenes(true)),
     gamePaused: () => game.scene.isActive('Pause'),
+    rotateMessage: () => rotateMessageShowing(),
     pause: () => {
       testControls.paused = true;
     },
