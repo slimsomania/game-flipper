@@ -874,9 +874,9 @@
       "depends_on": [
         "F040"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built src/game/rotateMessage.ts: a DOM overlay (icon + 26px text, game palette) shown when there is no fine pointer (P14) and innerHeight > innerWidth, installed from main.ts; GameScene subscribes and calls openPause() when it appears; hook rotateMessage(). Tests: tests/e2e/phone/rotate.spec.ts (5) and tests/e2e/rotateDesktop.spec.ts; --portrait snap checked; verify green.",
+      "notes": "Built src/game/rotateMessage.ts: a DOM overlay (icon + 26px text, game palette) shown when there is no fine pointer (P14) and innerHeight > innerWidth, installed from main.ts; GameScene subscribes and calls openPause() when it appears; hook rotateMessage(). Tests: tests/e2e/phone/rotate.spec.ts (5) and tests/e2e/rotateDesktop.spec.ts; --portrait snap checked; verify green.\nReviewed: verify green (unit 920/920, e2e 298/298); rotate specs 6/6; mid-flight test fails with the GameScene subscription disabled; scratch specs (result phase, finger held, rapid toggles, already paused, canvas 640x360 after, desktop resize mid-flight) all pass; --portrait snaps on Title and Game centered and readable; desktop 600x900 and 1024x576 snaps unchanged.",
       "review_feedback": ""
     },
     {
