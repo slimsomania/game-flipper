@@ -2038,3 +2038,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F040 → needs_review
 - Issues / follow-ups: padding on #game itself shifted the canvas (Phaser centers using the parent's whole box), hence the wrapper. The 44 px case fits the 740 px phone without shrinking the canvas (652 px free ≥ 640), so that test checks position, not size. Real fullscreen and the orientation lock can't be checked in headless Chromium; only the call is tested.
 - Next: F041; the Play tap is the only fullscreen request (TitleScene.play).
+
+> [harness] session 113 · builder F040 · todo → needs_review · ok · verify passed · 1 commit(s) · 53 tool calls · 34m 31s · ~$0.65 API-equivalent
