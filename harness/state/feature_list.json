@@ -1006,10 +1006,10 @@
       "depends_on": [
         "F046"
       ],
-      "status": "needs_review",
+      "status": "todo",
       "attempts": 1,
       "notes": "Added manifest.webmanifest and the iPhone tags in index.html; icons in public/icons/ are drawn by scripts/iconRender.ts (npm run icons). isHomeScreenApp() in pageGuards.ts makes createFullscreenControl create no button when display-mode is fullscreen or standalone. Verified with tests/e2e/homeScreenApp.spec.ts and homeScreenIcons.spec.ts (26 desktop e2e incl. fullscreenButton pass), unit 950, typecheck, build copies manifest and icons; looked at both 512 icons. The full npm run verify was denied in this session, so the harness gate is the full check.",
-      "review_feedback": ""
+      "review_feedback": "1. Regression of F046 on desktop: in Chromium, `matchMedia('(display-mode: fullscreen)')` also matches when the page itself is fullscreen through the Fullscreen API, not only in an installed app. Reviewer probe (temporary desktop Playwright spec, real requestFullscreen, no stub): openTitle('?testhooks&seed=7'), click the fullscreen button, wait for document.fullscreenElement; then matchMedia display-mode fullscreen=true, standalone=false, browser=false. startGame(page): `__FLIPPER__.fullscreenButton()` is null on Play; Esc opens Pause and it is null there too (the screenshot shows only the pause and speaker buttons). So once a desktop player enters fullscreen, every screen created afterwards has no button and no F key, and they can no longer leave fullscreen from the game, which F046 (done) requires on Title, Play, Pause and Summary. The current tests miss it because fullscreenButton.spec.ts uses stubFullscreen (display-mode never changes) and homeScreenApp.spec.ts only stubs matchMedia. Expected: the button and F stay on every screen after the page enters fullscreen through the button or F; they hide only when the game was launched as a home-screen app. One way: decide `isHomeScreenApp()` once at page load, before the game can request fullscreen, and/or ignore display-mode fullscreen while `document.fullscreenElement != null`. Add a desktop e2e test with real (unstubbed) fullscreen, which works in headless Chromium: enter fullscreen on the Title with the button, start Play, open Pause, reach the Summary, and assert the button is shown with the leave icon on each and that the button or F leaves fullscreen. Keep the existing display-mode stub tests passing (with the stub active from page load the button must still be hidden)."
     },
     {
       "id": "F048",
