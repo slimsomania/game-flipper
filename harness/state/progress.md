@@ -2196,3 +2196,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) The card has a lot of blank space between its two text lines and Close (as the builder said). (2) On the Title and Summary the button sits with an empty Pause slot beside the speaker; deliberate, keeps the button fixed. (3) If the game is ever embedded in an iframe without allowfullscreen, desktop Chrome reports fullscreenEnabled false and shows the iPhone card to a desktop player; harmless now, worth remembering for hosting. (4) ARCHITECTURE's testHooks row doesn't list `fullscreenButton()` (it is in the new fullscreen row).
 
 > [harness] session 131 · reviewer F046 · needs_review → todo · ok · 1 commit(s) · 59 tool calls · 34m 13s · ~$2.13 API-equivalent
+
+## Session 132 · builder · F046 Fullscreen button and F key
+- Did: the review's problem. `bindGameInput` (src/game/gameInput.ts) now ignores Space, Up/Down, R keydowns and the wheel while the home-screen card's blocker exists (key-ups still release). New e2e case in tests/e2e/fullscreenButton.spec.ts: card open, Space, held ArrowUp, wheel, R leave roundState unchanged and the card open; after Close Space throws. ARCHITECTURE.md updated.
+- Verified: fullscreenButton.spec.ts 19/19 green; full `npm run verify` run (result below in the harness line).
+- Status: F046 → needs_review
+- Issues / follow-ups: none
+- Next: reviewer: check Esc/P still pause with the card open, and the keys with the card on a phone keyboard.

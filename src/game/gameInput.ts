@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { PowerDirection } from '../core/powerMeter';
 import type { Simulation } from '../core/simulation';
 import { CoalescedMoves } from './coalescedMoves';
+import { HOME_CARD_BLOCKER_NAME } from './view/fullscreenButtonView';
 
 /** When a pointer event happened, in milliseconds: the browser's own time stamp, not the frame's. */
 const eventMillis = (pointer: Phaser.Input.Pointer): number =>
@@ -40,11 +41,13 @@ const isLeftButton = (pointer: Phaser.Input.Pointer): boolean => pointer.button 
  *   handling, so a tap acts once (tests/e2e/phone/tap.spec.ts uses real touches to prove it).
  */
 export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
+  // While the home-screen card is open the round is frozen for input: keys and wheel do nothing.
+  const cardOpen = (): boolean => scene.children.getByName(HOME_CARD_BLOCKER_NAME) != null;
   const keyboard = scene.input.keyboard;
   if (keyboard) {
     keyboard.addCapture('UP,DOWN,SPACE'); // keep the browser from scrolling or clicking a button
     const firstPress = (action: () => void) => (event: KeyboardEvent) => {
-      if (!event.repeat) action();
+      if (!event.repeat && !cardOpen()) action();
     };
     const powerKey = (name: string, direction: PowerDirection): void => {
       keyboard.on(
@@ -67,7 +70,7 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
   }
 
   scene.input.on('wheel', (_pointer: unknown, _over: unknown, _dx: number, dy: number) => {
-    if (dy !== 0) sim.powerMeter.wheel(dy < 0 ? 1 : -1);
+    if (dy !== 0 && !cardOpen()) sim.powerMeter.wheel(dy < 0 ? 1 : -1);
   });
 
   // The samples between two frames (F033): while the bottle is grabbed, the browser's own

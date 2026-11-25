@@ -152,6 +152,28 @@ test('a click outside the card does not skip the wait of a result', async ({ pag
   expect((await gameState(page)).phase).toBe('result');
 });
 
+test('while the card is open, Space, Up, the wheel and R change nothing', async ({ page }) => {
+  await stubFullscreen(page, 'unsupported');
+  await openGame(page, '?seed=7');
+  const before = await roundState(page);
+  await clickFullscreenButton(page);
+  await expect.poll(() => cardOpen(page)).toBe(true);
+  await page.keyboard.press('Space');
+  await page.keyboard.down('ArrowUp');
+  await page.waitForTimeout(300);
+  await page.keyboard.up('ArrowUp');
+  await page.mouse.move(640, 360);
+  await page.mouse.wheel(0, -200);
+  await page.keyboard.press('r');
+  await page.waitForTimeout(100);
+  expect(await roundState(page)).toEqual(before);
+  expect(await cardOpen(page)).toBe(true);
+  await clickGame(page, await buttonNamed(page, 'homeCardClose'));
+  await expect.poll(() => cardOpen(page)).toBe(false);
+  await page.keyboard.press('Space');
+  await expect.poll(async () => (await gameState(page)).phase).not.toBe('aiming');
+});
+
 test('a rejected requestFullscreen leaves the game working and logs no error', async ({ page }) => {
   await stubFullscreen(page, 'reject');
   const errors = await openGame(page, '?seed=7');
