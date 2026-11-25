@@ -2220,3 +2220,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F047 → needs_review
 - Issues / follow-ups: the icon render depends on this machine's Chromium canvas; a different Chromium build could change the bytes and fail homeScreenIcons.spec.ts (rerun `npm run icons`). iconRender.ts needs a `__name` shim because tsx wraps named functions.
 - Next: reviewer: run full verify; check the phone project's fullscreenButton specs still pass.
+
+> [harness] session 134 · builder F047 · todo → needs_review · ok · verify passed · 1 commit(s) · 38 tool calls · 5m 38s · ~$0.56 API-equivalent
