@@ -915,9 +915,9 @@
       "depends_on": [
         "F042"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Assumption: \"readable on a 6-inch phone\" is checked as at least 12 CSS px of text height on the 740×360 phone. A device counts as touch-only when no fine pointer is present, so a touchscreen laptop keeps the desktop hints. Built: src/game/inputKind.ts (detectInputKind), titleTexts/pauseTexts/summaryTexts take the kind and return null hints (and a finger controls line) on touch; views skip null hints; the power bar's POWER caption went 16 to 24 px. Verified by tests/unit/touchText.test.ts, tests/e2e/phone/readable.spec.ts, tests/e2e/keyHintsDesktop.spec.ts and --phone snaps.",
+      "notes": "Assumption: \"readable on a 6-inch phone\" is checked as at least 12 CSS px of text height on the 740×360 phone. A device counts as touch-only when no fine pointer is present, so a touchscreen laptop keeps the desktop hints. Built: src/game/inputKind.ts (detectInputKind), titleTexts/pauseTexts/summaryTexts take the kind and return null hints (and a finger controls line) on touch; views skip null hints; the power bar's POWER caption went 16 to 24 px. Verified by tests/unit/touchText.test.ts, tests/e2e/phone/readable.spec.ts, tests/e2e/keyHintsDesktop.spec.ts and --phone snaps.\nReviewed: verify green (unit 934, e2e 321/321); POWER-at-16px mutation fails readable.spec's Play test; --phone snaps of Title, Play (aiming, Nailed it! +1, Replay), Pause and a 10-throw Summary are readable with no key words or overlaps; 1024x576 desktop snaps keep all three key hints; all font sizes in src/game are >= 24.",
       "review_feedback": ""
     },
     {
