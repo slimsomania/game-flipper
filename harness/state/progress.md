@@ -2014,3 +2014,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 110 · builder F039 · todo → todo · ok · verify passed · 1 commit(s) · 35 tool calls · 12m 16s · ~$0.69 API-equivalent
 > [harness] corrected: F042 was changed, but this session may only change F039 (reverted)
+
+## Session 111 · builder · F039 Tap every button and skip the wait with a finger
+- Did: no code change. Session 110 built and tested everything but wrote its status and notes on F042 by mistake (the harness reverted that). This session set F039 itself to needs_review with the notes.
+- Verified: tap.spec.ts 8 of 8 on the phone project; the harness verify passed after session 110 with the same code.
+- Status: F039 → needs_review
+- Issues / follow-ups: none
+- Next: F040 onwards; in feature_list.json check the id before editing status and notes.
