@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openGame, openTitle } from '../helpers';
+import { fsCalls, stubFullscreen } from '../fullscreenHelpers';
 import { gamePoint } from '../mouseHelpers';
 import { activeScenes } from '../roundHelpers';
 import { playToSummary } from '../summaryHelpers';
@@ -16,6 +17,10 @@ interface Area {
 }
 
 const INSET = 4; // CSS px
+
+test.beforeEach(async ({ page }) => {
+  await stubFullscreen(page, 'ok');
+});
 
 const buttons = (page: Page): Promise<Area[]> => page.evaluate(() => window.__FLIPPER__!.buttons());
 const paused = (page: Page) => page.evaluate(() => window.__FLIPPER__!.gamePaused());
@@ -69,6 +74,7 @@ const effects: Record<string, (page: Page, mutedBefore: boolean) => Promise<void
   playButton: (page) => expect.poll(() => activeScenes(page)).toEqual(['Game']),
   pauseButton: (page) => expect.poll(() => paused(page)).not.toBe(undefined),
   muteButton: (page, before) => expect.poll(() => muted(page)).toBe(!before),
+  fullscreenButton: (page) => expect.poll(async () => (await fsCalls(page)).req).toBe(1),
   resumeButton: (page) => expect.poll(() => paused(page)).toBe(false),
   restartButton: (page) => expect.poll(() => activeScenes(page)).toEqual(['Game']),
   quitButton: (page) => expect.poll(() => activeScenes(page)).toEqual(['Title']),
@@ -81,10 +87,17 @@ const pauseEffect = (screen: Screen) => (page: Page) =>
   expect.poll(() => paused(page)).toBe(screen === 'play');
 
 const expected: Record<Screen, string[]> = {
-  title: ['playButton', 'muteButton'],
-  play: ['pauseButton', 'muteButton'],
-  pause: ['pauseButton', 'muteButton', 'resumeButton', 'restartButton', 'quitButton'],
-  summary: ['playAgainButton', 'titleButton', 'muteButton'],
+  title: ['playButton', 'muteButton', 'fullscreenButton'],
+  play: ['pauseButton', 'muteButton', 'fullscreenButton'],
+  pause: [
+    'pauseButton',
+    'muteButton',
+    'fullscreenButton',
+    'resumeButton',
+    'restartButton',
+    'quitButton',
+  ],
+  summary: ['playAgainButton', 'titleButton', 'muteButton', 'fullscreenButton'],
 };
 
 for (const screen of Object.keys(setups) as Screen[]) {
