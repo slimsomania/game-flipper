@@ -2104,3 +2104,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Did: brought `docs/ARCHITECTURE.md` up to date with F040–F042: new rows for `pageGuards.ts` and `rotateMessage.ts`, `hitBox()` in the `buttonView.ts` entry, and the `buttons()` hook in the `testHooks.ts` entry (flagged by the F041 and F042 builders and reviewers). Docs only; no code changed.
 - Verified: `npm run format` (clean). I did not re-run `npm run verify` (about 22 minutes) because only Markdown changed; the harness's verify after session 119 passed.
 - Debt left: (1) buttonHit.test.ts's "clear of the HUD and power bar" check uses stand-in bounds; HUD_X and BAR_* are private in hudView.ts and powerBarView.ts and would need exporting to make it real. (2) src/core/simulation.ts (340 lines) and difficulty.ts (315) are just over the ~300 line guideline. (3) The `#safe` padding strip has no contextmenu guard. (4) ARCHITECTURE.md rows are very long single lines, hard to review.
+
+> [harness] session 121 · maintainer · ok · verify passed · 1 commit(s) · 17 tool calls · 43s · ~$0.23 API-equivalent
