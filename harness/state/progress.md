@@ -2328,3 +2328,8 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) No run in my window had a full 40-particle burst (max 97), so the 800 per-frame cap wasn't tested near its limit here. The human measured about 600 for a full burst. (2) The phone rAF rate is about 41-46 fps under 4x software rendering; as decided, 60 fps is a manual check on a real phone. (3) This machine was idle this session: the phone times were 3.8-4.9 ms, against 9-15 ms in session 144.
 
 > [harness] session 146 · reviewer F049 · needs_review → done · ok · 1 commit(s) · 38 tool calls · 37m 13s · ~$1.35 API-equivalent
+
+## Session 147 · maintainer
+- Did: an audit only, no code changes. Largest files are simulation.ts (340), testHooks.ts (334), difficulty.ts (315) and waterSurface.ts (300), all near the ~300 line guide but each still focused, so I did not split them. Every hook in the `FlipperTestApi` interface is mentioned in docs/ARCHITECTURE.md (frameCost, bakedGraphics and the phone render-work budget are documented), so the doc matches the code. The tree was clean and the harness's verify after session 145 passed, so no behavior-preserving change was worth the risk of an unneeded 26 min e2e run.
+- Verified: `git status` clean; read the tail of progress.md and the testHooks interface against ARCHITECTURE.md. I did not run `npm run verify` (nothing changed); the shell in this session denied loops and variable expansions, so I used the search tool instead.
+- Debt left: split simulation.ts and testHooks.ts if they grow past ~350 lines; the Node timing test in F028 varies 7x run to run; 60 fps on a real phone is still a manual human check; timers are read from Phaser's private `_active` and `_pendingInsertion` lists.
