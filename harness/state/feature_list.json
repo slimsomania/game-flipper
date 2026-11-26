@@ -1032,9 +1032,9 @@
       "depends_on": [
         "F045"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added by hand (human session, 2026-11-25) after the human tried the game on a phone, with design sections 7, 11 and 13 updated the same day. Built: src/core/touchTap.ts (classifyTouch, powerFromBar), MouseControl tap path (source 'tap'), touchTapMaxMs/Move in tuning, bar geometry and BAR_TOUCH in src/game/view/powerBarLayout.ts, bar slide in gameInput.ts, new Title hint. Verified by unit tests, phone/powerBarTouch.spec.ts, powerBarMouse.spec.ts, two --phone snaps and a green npm run verify.",
+      "notes": "Added by hand (human session, 2026-11-25) after the human tried the game on a phone, with design sections 7, 11 and 13 updated the same day. Built: src/core/touchTap.ts (classifyTouch, powerFromBar), MouseControl tap path (source 'tap'), touchTapMaxMs/Move in tuning, bar geometry and BAR_TOUCH in src/game/view/powerBarLayout.ts, bar slide in gameInput.ts, new Title hint. Verified by unit tests, phone/powerBarTouch.spec.ts, powerBarMouse.spec.ts, two --phone snaps and a green npm run verify. Reviewed: session 139, npm run verify green (unit 961/961, e2e 372/372 incl. powerBarTouch 9/9 and powerBarMouse); --phone snaps of the Title hint and a mid-slide 77% fill; probes of the bar edges (100/0 clamp), the bar/grab seam (grab at x 193 never moves the bar; the bar area ends at x 192), a bar slide carried onto the bottle (follows, no grab), a tap at power 25 (source tap), and desktop 1024x576 (mouse on bar and click on bottle change nothing; Up and mouse push work).",
       "review_feedback": ""
     },
     {
