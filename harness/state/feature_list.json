@@ -1058,9 +1058,9 @@
         "F047",
         "F048"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Measured, and nothing missed the budget, so no game code was changed beyond timing. GameScene.update times itself into src/debug/frameCost.ts; hooks frameTime(), resetFrameTime() and objectCounts() expose it. Tests: tests/unit/performance.test.ts, tests/e2e/performance.spec.ts (desktop budget, 20-throw leak check) and tests/e2e/phone/performancePhone.spec.ts (CPU 4x via CDP). The full e2e suite was not run by the builder (the shell denied npm run verify); format, typecheck and unit tests pass.",
+      "notes": "Measured, and nothing missed the budget, so no game code was changed beyond timing. GameScene.update times itself into src/debug/frameCost.ts; hooks frameTime(), resetFrameTime() and objectCounts() expose it. Tests: tests/unit/performance.test.ts, tests/e2e/performance.spec.ts (desktop budget, 20-throw leak check) and tests/e2e/phone/performancePhone.spec.ts (CPU 4x via CDP). The full e2e suite was not run by the builder (the shell denied npm run verify); format, typecheck and unit tests pass. Reviewed: verify run piece by piece (format, typecheck, unit 962/962, build, e2e 375/375); Node median 12.5 ms (limit 50), desktop hook 0.31 ms/frame (limit 4), phone 4x hook 3.20 ms/frame (limit 8), objects/tweens/timers 29/0/0 after 1 and after 20 throws; a CDP probe shows the hook excludes Phaser's render and the 4x phone runs at about 30 fps (see session 141).",
       "review_feedback": ""
     }
   ]
