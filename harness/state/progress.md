@@ -2311,3 +2311,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F049 → needs_review
 - Issues / follow-ups: the phone gate still depends on an idle machine (software WebGL under 4x throttle runs at ~40 fps, not 60); a real-phone check is still worth doing.
 - Next: reviewer: check for stray Chromium/node processes first, then run the phone spec 3 times on an idle machine.
+
+> [harness] session 145 · builder F049 · todo → needs_review · ok · verify passed · 1 commit(s) · 27 tool calls · 29m 5s · ~$0.39 API-equivalent
