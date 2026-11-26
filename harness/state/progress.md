@@ -2303,3 +2303,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: The load on this machine looked external: session 143 timed out in this same review, and tests ran 3 to 10 times slower than usual. The shell wouldn't let me list processes, so a human should check for orphaned Chromium or node processes from session 143 (see the harness-dies-with-vscode notes). If the phone number is fine on an idle machine, the human may still want a perf gate that is less sensitive to load, but the budget itself must not be loosened by an agent. Desktop criteria 1, 2 and 4 and criterion 5 (the progress entry has the times, fps and what changed) are met.
 
 > [harness] session 144 · reviewer F049 · needs_review → todo · ok · 1 commit(s) · 55 tool calls · 48m 34s · ~$1.88 API-equivalent
+
+## Session 145 · builder · F049 Measure the whole frame, with the replay on
+- Did: `tests/e2e/perfHelpers.ts`: after the 1 s warm-up, `playUntilThrow` plays on until a throw has just been made, so the measured 5 s window always starts with a throw and holds its flight and replay (the 5 s and the replay are unchanged). No game code changed: the water Graphics (changes every frame in flight), the particles (redrawn only while alive), the arrow (drawn once) and the HUD/power fill (cached) were already minimal, so no further game-side saving was left.
+- Measured (idle machine, replay played in every run): phone 4x whole frame 6.0, 4.5, 4.6, 5.0 and 4.8 ms at 37.6, 41.2, 42.4, 40.0 and 41.8 fps (rAF); desktop 0.61 ms at 58.4 fps; busy-wait test 0.609 → 5.456 ms; leak test 29/0/0 after 1 and after 20 throws. The reviewer's 9-15 ms at 22-30 fps came from a machine loaded by orphaned processes.
+- Verified: format, `npm run verify` green (378 e2e passed, 25.8 min).
+- Status: F049 → needs_review
+- Issues / follow-ups: the phone gate still depends on an idle machine (software WebGL under 4x throttle runs at ~40 fps, not 60); a real-phone check is still worth doing.
+- Next: reviewer: check for stray Chromium/node processes first, then run the phone spec 3 times on an idle machine.
