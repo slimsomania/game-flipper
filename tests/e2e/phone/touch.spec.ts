@@ -58,7 +58,9 @@ test('a finger pushed up 50 CSS px in 100 ms on the bottle throws with source to
   expect(errors).toEqual([]);
 });
 
-test('a touch away from the bottle, or a tap on it that does not move, throws nothing', async ({
+// F048: a quick still tap on the bottle now throws at the bar's power (powerBarTouch.spec.ts); a
+// touch away from it, or a held one that does not move, still throws nothing.
+test('a touch away from the bottle, or a held touch on it that does not move, throws nothing', async ({
   page,
 }) => {
   await openGame(page, '?seed=7');
@@ -72,7 +74,7 @@ test('a touch away from the bottle, or a tap on it that does not move, throws no
   expect(s.phase).toBe('aiming');
   expect(s.lastThrow).toBeNull();
 
-  await dragTouchInPage(page, { at: bottle, rise: 0, ms: 100, end: 'release' });
+  await dragTouchInPage(page, { at: bottle, rise: 0, ms: 600, end: 'release' });
   s = await gameState(page);
   expect(s.dragging).toBe(false);
   expect(s.phase).toBe('aiming');

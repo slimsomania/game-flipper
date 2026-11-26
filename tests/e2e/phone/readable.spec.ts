@@ -51,15 +51,15 @@ async function pauseByTap(page: Page): Promise<void> {
   await expect.poll(() => page.evaluate(() => window.__FLIPPER__!.gamePaused())).toBe(true);
 }
 
-test('Title: texts are readable, and the controls hint speaks of touching the bottle', async ({
+test('Title: texts are readable, and the controls hint names the push and the bar-and-tap', async ({
   page,
 }) => {
   await openTitle(page, '?seed=7');
   await expectReadable(page);
   const texts = await visibleTexts(page);
-  const hint = texts.find((t) => /touch/i.test(t))!;
-  expect(hint).toMatch(/touch the bottle/i);
-  expect(hint).toMatch(/push (it )?up/i);
+  const hint = texts.find((t) => /tap the bottle/i.test(t))!;
+  expect(hint).toMatch(/set the power bar and tap the bottle/i);
+  expect(hint).toMatch(/push the bottle up/i);
   for (const t of texts) expect(t, t).not.toMatch(KEY_WORDS);
 });
 

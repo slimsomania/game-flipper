@@ -9,8 +9,7 @@ const KEYS = /\b(Esc|P|Enter|Space|R|Up|Down|wheel)\b/;
 describe('wording by input kind (F043)', () => {
   it('the title speaks of fingers on a touch device and names no key', () => {
     const touch = titleTexts(3, 'touch');
-    expect(touch.controlsHint).toMatch(/touch the bottle/i);
-    expect(touch.controlsHint).toMatch(/push it up/i);
+    expect(touch.controlsHint).toBe('Push the bottle up, or set the power bar and tap the bottle');
     expect(touch.controlsHint).not.toMatch(KEYS);
     expect(touch.startHint).toBeNull();
   });

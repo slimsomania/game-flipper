@@ -131,6 +131,12 @@ export interface Tuning {
   touchMinPower: number;
   touchGrabPadding: number;
   /**
+   * F048: a touch on the bottle that lifts within this many milliseconds, having moved at most
+   * `touchTapMaxMove` game px from where it pressed, is a tap: it throws at the bar's power.
+   */
+  touchTapMaxMs: number;
+  touchTapMaxMove: number;
+  /**
    * Throws in a round (design section 2). Read as a whole number of at least 1; after the last
    * throw's result the phase is `roundOver`.
    */
@@ -251,6 +257,9 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   touchFullSpeed: 3000,
   touchMinPower: 10,
   touchGrabPadding: 48,
+  // F048: a tap is a lift within 300 ms after at most 2 mm (22 game px) of movement.
+  touchTapMaxMs: 300,
+  touchTapMaxMove: 22,
   // F013: design section 2, a round is 10 throws.
   throwsPerRound: 10,
   // F016: a thrown bottle first hits the table at 3 to 8 m/s, and its later bounces are 2 m/s or

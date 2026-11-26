@@ -8,15 +8,22 @@ import { bottleCenterOnPage, dragTouchInPage } from './touchHelpers';
 
 const CSS_PX_PER_MM = 5.5;
 
-test('a 2 mm push throws nothing', async ({ page }) => {
+// F048: 2 mm is within the tap limit. Quick, it is a tap (a throw at the bar's power, not a push);
+// slow, it is neither and throws nothing.
+test('a quick 2 mm movement is a tap, not a push; a slow one throws nothing', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
   await page.evaluate(() => window.__FLIPPER__!.pause());
   const at = await bottleCenterOnPage(page);
-  await dragTouchInPage(page, { at, rise: 2 * CSS_PX_PER_MM, ms: 150, end: 'release' });
-  const state = await gameState(page);
+  await dragTouchInPage(page, { at, rise: 2 * CSS_PX_PER_MM, ms: 600, end: 'release' });
+  let state = await gameState(page);
   expect(state.dragging).toBe(false);
   expect(state.phase).toBe('aiming');
   expect(state.lastThrow).toBeNull();
+
+  await dragTouchInPage(page, { at, rise: 2 * CSS_PX_PER_MM, ms: 150, end: 'release' });
+  state = await gameState(page);
+  expect(state.phase).toBe('flying');
+  expect(state.lastThrow).toMatchObject({ source: 'tap', power: 50 });
   expect(errors).toEqual([]);
 });
 

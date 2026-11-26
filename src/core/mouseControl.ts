@@ -1,6 +1,8 @@
 import { Grab, isOnBottle, type BottlePosition } from './grab';
 import type { PowerMeter } from './powerMeter';
 import type { Phase } from './snapshot';
+import type { ThrowSource } from './throw';
+import { classifyTouch } from './touchTap';
 import type { Tuning } from './tuning';
 
 /*
@@ -22,7 +24,7 @@ export interface MouseHost {
   /** Where the held bottle is. */
   bottle(): BottlePosition;
   /** Throw the held bottle with `power`, as a throw from `source`. Returns whether it threw. */
-  throwWithPointer(power: number, source: PointerSource): boolean;
+  throwWithPointer(power: number, source: ThrowSource): boolean;
 }
 
 /** The push numbers a pointer of this kind reads: a finger's own full distance, speed, minimum and padding. */
@@ -40,6 +42,11 @@ export function pushTuningFor(tuning: Tuning, source: PointerSource): Tuning {
 export class MouseControl {
   private readonly grabbing = new Grab();
   private source: PointerSource = 'mouse';
+  /** Where and when the press happened, and the farthest the pointer has been from there (F048). */
+  private pressX = 0;
+  private pressY = 0;
+  private pressT = 0;
+  private moved = 0;
 
   constructor(private readonly host: MouseHost) {}
 
@@ -68,12 +75,19 @@ export class MouseControl {
     if (this.grabbing.active || !this.canGrab(x, y, source)) return false;
     if (!this.grabbing.begin(y, t, this.host.powerMeter.value)) return false;
     this.source = source;
+    this.pressX = x;
+    this.pressY = y;
+    this.pressT = t;
+    this.moved = 0;
     this.showPush();
     return true;
   }
 
   /** The pointer moved to height `y` at time `t` (seconds) during a grab; the bar follows the push. */
-  drag(y: number, t: number): void {
+  drag(y: number, t: number, x: number = this.pressX): void {
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      this.moved = Math.max(this.moved, Math.hypot(x - this.pressX, y - this.pressY));
+    }
     if (this.grabbing.move(y, t, this.host.tuning())) this.showPush();
   }
 
@@ -84,9 +98,21 @@ export class MouseControl {
    * `throwBottle` as the keyboard (source `mouse`), and the bar keeps that power. Otherwise nothing
    * is thrown and the bar goes back to what it showed before the grab. Returns whether it threw.
    */
-  release(t: number, y?: number): boolean {
+  release(t: number, y?: number, x?: number): boolean {
     if (!this.grabbing.active) return false;
     const tuning = pushTuningFor(this.host.tuning(), this.source);
+    if (this.source === 'touch') {
+      if (x !== undefined && y !== undefined) this.drag(y, t, x);
+      // F048: a finger that lifts at once without moving is a tap: it throws at the bar's power,
+      // exactly as Space does. One held too long without moving is neither a tap nor a push.
+      const kind = classifyTouch(t - this.pressT, this.moved, this.host.tuning());
+      if (kind !== 'push') {
+        const bar = this.grabbing.barBefore;
+        this.grabbing.cancel();
+        this.host.powerMeter.set(bar);
+        return kind === 'tap' && this.host.throwWithPointer(bar, 'tap');
+      }
+    }
     const power = this.grabbing.finish(tuning, t, y);
     if (!(power >= tuning.pushMinPower)) {
       this.host.powerMeter.set(this.grabbing.barBefore);
@@ -123,6 +149,8 @@ export class MouseControl {
 
   /** The power bar shows what a release right now would throw with. */
   private showPush(): void {
+    // A finger that hasn't moved past the tap limit may yet be a tap: the bar keeps its value.
+    if (this.source === 'touch' && this.moved <= this.host.tuning().touchTapMaxMove) return;
     this.host.powerMeter.set(this.grabbing.power(pushTuningFor(this.host.tuning(), this.source)));
   }
 }

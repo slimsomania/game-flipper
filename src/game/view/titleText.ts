@@ -27,7 +27,7 @@ export function titleTexts(best: number, kind: InputKind = 'keyboard'): TitleTex
     startHint: touch ? null : 'or press Enter or Space',
     bestLine: `Best: ${best}`,
     controlsHint: touch
-      ? 'Touch the bottle and push it up to throw'
+      ? 'Push the bottle up, or set the power bar and tap the bottle'
       : 'Up/Down or wheel: power · Space: throw · or grab the bottle and push up',
   };
 }

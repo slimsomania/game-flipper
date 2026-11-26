@@ -1,20 +1,7 @@
 import type Phaser from 'phaser';
-import { HAND_X, HAND_Y } from '../../core/bottle';
-import { PIXELS_PER_METER } from '../../core/constants';
 import { MAX_POWER } from '../../core/throw';
 import { COLORS, FONT_FAMILY } from '../theme';
-
-/*
- * The power bar sits on the left of the hand, level with the bottle's base: far enough from the
- * bottle (and from the table, which starts below and to the right) that neither a held nor a
- * thrown bottle reaches it. Positions are in pixels on the 1280×720 canvas.
- */
-const BAR_WIDTH = 44;
-const BAR_HEIGHT = 220;
-const BAR_X = HAND_X * PIXELS_PER_METER - 130; // center of the bar
-const BAR_BOTTOM = HAND_Y * PIXELS_PER_METER + 10; // level with the bottle's base
-const BAR_TOP = BAR_BOTTOM - BAR_HEIGHT;
-const BAR_LEFT = BAR_X - BAR_WIDTH / 2;
+import { BAR_BOTTOM, BAR_HEIGHT, BAR_LEFT, BAR_TOP, BAR_WIDTH, BAR_X } from './powerBarLayout';
 
 export interface PowerBarView {
   /** Fill the bar to `power` (0 to 100) and show it as a whole percentage. */

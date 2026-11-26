@@ -66,10 +66,11 @@ describe('a finger on the held bottle', () => {
     expect(touch.snapshot().outcome).toEqual(keyboard.snapshot().outcome);
   });
 
-  it('a touch that never moves throws nothing, and the next mouse grab records mouse', () => {
+  it('a touch that never moves and is held past the tap time throws nothing, and the next mouse grab records mouse', () => {
+    // F048: a quick still touch is a tap (see touchTap.test.ts); a held one is neither tap nor push.
     const sim = new Simulation({ seed: 7 });
     expect(sim.mouse.grab(ON_BOTTLE.x, ON_BOTTLE.y, 10, 'touch')).toBe(true);
-    expect(sim.mouse.release(10.1, ON_BOTTLE.y)).toBe(false);
+    expect(sim.mouse.release(10.5, ON_BOTTLE.y)).toBe(false);
     expect(sim.snapshot().lastThrow).toBeNull();
     push(sim, 'mouse');
     expect(sim.snapshot().lastThrow!.source).toBe('mouse');

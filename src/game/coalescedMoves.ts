@@ -15,6 +15,8 @@
 export interface MoveSample {
   timeStamp: number;
   pageY: number;
+  /** Where sideways, when the event says (a finger that slides off a tap is judged by it). */
+  pageX?: number;
 }
 
 /** A native `pointermove`, as far as this module reads it. */

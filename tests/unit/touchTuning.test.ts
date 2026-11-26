@@ -75,16 +75,26 @@ describe('the finger push on the reference phone', () => {
 });
 
 describe('grabbing and jitter with a finger', () => {
-  it('a touch lifted after at most 2 mm of upward jitter throws nothing, at any speed', () => {
-    for (const seconds of [0.01, 0.02, 0.05, 0.1, 0.15, 0.3]) {
+  it('a slow 2 mm movement (longer than the tap time) throws nothing', () => {
+    for (const seconds of [0.35, 0.5, 1]) {
+      const sim = new Simulation({ seed: 7 });
+      expect(push(sim, 2, 'touch', seconds), `${seconds} s`).toBeNull();
+      expect(sim.snapshot().lastThrow).toBeNull();
+      expect(sim.snapshot().phase).toBe('aiming');
+    }
+  });
+
+  // F048: before it, this threw nothing; now a quick still touch is a tap at the bar's power.
+  it('at most 2 mm of upward jitter is never a push, at any speed; lifted quickly it is a tap', () => {
+    for (const seconds of [0.01, 0.02, 0.05, 0.1, 0.15, 0.25]) {
       for (const mm of [0.5, 1, 2]) {
         expect(pushPower(pushPath(mm * GAME_PX_PER_MM, seconds, 240), TOUCH)).toBeLessThan(
           DEFAULT_TUNING.touchMinPower,
         );
         const sim = new Simulation({ seed: 7 });
-        expect(push(sim, mm, 'touch', seconds), `${mm} mm in ${seconds} s`).toBeNull();
-        expect(sim.snapshot().lastThrow).toBeNull();
-        expect(sim.snapshot().phase).toBe('aiming');
+        const bar = sim.powerMeter.value;
+        expect(push(sim, mm, 'touch', seconds), `${mm} mm in ${seconds} s`).toBe(bar);
+        expect(sim.snapshot().lastThrow).toMatchObject({ source: 'tap', power: bar });
       }
     }
   });

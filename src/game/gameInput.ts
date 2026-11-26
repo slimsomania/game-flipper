@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import type { PowerDirection } from '../core/powerMeter';
 import type { Simulation } from '../core/simulation';
 import { CoalescedMoves } from './coalescedMoves';
+import { powerFromBar } from '../core/touchTap';
 import { HOME_CARD_BLOCKER_NAME } from './view/fullscreenButtonView';
+import { BAR_BOTTOM, BAR_TOP, inBarTouchArea } from './view/powerBarLayout';
 
 /** When a pointer event happened, in milliseconds: the browser's own time stamp, not the frame's. */
 const eventMillis = (pointer: Phaser.Input.Pointer): number =>
@@ -82,7 +84,18 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
     'pointerdown',
     (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
       // A press on a button (the speaker) belongs to the button: it grabs nothing and skips nothing.
+      barTouch = false; // a press that follows a lost release (a pause) starts clean
       if (currentlyOver.length > 0) return;
+      // F048: a finger that starts on the power bar sets the power and nothing else: it never
+      // grabs the bottle, never throws and never skips a result. (The bar's area ends where the
+      // bottle's grab area begins, so the two never compete.)
+      if (pointer.wasTouch && inBarTouchArea(pointer.x, pointer.y)) {
+        if (sim.phase === 'aiming' && !cardOpen()) {
+          barTouch = true;
+          sim.powerMeter.set(barPower(pointer.y));
+        }
+        return;
+      }
       // Grabbing only works while aiming and skipping only during a result, so at most one happens.
       // The scene tells core what kind of pointer it is (a finger or a mouse); the physics doesn't care.
       const source = pointer.wasTouch ? 'touch' : 'mouse';
@@ -96,26 +109,45 @@ export function bindGameInput(scene: Phaser.Scene, sim: Simulation): void {
       sim.skip();
     },
   );
+  // A finger sliding on the power bar (F048): the bar follows its height, wherever it goes.
+  let barTouch = false;
+  const barPower = (y: number): number => powerFromBar(y, BAR_TOP, BAR_BOTTOM);
   scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+    if (barTouch) {
+      if (pointer.wasTouch && sim.phase === 'aiming') sim.powerMeter.set(barPower(pointer.y));
+      return;
+    }
     if (moves.covers(eventMillis(pointer))) return; // a coalesced sample already carried this move
-    sim.mouse.drag(pointer.y, eventSeconds(pointer));
+    sim.mouse.drag(pointer.y, eventSeconds(pointer), pointer.x);
   });
   const canvas = scene.game.canvas;
   const onNativeMove = (event: PointerEvent): void => {
     if (!sim.mouse.dragging) return;
     for (const sample of moves.fresh(event)) {
       // The height in logical game pixels, the way Phaser converts a pointer's `pageY`.
-      sim.mouse.drag(scene.scale.transformY(sample.pageY), sample.timeStamp / 1000);
+      sim.mouse.drag(
+        scene.scale.transformY(sample.pageY),
+        sample.timeStamp / 1000,
+        sample.pageX === undefined ? undefined : scene.scale.transformX(sample.pageX),
+      );
     }
   };
   canvas.addEventListener('pointermove', onNativeMove);
   scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+    if (barTouch) {
+      barTouch = false; // lifting leaves the value where it is
+      return;
+    }
     if (!isLeftButton(pointer)) return;
     // A touchcancel (the system took the touch away) is not a release: end the grab, throw nothing.
     if (pointer.wasCanceled) sim.mouse.cancel();
-    else sim.mouse.release(eventSeconds(pointer), pointer.y);
+    else sim.mouse.release(eventSeconds(pointer), pointer.y, pointer.x);
   });
   scene.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
+    if (barTouch) {
+      barTouch = false;
+      return;
+    }
     if (isLeftButton(pointer)) sim.mouse.release(eventSeconds(pointer));
   });
 
