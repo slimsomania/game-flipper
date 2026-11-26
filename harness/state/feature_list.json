@@ -1059,7 +1059,7 @@
         "F048"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Measured, and nothing missed the budget, so no game code was changed beyond timing. GameScene.update times itself into src/debug/frameCost.ts; hooks frameTime(), resetFrameTime() and objectCounts() expose it. Tests: tests/unit/performance.test.ts, tests/e2e/performance.spec.ts (desktop budget, 20-throw leak check) and tests/e2e/phone/performancePhone.spec.ts (CPU 4x via CDP). The full e2e suite was not run by the builder (the shell denied npm run verify); format, typecheck and unit tests pass.",
       "review_feedback": ""
     }
