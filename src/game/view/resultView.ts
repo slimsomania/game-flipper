@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../../core/constants';
 import type { Outcome } from '../../core/outcome';
 import { OVERSCAN_PX } from '../effects/effects';
 import { FONT_FAMILY } from '../theme';
+import { createPageFlash } from './pageFlash';
 import { flashAlpha, popScale, resultStyle } from './resultStyle';
 
 /** Above the table, bottle and power bar, so the flash tints them; the message sits above it. */
@@ -25,7 +26,8 @@ export interface ResultView {
  * for a success, "red" for a fail), and a large message that pops in (small, a little past full
  * size, then full size) and stays until the next bottle appears. The message is hidden (not just
  * empty) when there is no result, so it never shows up in the visible texts of the scene. The
- * flash reaches past the canvas by `OVERSCAN_PX`, so a camera shake never shows its edge.
+ * flash reaches past the canvas by `OVERSCAN_PX`, so a camera shake never shows its edge, and a
+ * page flash (`pageFlash.ts`) tints the letterbox and safe area around the canvas with it.
  */
 export function createResultView(scene: Phaser.Scene): ResultView {
   const flash = scene.add
@@ -49,17 +51,21 @@ export function createResultView(scene: Phaser.Scene): ResultView {
     .setOrigin(0.5)
     .setDepth(MESSAGE_DEPTH)
     .setVisible(false);
+  const pageFlash = createPageFlash(scene.game.canvas);
+  scene.events.once('shutdown', () => pageFlash.destroy());
 
   return {
     update(outcome, resultSteps) {
       if (!outcome) {
         flash.setVisible(false);
+        pageFlash.set(0, 0);
         message.setVisible(false);
         return;
       }
       const style = resultStyle(outcome);
       const alpha = flashAlpha(resultSteps);
       flash.setFillStyle(style.flash, alpha).setVisible(alpha > 0);
+      pageFlash.set(style.flash, alpha);
       message
         .setText(style.message)
         .setColor(style.text)
