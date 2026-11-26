@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import { COLORS, FONT_FAMILY } from '../theme';
+import { bakedFromCommands, bakedTexture } from './bakedGraphics';
 
 export type ButtonState = 'idle' | 'hover' | 'pressed';
 
@@ -114,7 +115,11 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
   const canvas = scene.game.canvas;
   const depth = spec.depth ?? 0;
   const radius = spec.radius ?? CORNER_RADIUS;
-  const graphics = scene.add.graphics().setDepth(depth);
+  // The face and the icon are drawn once per look into textures (see bakedGraphics.ts): a
+  // Graphics would be tessellated again every frame.
+  const left = x - width / 2;
+  const top = y - height / 2;
+  const face = scene.add.image(left, top, '__DEFAULT').setOrigin(0, 0).setDepth(depth);
   // A button with no label has no text object at all, so it never shows up in the visible texts.
   const label = spec.label
     ? scene.add
@@ -127,7 +132,12 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
         .setOrigin(0.5)
         .setDepth(depth + 1)
     : null;
-  const icon = spec.icon ? scene.add.graphics().setDepth(depth + 1) : null;
+  const icon = spec.icon
+    ? scene.add
+        .image(left, top, '__DEFAULT')
+        .setOrigin(0, 0)
+        .setDepth(depth + 1)
+    : null;
   // The hit area covers the lip too: it is part of what the player sees.
   const hit = hitBox(spec);
   const zone = scene.add
@@ -142,16 +152,30 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
   const show = (): void => {
     const state: ButtonState = pressed ? 'pressed' : hover ? 'hover' : 'idle';
     const look = buttonLook(state);
-    const left = x - width / 2;
-    const top = y - height / 2;
-    graphics
-      .clear()
-      .fillStyle(look.lip)
-      .fillRoundedRect(left, top + BUTTON_LIP, width, height, radius)
-      .fillStyle(look.face)
-      .fillRoundedRect(left, top + look.sink, width, height, radius);
+    const boxHeight = height + BUTTON_LIP;
+    face.setTexture(
+      bakedTexture(
+        scene,
+        `button:${width}x${height}:${radius}:${look.face}:${look.lip}:${look.sink}`,
+        width,
+        boxHeight,
+        (g) =>
+          g
+            .fillStyle(look.lip)
+            .fillRoundedRect(0, BUTTON_LIP, width, height, radius)
+            .fillStyle(look.face)
+            .fillRoundedRect(0, look.sink, width, height, radius),
+      ),
+    );
     label?.setY(y + look.sink);
-    if (icon && spec.icon) spec.icon(icon.clear(), x, y + look.sink);
+    const drawIcon = spec.icon;
+    if (icon && drawIcon) {
+      icon.setTexture(
+        bakedFromCommands(scene, 'icon', width, boxHeight, (g) =>
+          drawIcon(g, width / 2, height / 2 + look.sink),
+        ),
+      );
+    }
     canvas.style.cursor = hover ? 'pointer' : '';
   };
 

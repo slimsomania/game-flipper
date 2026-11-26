@@ -193,10 +193,12 @@ export interface FlipperTestApi {
   recording(): ReplayFrame[];
   /** The landing clip of the current throw (see `Simulation.landingClip`); [] with none. */
   landingClip(): ReplayFrame[];
+  /** The Phaser game instance, so a test can add listeners to the game's events (F049). */
+  phaserGame(): Phaser.Game;
   /**
-   * The Game scene's own cost per frame (F028): how many frames of its update (stepping the
-   * simulation, drawing, sounds and effects) it has timed since the last `resetFrameTime()` and
-   * their average in milliseconds.
+   * The whole-frame cost (F049): how many frames, timed from Phaser's PRE_STEP to its POST_RENDER
+   * (scene updates, our drawing and Phaser's render), since the last `resetFrameTime()` and their
+   * average in milliseconds.
    */
   frameTime(): { frames: number; averageMs: number };
   /** Start the frame-time average afresh. */
@@ -241,6 +243,7 @@ export function installTestHooks(game: Phaser.Game): void {
 
   window.__FLIPPER__ = {
     ready: false,
+    phaserGame: () => game,
     activeScenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     state: () => currentSimulation()?.snapshot() ?? null,
     texts: () => visibleTexts(game.scene.getScenes(true)),

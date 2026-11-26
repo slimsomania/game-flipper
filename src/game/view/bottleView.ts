@@ -4,12 +4,15 @@ import { PIXELS_PER_METER, SIM_DT } from '../../core/constants';
 import type { BottleSnapshot } from '../../core/simulation';
 import { DEFAULT_TUNING } from '../../core/tuning';
 import { COLORS } from '../theme';
+import { bakedTexture } from './bakedGraphics';
 import { WaterMotion, waterShape } from './waterSurface';
 
 /** Opacity of the plastic: the table and the background show through a little. */
 const SHELL_ALPHA = 0.55;
 const WATER_ALPHA = 0.92;
 const SURFACE_LINE_PX = 3;
+/** Room around the baked shell so its antialiased edge isn't cut. */
+const SHELL_PAD_PX = 2;
 /** More simulation steps than this between two draws means the water starts over. */
 const MAX_STEPS_BETWEEN_DRAWS = 30;
 
@@ -32,12 +35,28 @@ const toPixels = (points: readonly Point[]): Point[] =>
  * Nothing here is text: the player reads the level from the fill alone.
  */
 export function createBottleView(scene: Phaser.Scene): BottleView {
-  const shell = scene.add.graphics();
-  for (const part of BOTTLE_PARTS) {
-    if (part.name === 'cap') shell.fillStyle(COLORS.cap, 1);
-    else shell.fillStyle(COLORS.bottle, SHELL_ALPHA);
-    shell.fillPoints(toPixels(part.vertices), true);
-  }
+  // The shell never changes: it is drawn once into a texture (see bakedGraphics.ts).
+  const all = BOTTLE_PARTS.flatMap((part) => toPixels(part.vertices));
+  const minX = Math.floor(Math.min(...all.map((p) => p.x))) - SHELL_PAD_PX;
+  const minY = Math.floor(Math.min(...all.map((p) => p.y))) - SHELL_PAD_PX;
+  const maxX = Math.ceil(Math.max(...all.map((p) => p.x))) + SHELL_PAD_PX;
+  const maxY = Math.ceil(Math.max(...all.map((p) => p.y))) + SHELL_PAD_PX;
+  const shell = scene.add
+    .image(
+      minX,
+      minY,
+      bakedTexture(scene, 'bottleShell', maxX - minX, maxY - minY, (g) => {
+        for (const part of BOTTLE_PARTS) {
+          if (part.name === 'cap') g.fillStyle(COLORS.cap, 1);
+          else g.fillStyle(COLORS.bottle, SHELL_ALPHA);
+          g.fillPoints(
+            toPixels(part.vertices).map((p) => ({ x: p.x - minX, y: p.y - minY })),
+            true,
+          );
+        }
+      }),
+    )
+    .setOrigin(0, 0);
 
   const water = scene.add.graphics();
   // The container carries the pose; both graphics are drawn in the bottle's local coordinates.

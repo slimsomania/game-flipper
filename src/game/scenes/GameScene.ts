@@ -4,7 +4,7 @@ import { createFixedStepper } from '../../core/fixedStep';
 import { Simulation, type SimSnapshot } from '../../core/simulation';
 import type { SimEvent } from '../../core/events';
 import { registerSimulation } from '../../debug/currentSimulation';
-import { recordFrameCost } from '../../debug/frameCost';
+import { watchFrameCost } from '../../debug/frameCost';
 import { markReady, testControls } from '../../debug/testHooks';
 import { tuningControl } from '../../debug/tuningControl';
 import { sharedSfx } from '../audio/sfx';
@@ -74,7 +74,9 @@ export class GameScene extends Phaser.Scene {
     const stopWatching = onRotateMessageChange((showing) => {
       if (showing && this.scene.isActive()) this.openPause();
     });
+    const stopTiming = watchFrameCost(this.game.events);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      stopTiming();
       this.events.off(Phaser.Scenes.Events.RESUME, onResume);
       stopWatching();
       registerSimulation(null);
@@ -104,7 +106,6 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     // The pause overlay opens next frame: step nothing more in the meantime.
     if (this.pauseRequested) return;
-    const started = performance.now();
     if (!testControls.paused) this.stepper.advance(delta, () => this.sim.step());
     const snapshot = this.sim.snapshot();
     this.draw(snapshot);
@@ -112,7 +113,6 @@ export class GameScene extends Phaser.Scene {
     const events = this.sim.drainEvents();
     this.playSounds(events);
     this.effectsView.update(events, snapshot, this.sim.tuning);
-    recordFrameCost(performance.now() - started);
     if (this.sim.phase === 'roundOver') this.openSummary();
   }
 

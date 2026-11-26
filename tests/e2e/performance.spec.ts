@@ -2,10 +2,42 @@ import { expect, test } from '@playwright/test';
 import { openGame } from './helpers';
 import { measureFrameTime } from './perfHelpers';
 
-test('5 s of real-time play averages under 4 ms per frame', async ({ page }) => {
-  const errors = await openGame(page, '?seed=7');
+test('the frame-time hook covers the whole frame, up to the end of the render', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7', false);
+  const average = async (): Promise<number> => {
+    await page.evaluate(() => window.__FLIPPER__!.resetFrameTime());
+    await page.waitForFunction(() => window.__FLIPPER__!.frameTime().frames >= 30);
+    return page.evaluate(() => window.__FLIPPER__!.frameTime().averageMs);
+  };
+  const without = await average();
+  await page.evaluate(() => {
+    const game = window.__FLIPPER__!.phaserGame();
+    game.events.on('postrender', () => {
+      const end = performance.now() + 5;
+      while (performance.now() < end) {
+        // busy-wait
+      }
+    });
+  });
+  const withWait = await average();
+  console.log(
+    `whole frame: ${without.toFixed(3)} ms, with a 5 ms postrender wait ${withWait.toFixed(3)} ms`,
+  );
+  expect(withWait - without).toBeGreaterThanOrEqual(4);
+  expect(errors).toEqual([]);
+});
+
+test('5 s of real-time play with the replay on averages under 4 ms per whole frame', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7', false);
   const cost = await measureFrameTime(page, 5000);
-  console.log(`desktop: ${cost.averageMs.toFixed(3)} ms/frame over ${cost.frames} frames`);
+  console.log(
+    `desktop: ${cost.averageMs.toFixed(3)} ms/frame over ${cost.frames} frames, ${cost.fps.toFixed(1)} fps (rAF), replay played: ${cost.replayed}`,
+  );
+  expect(cost.replayed).toBe(true);
   expect(cost.frames).toBeGreaterThan(100);
   expect(cost.averageMs).toBeLessThan(4);
   expect(errors).toEqual([]);
@@ -14,15 +46,19 @@ test('5 s of real-time play averages under 4 ms per frame', async ({ page }) => 
 test('after 20 throws the Game scene holds as many objects, tweens and timers as after 1', async ({
   page,
 }) => {
-  const errors = await openGame(page, '?seed=7');
+  const errors = await openGame(page, '?seed=7', false);
   const throwOnce = async (): Promise<void> => {
     // Step the simulation by hand (each throw takes about 3 s in real time): the scene still
-    // draws, and spawns and removes its objects, once per frame.
+    // draws, and spawns and removes its objects, once per frame. The replay is on: step into it,
+    // let a few frames of it draw, then skip the rest.
     await page.evaluate(() => {
       const api = window.__FLIPPER__!;
       api.pause();
       api.throwBottle(70);
       for (let i = 0; i < 900 && api.state()?.phase === 'flying'; i++) api.step();
+      for (let i = 0; i < 600 && api.state()?.phase === 'result' && !api.state()!.replay; i++) {
+        api.step();
+      }
     });
     await page.waitForFunction(() => window.__FLIPPER__!.state()?.phase === 'result');
     await page.evaluate(() => window.__FLIPPER__!.skip());
