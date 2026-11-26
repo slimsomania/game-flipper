@@ -2335,3 +2335,8 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Debt left: split simulation.ts and testHooks.ts if they grow past ~350 lines; the Node timing test in F028 varies 7x run to run; 60 fps on a real phone is still a manual human check; timers are read from Phaser's private `_active` and `_pendingInsertion` lists.
 
 > [harness] session 147 · maintainer · ok · verify FAILED · 0 commit(s) · 1 tool calls · 6s · ~$0.09 API-equivalent
+
+## Human session · 2026-11-26 · flaky desktop perf replay check fixed
+- Did: the harness gate after session 147 failed once on performance.spec.ts "5 s of real-time play…": `replayed` false. The machine was loaded then (phone thumb tests took 20-27 s), so frames were slow, the game ran slower than real time, and the 5 s window that started at a throw ended before its replay began. `measureFrameTime` (tests/e2e/perfHelpers.ts) now warms up until a replay has just begun (`playUntilReplay`, replacing `playUntilThrow`), so the measured 5 s window always starts inside a replay at any frame rate; the 5 s and the assertions are unchanged.
+- Verified: a temporary probe at CPU 10x (17-19 fps) had a replay in 3 of 3 windows; performance.spec.ts and phone/performancePhone.spec.ts 8/8 (desktop 0.81 ms, phone 4.9-6.2 ms, 48-63 average Graphics entries); typecheck clean.
+- Next: builder F050. The gate failure shown in your prompt (session 147) is this fixed flake; no need to work on it.

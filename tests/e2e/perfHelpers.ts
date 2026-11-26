@@ -34,22 +34,23 @@ export async function playRealTime(page: Page, ms: number): Promise<boolean> {
 }
 
 /**
- * Play on until the next throw has just been made, so the measured window that follows starts
- * with a throw and always has room for its flight and replay, however slow the frames are.
+ * Play on until a slow-motion replay has just begun, so the measured window that follows starts
+ * inside a replay. At a low frame rate (a slow or busy machine) the game runs slower than real
+ * time, and a window that merely starts at a throw can end before that throw's replay begins.
  */
-async function playUntilThrow(page: Page): Promise<void> {
+async function playUntilReplay(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const api = window.__FLIPPER__!;
     let resultSince = 0;
     for (;;) {
       const state = api.state();
       if (state?.phase === 'aiming') {
+        resultSince = 0;
         api.throwBottle(60 + Math.random() * 30);
-        return;
-      }
-      if (state?.phase === 'result') {
+      } else if (state?.phase === 'result') {
+        if (state.replay !== null) return;
         if (resultSince === 0) resultSince = performance.now();
-        if (state.replay !== null || performance.now() - resultSince > 6000) api.skip();
+        if (performance.now() - resultSince > 6000) api.skip();
       }
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
@@ -74,7 +75,7 @@ export interface FrameMeasure {
  */
 export async function measureFrameTime(page: Page, ms: number): Promise<FrameMeasure> {
   await playRealTime(page, 1000);
-  await playUntilThrow(page);
+  await playUntilReplay(page);
   await page.evaluate(() => {
     window.__FLIPPER__!.resetFrameTime();
     const w = window as unknown as { __raf: number };
