@@ -31,8 +31,9 @@
         margin: 0;
         height: 100%;
         height: 100dvh; /* the visible viewport: the browser's bars don't push the canvas */
-        /* A little darker than the game background, so the letterbox reads as a frame. */
-        background: #cdd7e2;
+        /* Same as the game background (theme.ts): the notch / home-indicator safe-area padding and
+           the letterbox bars then blend in instead of showing a gray frame on iPhone. */
+        background: #eaf0f6;
         overflow: hidden;
         touch-action: none;
         user-select: none;
