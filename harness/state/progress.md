@@ -2255,3 +2255,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F048 → needs_review
 - Issues / follow-ups: BAR_TOUCH uses DEFAULT_TUNING.touchGrabPadding, so changing that padding in the panel could create an overlap; touch moves of exactly the limit use a 1e-3 px slack.
 - Next: reviewer: try a real slide beginning at the bar's edge and a tap while the bottle is rotated.
+
+> [harness] session 138 · builder F048 · todo → needs_review · ok · verify passed · 1 commit(s) · 80 tool calls · 51m 11s · ~$1.30 API-equivalent
