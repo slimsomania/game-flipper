@@ -1085,7 +1085,7 @@
         "F028"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "src/debug/frameCost.ts now times PRE_STEP to POST_RENDER (watchFrameCost, removed on Game scene shutdown); new hook phaserGame(); perf specs run with the replay on and play the replay before skipping. The phone budget failed at first (10.4 ms, 33 fps) because every visible Graphics is re-tessellated each frame (render alone was 6-8 ms at 4x); baking static Graphics into textures (src/game/view/bakedGraphics.ts: button faces and icons, bottle shell, power bar track and marks) brought it to 5.2-6.3 ms. Verified: format, typecheck, npm test 962, e2e 378 all green.",
       "review_feedback": ""
     },

@@ -2291,3 +2291,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F049 → needs_review
 - Issues / follow-ups: the phone 4x average varies 5-6.5 ms run to run (limit 8). Still redrawn each frame: the water, particles, off-screen arrow and power fill Graphics (few commands). Software rendering still holds the 4x phone under 60 fps, so a real phone check is worth doing.
 - Next: reviewer: rerun the perf specs a few times for the phone margin, and check the baked buttons and bottle look right at the phone size (hover/pressed button faces, mute icon on and off).
+
+> [harness] session 142 · builder F049 · todo → needs_review · ok · verify passed · 1 commit(s) · 80 tool calls · 44m 22s · ~$1.14 API-equivalent
