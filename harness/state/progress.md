@@ -2293,3 +2293,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: reviewer: rerun the perf specs a few times for the phone margin, and check the baked buttons and bottle look right at the phone size (hover/pressed button faces, mute icon on and off).
 
 > [harness] session 142 · builder F049 · todo → needs_review · ok · verify passed · 1 commit(s) · 80 tool calls · 44m 22s · ~$1.14 API-equivalent
+
+> [harness] session 143 · reviewer F049 · needs_review → needs_review · timeout · 0 commit(s) · 40 tool calls · 1h 15m · ~$0.83 API-equivalent
