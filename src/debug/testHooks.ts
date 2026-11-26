@@ -9,6 +9,7 @@ import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
 import { drawnShadow, type DrawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
+import { frameCost, resetFrameCost } from './frameCost';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
@@ -192,6 +193,19 @@ export interface FlipperTestApi {
   recording(): ReplayFrame[];
   /** The landing clip of the current throw (see `Simulation.landingClip`); [] with none. */
   landingClip(): ReplayFrame[];
+  /**
+   * The Game scene's own cost per frame (F028): how many frames of its update (stepping the
+   * simulation, drawing, sounds and effects) it has timed since the last `resetFrameTime()` and
+   * their average in milliseconds.
+   */
+  frameTime(): { frames: number; averageMs: number };
+  /** Start the frame-time average afresh. */
+  resetFrameTime(): void;
+  /**
+   * How many display objects, tweens and timers the Game scene holds now, to catch leaks over many
+   * throws. Null when no game scene is running.
+   */
+  objectCounts(): { objects: number; tweens: number; timers: number } | null;
   /** Stop all running and paused scenes and start `key` (e.g. "Game") with optional scene data. */
   startScene(key: string, data?: object): void;
   /** Renderer and build info, for debugging test environments. */
@@ -282,6 +296,19 @@ export function installTestHooks(game: Phaser.Game): void {
     },
     recording: () => currentSimulation()?.recording ?? [],
     landingClip: () => currentSimulation()?.landingClip ?? [],
+    frameTime: () => frameCost(),
+    resetFrameTime: () => resetFrameCost(),
+    objectCounts: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      if (!scene) return null;
+      // Phaser's clock has no public list of its timers: read its two queues.
+      const clock = scene.time as unknown as { _active: unknown[]; _pendingInsertion: unknown[] };
+      return {
+        objects: scene.children.length,
+        tweens: scene.tweens.getTweens().length,
+        timers: clock._active.length + clock._pendingInsertion.length,
+      };
+    },
     startScene: (key, data) => {
       // Paused scenes too: the Game scene is paused while the round summary is open.
       for (const scene of game.scene.getScenes(false)) {

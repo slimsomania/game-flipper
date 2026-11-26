@@ -1058,9 +1058,9 @@
         "F047",
         "F048"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Moved after F045 and made to depend on it by hand (human session, 2026-11-23), so it is built after M7 and its phone criterion can use F037's phone project. Made to depend on F046, F047 and F048 by hand (human session, 2026-11-25) so the budget is measured with the fullscreen button in the scene.",
+      "notes": "Measured, and nothing missed the budget, so no game code was changed beyond timing. GameScene.update times itself into src/debug/frameCost.ts; hooks frameTime(), resetFrameTime() and objectCounts() expose it. Tests: tests/unit/performance.test.ts, tests/e2e/performance.spec.ts (desktop budget, 20-throw leak check) and tests/e2e/phone/performancePhone.spec.ts (CPU 4x via CDP). The full e2e suite was not run by the builder (the shell denied npm run verify); format, typecheck and unit tests pass.",
       "review_feedback": ""
     }
   ]
