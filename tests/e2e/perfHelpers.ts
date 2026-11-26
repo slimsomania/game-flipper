@@ -59,6 +59,9 @@ async function playUntilThrow(page: Page): Promise<void> {
 export interface FrameMeasure {
   frames: number;
   averageMs: number;
+  /** Average and most Graphics commands drawn per frame (the game's own render work). */
+  averageGraphicsCommands: number;
+  maxGraphicsCommands: number;
   /** Frames per second from requestAnimationFrame over the same window. */
   fps: number;
   /** True if the replay played at some point in the window. */

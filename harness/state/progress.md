@@ -2313,3 +2313,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: reviewer: check for stray Chromium/node processes first, then run the phone spec 3 times on an idle machine.
 
 > [harness] session 145 · builder F049 · todo → needs_review · ok · verify passed · 1 commit(s) · 27 tool calls · 29m 5s · ~$0.39 API-equivalent
+
+## Human session · 2026-11-26 · F049 phone gate changed by the human
+- Did: sessions 143 (timeout) and 144 (fail) showed the phone 4x millisecond budget measures the test machine, not the game: headless Chromium draws WebGL in software (SwiftShader), and the same code measured 1.2 to 14.9 ms. The human replaced criterion 3's 8 ms assertion with a machine-independent render-work budget. `src/debug/frameCost.ts` now also counts the Graphics command-buffer entries drawn per frame (`frameTime().averageGraphicsCommands` and `maxGraphicsCommands`); `tests/e2e/phone/performancePhone.spec.ts` asserts at most 250 on average and 800 in any frame, logs the ms and keeps a 25 ms ceiling. ARCHITECTURE.md and F049's acceptance updated.
+- Measured: baked HEAD about 60-80 average, 82-300 max (particle bursts add 13 per particle); with the three views reverted to before the bake, about 811 average, up to 1044. Phone ms 1.2-5.1, all passing, including 3 runs with every core busy.
+- Verified: `npm run verify` green: unit 962/962, e2e 378/378 (25.8 min); phone 5.104 ms, 41.2 fps, 79.1 average / 300 max entries, replay played; desktop 0.650 ms at 57.0 fps.
+- Status: F049 stays needs_review.
+- Next: reviewer: check the new criterion 3 (run the phone spec 3 times); the other criteria are unchanged. The human checks 60 fps on a real phone.

@@ -74,7 +74,7 @@ export class GameScene extends Phaser.Scene {
     const stopWatching = onRotateMessageChange((showing) => {
       if (showing && this.scene.isActive()) this.openPause();
     });
-    const stopTiming = watchFrameCost(this.game.events);
+    const stopTiming = watchFrameCost(this.game);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       stopTiming();
       this.events.off(Phaser.Scenes.Events.RESUME, onResume);

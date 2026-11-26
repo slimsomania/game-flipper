@@ -9,7 +9,7 @@ import { sharedSfx, type SoundLogEntry } from '../game/audio/sfx';
 import { sharedEffectLog, type EffectLogEntry } from '../game/effects/effectLog';
 import { drawnShadow, type DrawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
-import { frameCost, resetFrameCost } from './frameCost';
+import { frameCost, resetFrameCost, type FrameCost } from './frameCost';
 import { currentSimulation } from './currentSimulation';
 import { tuningControl } from './tuningControl';
 import { visibleFlash, type FlashView } from './visibleFlash';
@@ -198,9 +198,10 @@ export interface FlipperTestApi {
   /**
    * The whole-frame cost (F049): how many frames, timed from Phaser's PRE_STEP to its POST_RENDER
    * (scene updates, our drawing and Phaser's render), since the last `resetFrameTime()` and their
-   * average in milliseconds.
+   * average in milliseconds, plus the render work: the average and most Graphics commands drawn
+   * per frame by all visible Graphics (machine-independent, unlike the milliseconds).
    */
-  frameTime(): { frames: number; averageMs: number };
+  frameTime(): FrameCost;
   /** Start the frame-time average afresh. */
   resetFrameTime(): void;
   /**
