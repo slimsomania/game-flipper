@@ -40,6 +40,11 @@
       "id": "M8",
       "title": "Fullscreen and release readiness",
       "goal": "The game can go fullscreen on a PC and an Android phone with a corner button and the F key, and can be added to a phone's home screen to play without the browser's bars (the iPhone way); a phone can also set the power by sliding a finger on the power bar and throw with a tap on the bottle; then the 60 fps target is met with headroom on a laptop and a mid-range phone, and the production build works without test hooks."
+    },
+    {
+      "id": "M9",
+      "title": "Review fixes",
+      "goal": "Fixes from the outside reviews of M6-M8 (Copilot and Antigravity, 2026-11-25): performance budgets that measure the whole frame, including Phaser's render and the slow-motion replay, and four small polish fixes (a listener leak on the iPhone home-screen card, the round summary's flat background against the page gradient, older iOS home-screen detection, a fullscreen test stub that checks its target)."
     }
   ],
   "features": [
@@ -1061,6 +1066,48 @@
       "status": "done",
       "attempts": 1,
       "notes": "Measured, and nothing missed the budget, so no game code was changed beyond timing. GameScene.update times itself into src/debug/frameCost.ts; hooks frameTime(), resetFrameTime() and objectCounts() expose it. Tests: tests/unit/performance.test.ts, tests/e2e/performance.spec.ts (desktop budget, 20-throw leak check) and tests/e2e/phone/performancePhone.spec.ts (CPU 4x via CDP). The full e2e suite was not run by the builder (the shell denied npm run verify); format, typecheck and unit tests pass. Reviewed: verify run piece by piece (format, typecheck, unit 962/962, build, e2e 375/375); Node median 12.5 ms (limit 50), desktop hook 0.31 ms/frame (limit 4), phone 4x hook 3.20 ms/frame (limit 8), objects/tweens/timers 29/0/0 after 1 and after 20 throws; a CDP probe shows the hook excludes Phaser's render and the 4x phone runs at about 30 fps (see session 141).",
+      "review_feedback": ""
+    },
+    {
+      "id": "F049",
+      "milestone": "M9",
+      "category": "performance",
+      "title": "Measure the whole frame, with the replay on",
+      "description": "Outside review of F028: the frame-cost hook (GameScene.update calls recordFrameCost in src/debug/frameCost.ts) stops before Phaser renders, so the 'update-and-draw' budgets never include rendering; and the frame-time and 20-throw leak tests open the game through openGame, which turns the slow-motion replay off (replaySpeed 0), so they never play a replay. F028's reviewer also saw the 4x-slowed phone run at about 30 fps. Time the whole frame instead: from Phaser's game PRE_STEP event to its POST_RENDER event (Phaser.Core.Events), summed per frame into the same frameCost module, with the listeners removed on scene shutdown; keep the hook names frameTime() and resetFrameTime() (say in docs/ARCHITECTURE.md what they now cover). Run the desktop and phone frame-time tests and the leak test with the replay on (openGame's replayOff argument false), skipping only the result waits the test's play loop already skips, so replays really play during the measured time. Keep the budgets: 4 ms desktop, 8 ms phone at 4x CPU. If a budget now fails, find where the time goes (for example with a Chromium performance trace or by timing parts of the frame) and fix the game's own cost (redrawing Graphics that didn't change, too many draw calls, objects made every frame). Headless Chromium draws WebGL in software (SwiftShader), which a real phone's GPU doesn't; if after fixing the game's own cost the rest is clearly the software renderer, don't loosen any budget: set the feature to blocked and explain the numbers in notes, so the human decides. Also record the real frame rate (frames per second from requestAnimationFrame over the same window) in the progress entry, without asserting on it.",
+      "acceptance": [
+        "E2E: the frame-time hook covers the whole frame: with a busy-wait of 5 ms added inside a postrender listener by the test (registered through page.evaluate on the game instance), frameTime().averageMs rises by at least 4 ms compared with the same run without it.",
+        "E2E (desktop): over 5 s of real-time play with the replay on, at least one replay plays (the hooks report a replay playing at some point) and the average whole-frame time is under 4 ms.",
+        "E2E (phone, CPU slowed 4x): over 5 s of real-time play with the replay on, at least one replay plays and the average whole-frame time is under 8 ms.",
+        "E2E: after 20 throws with the replay on (each replay played or skipped), the Game scene has the same number of display objects, tweens and timers as after 1 (within the same small constant as F028).",
+        "The progress entry lists the measured whole-frame times (desktop and phone), the requestAnimationFrame frame rates, and what was changed to meet the budgets, if anything."
+      ],
+      "depends_on": [
+        "F028"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F050",
+      "milestone": "M9",
+      "category": "polish",
+      "title": "Small fixes from the M6-M8 review",
+      "description": "Four small fixes from the outside reviews, each with its own test. (1) Listener leak: createButton in src/game/view/buttonView.ts adds a scene 'pause' listener and a 'shutdown' listener that it removes only when the scene shuts down, so every time the iPhone home-screen card (src/game/view/fullscreenButtonView.ts) opens and closes, its Close button leaves two listeners behind, and a later pause calls show() on destroyed objects. Remove both when the button's zone is destroyed (and keep removing them on shutdown). (2) Summary background: since the page itself paints the background gradient (commit 20a1db0) and the canvas is transparent, the round summary's opaque flat camera background (COLORS.background in src/game/view/summaryView.ts) shows as a flat rectangle against the gradient around the canvas. Hide the paused Game scene while the summary is open instead (setVisible(false) on it, visible again on Play again and on the way to the Title) and drop the summary's camera background, so the page gradient shows through as on the other screens; nothing of the Game scene (table, bottle, HUD) may show through the summary. (3) Home-screen detection: in src/game/pageGuards.ts, also treat navigator.standalone === true (older iOS Safari's flag for a home-screen app) as a home-screen app, next to the display-mode checks. (4) Test stub: the fullscreen stub in tests/e2e/fullscreenHelpers.ts records requestFullscreen calls without checking the element; make it record whether each call targeted document.documentElement, and assert that in the existing fullscreen tests, so a change to another target (which would lose the safe-area padding) fails a test.",
+      "acceptance": [
+        "E2E: opening and closing the home-screen card 5 times (fullscreen stubbed as unsupported) leaves the Game scene's 'pause' and 'shutdown' listener counts the same as before the first opening, and pausing and resuming afterwards logs no console error.",
+        "E2E: while the round summary is open the Game scene isn't visible and the summary camera has no opaque background (its transparent flag or alpha 0); after Play again the Game scene is visible again and the new round plays; on the way to the Title, too.",
+        "A snap of the round summary at 1280x720 and with `--phone` (a viewport with bars around the canvas) shows the page gradient continuing behind the summary with no flat rectangle at the canvas's edges, and no table, bottle or HUD showing through.",
+        "E2E or unit: with navigator.standalone stubbed true and neither display-mode matching, the game counts as a home-screen app and the fullscreen button isn't shown; with it false or missing, nothing changes.",
+        "E2E: the fullscreen stub reports that every requestFullscreen call (corner button, F key, Play tap on a phone, Play again on a phone) targeted document.documentElement."
+      ],
+      "depends_on": [
+        "F049"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
       "review_feedback": ""
     }
   ]
