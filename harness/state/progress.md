@@ -2347,3 +2347,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F050 -> needs_review
 - Issues / follow-ups: none. I did not check that the leak test fails without the fix.
 - Next: reviewer: revert the buttonView.ts change locally and confirm the leak test fails.
+
+> [harness] session 148 · builder F050 · todo → needs_review · ok · verify passed · 1 commit(s) · 55 tool calls · 31m 42s · ~$0.72 API-equivalent

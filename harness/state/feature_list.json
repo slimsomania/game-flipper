@@ -1106,7 +1106,7 @@
         "F049"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "buttonView.ts removes its pause and shutdown listeners when its zone is destroyed; SummaryScene hides the Game scene (and shows it again on shutdown) and summaryView drops the camera background; pageGuards treats navigator.standalone === true as a home-screen app; the fullscreen stub records whether each request targeted documentElement (fsOnRoot), asserted in the corner-button, F, phone Play and Play again tests. New tests: summaryBackground.spec.ts, standalone cases in homeScreenApp.spec.ts, the 5x card leak test in phone/fullscreenButton.spec.ts. Verified with npm run verify (385 e2e passed) and snaps at 1280x720 and --phone.",
       "review_feedback": ""
     }
