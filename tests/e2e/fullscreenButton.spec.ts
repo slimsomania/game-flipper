@@ -8,6 +8,7 @@ import {
   enterFullscreenOutside,
   expectIcon,
   fsCalls,
+  fsOnRoot,
   leaveFullscreenOutside,
   roundState,
   stubFullscreen,
@@ -61,6 +62,7 @@ for (const screen of SCREENS) {
       await clickFullscreenButton(page);
       await expectIcon(page, true);
       expect(await fsCalls(page)).toEqual({ req: 1, exit: 0 });
+      expect(await fsOnRoot(page)).toEqual([true]);
       expect(await whereWeAre(page)).toEqual(before);
 
       await clickFullscreenButton(page);
@@ -77,6 +79,7 @@ for (const screen of SCREENS) {
       await page.keyboard.press('f');
       await expectIcon(page, true);
       expect(await fsCalls(page)).toEqual({ req: 1, exit: 0 });
+      expect(await fsOnRoot(page)).toEqual([true]);
       await page.keyboard.press('f');
       await expectIcon(page, false);
       expect(await fsCalls(page)).toEqual({ req: 1, exit: 1 });

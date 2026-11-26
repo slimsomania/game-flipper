@@ -13,6 +13,8 @@ export type FullscreenMode = 'ok' | 'reject' | 'unsupported';
 
 interface FsWindow {
   __fs: { req: number; exit: number };
+  /** For each requestFullscreen call: whether it targeted document.documentElement. */
+  __fsOnRoot: boolean[];
   __setFs: (on: boolean) => void;
 }
 
@@ -20,6 +22,7 @@ export async function stubFullscreen(page: Page, mode: FullscreenMode): Promise<
   await page.addInitScript((stubMode) => {
     const w = window as unknown as FsWindow;
     w.__fs = { req: 0, exit: 0 };
+    w.__fsOnRoot = [];
     let element: Element | null = null;
     Object.defineProperty(document, 'fullscreenElement', {
       configurable: true,
@@ -40,6 +43,7 @@ export async function stubFullscreen(page: Page, mode: FullscreenMode): Promise<
     Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, get: () => true });
     Element.prototype.requestFullscreen = function () {
       w.__fs.req++;
+      w.__fsOnRoot.push(this === document.documentElement);
       if (stubMode === 'reject') return Promise.reject(new Error('refused'));
       w.__setFs(true);
       return Promise.resolve();
@@ -53,6 +57,10 @@ export async function stubFullscreen(page: Page, mode: FullscreenMode): Promise<
 }
 
 export const fsCalls = (page: Page) => page.evaluate(() => (window as unknown as FsWindow).__fs);
+
+/** Whether each requestFullscreen call targeted document.documentElement (another target loses the safe-area padding). */
+export const fsOnRoot = (page: Page) =>
+  page.evaluate(() => (window as unknown as FsWindow).__fsOnRoot);
 
 /** The browser leaves fullscreen on its own (Esc, F11, the back gesture): the stub fires the event. */
 export const leaveFullscreenOutside = (page: Page) =>

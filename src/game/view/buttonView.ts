@@ -207,10 +207,19 @@ export function createButton(scene: Phaser.Scene, spec: ButtonSpec): ButtonView 
     show();
   };
   scene.events.on('pause', letGo);
-  scene.events.once('shutdown', () => {
+  const cleanUp = (): void => {
     scene.events.off('pause', letGo);
+    scene.events.off('shutdown', onShutdown);
+    zone.off('destroy', cleanUp);
+  };
+  const onShutdown = (): void => {
+    cleanUp();
     canvas.style.cursor = '';
-  });
+  };
+  scene.events.once('shutdown', onShutdown);
+  // A button destroyed before its scene ends (the home-screen card's Close) must not leave its
+  // listeners behind: a later pause would call show() on destroyed objects.
+  zone.once('destroy', cleanUp);
 
   show();
   return { activate: () => spec.onActivate(), refresh: show, zone };

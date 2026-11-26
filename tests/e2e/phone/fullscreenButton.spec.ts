@@ -4,6 +4,7 @@ import {
   cardOpen,
   enterFullscreenOutside,
   fsCalls,
+  fsOnRoot,
   stubFullscreen,
 } from '../fullscreenHelpers';
 import { gameState, openGame } from '../helpers';
@@ -42,6 +43,7 @@ test('the button is thumb-sized, clear of its neighbours, and a tap asks for ful
   }
   await tapGame(page, button);
   await expect.poll(() => fsCalls(page)).toEqual({ req: 1, exit: 0 });
+  expect(await fsOnRoot(page)).toEqual([true]);
 });
 
 test('a Play again tap asks for fullscreen when the page is not fullscreen', async ({ page }) => {
@@ -52,6 +54,7 @@ test('a Play again tap asks for fullscreen when the page is not fullscreen', asy
   const at = await playAgainPoint(page);
   await page.touchscreen.tap(at.x, at.y);
   await expect.poll(() => fsCalls(page)).toEqual({ req: 1, exit: 0 });
+  expect(await fsOnRoot(page)).toEqual([true]);
   await expect
     .poll(() => page.evaluate(() => window.__FLIPPER__!.activeScenes()))
     .toEqual(['Game']);
@@ -107,5 +110,39 @@ test('with no fullscreen (iPhone) the card blocks the bottle until it is closed'
   await expect.poll(() => cardOpen(page)).toBe(false);
   await push();
   await expect.poll(async () => (await gameState(page)).lastThrow?.source).toBe('touch');
+  expect(errors).toEqual([]);
+});
+
+test('opening and closing the home-screen card 5 times leaves no listeners behind', async ({
+  page,
+}) => {
+  await stubFullscreen(page, 'unsupported');
+  const errors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('pageerror', (error) => errors.push(error.message));
+  await openGame(page, '?seed=7');
+  await page.evaluate(() => window.__FLIPPER__!.pause());
+  const listeners = () =>
+    page.evaluate(() => {
+      const events = window.__FLIPPER__!.phaserGame().scene.getScene('Game').events;
+      return { pause: events.listenerCount('pause'), shutdown: events.listenerCount('shutdown') };
+    });
+  const before = await listeners();
+  const button = await buttonNamed(page, 'fullscreenButton');
+  for (let i = 0; i < 5; i++) {
+    await tapGame(page, button);
+    await expect.poll(() => cardOpen(page)).toBe(true);
+    await tapGame(page, await buttonNamed(page, 'homeCardClose'));
+    await expect.poll(() => cardOpen(page)).toBe(false);
+  }
+  expect(await listeners()).toEqual(before);
+
+  // A pause and a resume afterwards touch no destroyed button.
+  await page.keyboard.press('Escape');
+  await expect.poll(() => page.evaluate(() => window.__FLIPPER__!.gamePaused())).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => page.evaluate(() => window.__FLIPPER__!.gamePaused())).toBe(false);
   expect(errors).toEqual([]);
 });

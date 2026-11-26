@@ -46,7 +46,9 @@ function detectHomeScreenApp(): boolean {
   if (typeof document !== 'undefined' && document.fullscreenElement != null) return false;
   return (
     matchMedia('(display-mode: fullscreen)').matches ||
-    matchMedia('(display-mode: standalone)').matches
+    matchMedia('(display-mode: standalone)').matches ||
+    // older iOS Safari's flag for a home-screen app
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
   );
 }
 

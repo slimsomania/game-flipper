@@ -19,9 +19,9 @@ export interface SummaryView {
  * The round summary: a white card, centered on the plain light background, with "Round over", the
  * round's points as the biggest line, its landings out of its throws, the best score (with "New
  * best!" under it when this round set it), the Play again and Title buttons side by side and a line
- * about the keys (they are for Play again; Title is a click). The
- * background is the same light color as in play, drawn over the Game scene, which waits underneath;
- * the card is what stands out.
+ * about the keys (they are for Play again; Title is a click). The camera has no background, so the
+ * page's gradient shows through as on the other screens; the SummaryScene hides the Game scene
+ * underneath while the summary is open.
  */
 export function createSummaryView(
   scene: Phaser.Scene,
@@ -31,9 +31,6 @@ export function createSummaryView(
 ): SummaryView {
   const layout = SUMMARY_LAYOUT;
   const texts = summaryTexts(state, detectInputKind());
-
-  // An opaque camera background hides the paused Game scene (table, last bottle, HUD) completely.
-  scene.cameras.main.setBackgroundColor(COLORS.background);
 
   const { x, y, width, height, radius } = layout.card;
   scene.add

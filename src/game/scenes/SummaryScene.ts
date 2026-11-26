@@ -37,6 +37,12 @@ export class SummaryScene extends Phaser.Scene {
   create(data: SummaryData): void {
     this.sim = data.sim;
     this.closing = false;
+    // The camera is transparent so the page gradient shows: hide the paused Game scene (table,
+    // bottle, HUD) instead of covering it. It is shown again when the summary closes.
+    this.scene.setVisible(false, 'Game');
+    this.events.once('shutdown', () => {
+      if (this.scene.get('Game')) this.scene.setVisible(true, 'Game');
+    });
     // The round's score is kept as the best here, once, when the summary opens (not on Play again).
     const snapshot = this.sim.snapshot();
     const { best, isNewBest } = saveStore().recordRound(snapshot.score);

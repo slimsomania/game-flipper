@@ -116,3 +116,27 @@ for (const [mode, shown] of [
     expect(button !== null).toBe(shown);
   });
 }
+
+/** Make navigator.standalone (older iOS Safari's home-screen flag) answer `value`; no display-mode matches. */
+async function stubStandalone(page: Page, value: boolean | undefined): Promise<void> {
+  await stubDisplayMode(page, null);
+  await page.addInitScript((standalone) => {
+    Object.defineProperty(navigator, 'standalone', { configurable: true, get: () => standalone });
+  }, value);
+}
+
+for (const [value, shown] of [
+  [true, false],
+  [false, true],
+  [undefined, true],
+] as const) {
+  test(`navigator.standalone ${String(value)}: the fullscreen button is ${shown ? 'shown' : 'hidden'}`, async ({
+    page,
+  }) => {
+    await stubStandalone(page, value);
+    await openTitle(page, '?testhooks&seed=7');
+    await settleInput(page);
+    const button = await page.evaluate(() => window.__FLIPPER__!.fullscreenButton());
+    expect(button !== null).toBe(shown);
+  });
+}

@@ -1,5 +1,6 @@
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import { TITLE_LAYOUT } from '../../../src/game/view/titleLayout';
+import { fsCalls, fsOnRoot, stubFullscreen } from '../fullscreenHelpers';
 import { openTitle } from '../helpers';
 import { gamePoint } from '../mouseHelpers';
 
@@ -151,20 +152,14 @@ test('the canvas stays inside the safe-area insets', async ({ page }) => {
 test('the Play tap requests fullscreen once; a refusal still starts the round', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    const w = window as unknown as { __fs: number };
-    w.__fs = 0;
-    Element.prototype.requestFullscreen = () => {
-      w.__fs++;
-      return Promise.reject(new Error('refused'));
-    };
-  });
+  await stubFullscreen(page, 'reject');
   const errors = await openTitle(page, '?seed=7');
   const at = await gamePoint(page, TITLE_LAYOUT.play.x, TITLE_LAYOUT.play.y);
   await page.touchscreen.tap(at.x, at.y);
   await expect
     .poll(() => page.evaluate(() => window.__FLIPPER__!.activeScenes()))
     .toEqual(['Game']);
-  expect(await page.evaluate(() => (window as unknown as { __fs: number }).__fs)).toBe(1);
+  expect((await fsCalls(page)).req).toBe(1);
+  expect(await fsOnRoot(page)).toEqual([true]);
   expect(errors).toEqual([]);
 });
