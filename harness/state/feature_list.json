@@ -1218,7 +1218,7 @@
         "F053"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built: HowToScene takes {from: Title|Pause|Game} and resumes that scene on close; the Pause overlay has a How to play button (pauseLayout/pauseView/pauseText, card 640 high, four 88x88 buttons on a 108 pitch); GameScene.openHowTo (H) mirrors openPause. Verified by tests/e2e/howToInGame.spec.ts, the updated pause/thumb specs and unit layout tests, plus snaps at 1280x720 and --phone. Assumption: closing a card opened with H during play goes straight back to play, not to the Pause overlay (the design lists the Title, the Pause overlay and the first throw as the screens to return to; play is the screen H was pressed on). Assumption: H does nothing on the summary, since nothing there is in progress.",
       "review_feedback": ""
     },

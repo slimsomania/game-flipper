@@ -2472,3 +2472,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F055 → needs_review
 - Issues / follow-ups: updated pause.spec's expected texts and thumb.spec's pause buttons for the new button (not weakened). The paused Game's pause-button state isn't touched. ARCHITECTURE.md still lacks the How to play modules.
 - Next: F056 can reuse `HowToData.from`; remember the Pause overlay's H key is not bound (only the button opens the card from there).
+
+> [harness] session 162 · builder F055 · todo → needs_review · ok · verify passed · 1 commit(s) · 76 tool calls · 11m 35s · ~$0.80 API-equivalent
