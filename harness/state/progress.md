@@ -2498,3 +2498,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F056 → needs_review
 - Issues / follow-ups: none
 - Next: F057; ARCHITECTURE.md still lacks the How to play modules.
+
+> [harness] session 165 · builder F056 · todo → todo · ok · verify FAILED · 1 commit(s) · 21 tool calls · 1m 5s · ~$0.21 API-equivalent
