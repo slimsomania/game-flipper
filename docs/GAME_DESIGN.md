@@ -15,7 +15,7 @@ status: ready
 
 # Flipper: game design
 
-Created and designed by Vlas.
+Idea by Vlas. Developed by Oleksii Kozlovskyi.
 
 ## 1. Concept
 
