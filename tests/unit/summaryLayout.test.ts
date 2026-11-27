@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_WIDTH } from '../../src/core/constants';
+import { FULLSCREEN_BUTTON } from '../../src/game/view/fullscreenLayout';
 import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import { SUMMARY_LAYOUT } from '../../src/game/view/summaryLayout';
 
@@ -30,8 +31,9 @@ describe('the speaker button on the round summary', () => {
     }
   });
 
-  it('is on the canvas, in the top-right corner', () => {
-    expect(speaker.right).toBe(GAME_WIDTH - MUTE_BUTTON.margin);
+  it('is on the canvas, in the top-right row, just left of the fullscreen button in the corner', () => {
+    expect(speaker.right).toBeLessThan(FULLSCREEN_BUTTON.x - FULLSCREEN_BUTTON.width / 2);
+    expect(FULLSCREEN_BUTTON.x + FULLSCREEN_BUTTON.width / 2).toBe(GAME_WIDTH - MUTE_BUTTON.margin);
     expect(speaker.top).toBe(MUTE_BUTTON.margin);
   });
 });

@@ -4,6 +4,7 @@ import { COLORS, FONT_FAMILY } from '../theme';
 import { createButton, type ButtonView } from './buttonView';
 import { PAUSE_LAYOUT } from './pauseLayout';
 import type { PauseTexts } from './pauseText';
+import { dimPageWhile } from './pageDim';
 
 const DIM_DEPTH = 0;
 const CARD_DEPTH = 1;
@@ -41,6 +42,7 @@ export function createPauseView(
     .setDepth(DIM_DEPTH)
     .fillStyle(layout.dim.color, layout.dim.alpha)
     .fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  dimPageWhile(scene, layout.dim.color, layout.dim.alpha);
 
   const { x, y, width, height, radius } = layout.card;
   scene.add

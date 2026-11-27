@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_HEIGHT, GAME_WIDTH } from '../../src/core/constants';
-import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
+import { FULLSCREEN_BUTTON } from '../../src/game/view/fullscreenLayout';
+import { CORNER_HIT_GAP, MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import {
   ICON_HALF,
   ICON_STROKE,
@@ -99,8 +100,11 @@ describe('MUTE_BUTTON layout', () => {
   const top = y - height / 2;
   const bottom = y + height / 2 + lip;
 
-  it('sits in the top-right corner, one margin from the top and the right edge', () => {
-    expect(right).toBe(GAME_WIDTH - margin);
+  // The corner row reads pause, speaker, fullscreen: the fullscreen button has the corner itself.
+  it('sits one margin from the top, next to the fullscreen button in the top-right corner', () => {
+    expect(FULLSCREEN_BUTTON.x + FULLSCREEN_BUTTON.width / 2).toBe(GAME_WIDTH - margin);
+    expect(FULLSCREEN_BUTTON.y).toBe(y);
+    expect(x + MUTE_BUTTON.hitWidth + CORNER_HIT_GAP).toBe(FULLSCREEN_BUTTON.x);
     expect(top).toBe(margin);
   });
 

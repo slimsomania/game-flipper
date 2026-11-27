@@ -5,6 +5,7 @@ import { createButton } from './buttonView';
 import { HOW_TO_LAYOUT } from './howToLayout';
 import { createHowToPictures } from './howToPictureView';
 import type { HowToTexts } from './howToText';
+import { dimPageWhile } from './pageDim';
 
 const DIM_DEPTH = 0;
 const CARD_DEPTH = 1;
@@ -26,6 +27,7 @@ export function createHowToView(
     .setDepth(DIM_DEPTH)
     .fillStyle(layout.dim.color, layout.dim.alpha)
     .fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  dimPageWhile(scene, layout.dim.color, layout.dim.alpha);
   const { x, y, width, height, radius } = layout.card;
   scene.add
     .graphics()

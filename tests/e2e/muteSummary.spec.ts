@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { hitBox } from '../../src/game/view/buttonView';
+import { FULLSCREEN_BUTTON } from '../../src/game/view/fullscreenLayout';
 import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import { SUMMARY_LAYOUT } from '../../src/game/view/summaryLayout';
 import { FLIPPED } from '../shared';
@@ -149,7 +150,9 @@ test.describe('on the round summary', () => {
     expect(box).toMatchObject({ x: MUTE_BUTTON.x, width: MUTE_BUTTON.hitWidth });
     expect(box.x + box.width / 2).toBe(area.right);
     expect(box.y - box.height / 2).toBe(area.top);
-    expect(MUTE_BUTTON.x + MUTE_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
+    // The fullscreen button has the corner; the speaker is right next to it.
+    expect(FULLSCREEN_BUTTON.x + FULLSCREEN_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
+    expect(area.right).toBeLessThan(hitBox(FULLSCREEN_BUTTON).left);
     expect(box.x - box.width / 2).toBeGreaterThan(card.x + card.width / 2);
     for (const button of [playAgain, title]) {
       expect(box.x - box.width / 2).toBeGreaterThan(button.x + button.width / 2);

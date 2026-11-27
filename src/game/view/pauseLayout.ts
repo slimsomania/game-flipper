@@ -1,15 +1,15 @@
 import { GAME_HEIGHT, GAME_WIDTH } from '../../core/constants';
-import { MUTE_BUTTON } from './muteLayout';
+import { CORNER_HIT_GAP, MUTE_BUTTON } from './muteLayout';
 
 /**
  * Where the pause button and the pause overlay's parts are on the 1280x720 canvas (game pixels).
  * No Phaser in here, so e2e tests can import it to click on the buttons.
  *
- * The pause button is the speaker's twin, in the same row and to its left. The overlay dims the
- * whole canvas and puts a white card in the middle with the four buttons stacked in it.
+ * The pause button is the speaker's twin, in the same row and to its left: the leftmost of the
+ * corner row, shown only in play. The overlay dims the whole canvas and puts a white card in the
+ * middle with the four buttons stacked in it.
  */
-/** Between the two clickable areas (not the faces, which are smaller): they never overlap. */
-const HIT_GAP = 4;
+const HIT_GAP = CORNER_HIT_GAP;
 
 /** The corner button: pauses the game in play, and resumes it from the overlay. `x`, `y` are the middle of its face. */
 export const PAUSE_BUTTON = {
