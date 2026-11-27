@@ -2395,3 +2395,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F051 -> needs_review
 - Issues / follow-ups: perf test is wall-clock and flaky under load; the farming margin (9.9% vs 10%) is thin, so any physics retune must re-run scripts/flip-windows.ts.
 - Next: reviewer: run npx tsx scripts/flip-windows.ts capTipPoints=5 to see 14.8%, then the default for 9.9%.
+
+> [harness] session 153 · builder F051 · todo → needs_review · ok · verify passed · 1 commit(s) · 12 tool calls · 57s · ~$0.19 API-equivalent
