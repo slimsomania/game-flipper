@@ -2375,3 +2375,6 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F051 → needs_review
 - Issues / follow-ups: the margin is thin (9.9% vs 10%): any later physics retune must re-run flip-windows.ts. The message still reads 'Cap landing! +N' (F052 changes it). A tip-over now says '+1'. I did not run `npm run snap` (no visual change besides the number).
 - Next: reviewer: run `npx tsx scripts/flip-windows.ts capTipPoints=5` and confirm 14.8%, then the default for 9.9%.
+
+> [harness] session 151 · builder F051 · todo → todo · ok · verify FAILED · 1 commit(s) · 67 tool calls · 32m 35s · ~$0.80 API-equivalent
+> [harness] corrected: F051.attempts is counted by the harness (reverted)
