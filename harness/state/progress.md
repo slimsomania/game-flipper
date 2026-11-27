@@ -2465,3 +2465,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Notes for later: (1) The picture numbers live in src/game/view/howToPicture.ts, not src/core. They are pure presentation numbers, and the architecture test passes, so that's fine. (2) The e2e bar boxes are the full track (the same height for both). The short and tall difference is checked only on the fills in the unit test, which matches the criterion's wording. (3) docs/ARCHITECTURE.md still lacks the How to play modules (howToText/Layout/View/Picture/PictureView, HowToScene).
 
 > [harness] session 161 · reviewer F054 · needs_review → done · ok · 1 commit(s) · 15 tool calls · 4m 5s · ~$0.53 API-equivalent
+
+## Session 162 · builder · F055 Open How to play from the Pause overlay and with H in play
+- Did: `HowToScene` now takes `{ from: 'Title' | 'Pause' | 'Game' }` and resumes that scene when it closes (Esc, H, Close, outside click), so Esc closes only the card. The Pause overlay has a How to play button (`pauseLayout.ts` card 640 high, four 88-high buttons on a 108 px pitch; `pauseText.ts`, `pauseView.ts`, `PauseScene.openHowTo`). `GameScene.openHowTo` (H) follows `openPause`: lets go of the power key and the mouse grab, refuses once the round is over, pauses Game. Closing from H returns straight to play. Title passes `from: 'Title'`.
+- Verified: format:check, typecheck, npm test (978 pass), build. E2E: new tests/e2e/howToInGame.spec.ts (4 closers from the overlay, aiming + held Up, flight step for step, Esc, H on summary, H as the round ends), howTo, pause, pauseFreeze, pauseActions specs (desktop); phone thumb/readable pause cases (10 pass). Snaps at 1280x720 and --phone: four buttons fit the card, card over the overlay reads fine.
+- Status: F055 → needs_review
+- Issues / follow-ups: updated pause.spec's expected texts and thumb.spec's pause buttons for the new button (not weakened). The paused Game's pause-button state isn't touched. ARCHITECTURE.md still lacks the How to play modules.
+- Next: F056 can reuse `HowToData.from`; remember the Pause overlay's H key is not bound (only the button opens the card from there).

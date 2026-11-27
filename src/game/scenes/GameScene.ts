@@ -26,6 +26,7 @@ import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createReplayLabelView, type ReplayLabelView } from '../view/replayLabelView';
 import { createResultView, type ResultView } from '../view/resultView';
 import { createTableView } from '../view/tableView';
+import type { HowToData } from './HowToScene';
 import type { PauseData } from './PauseScene';
 import type { SummaryData } from './SummaryScene';
 
@@ -98,6 +99,9 @@ export class GameScene extends Phaser.Scene {
 
     bindGameInput(this, this.sim);
     bindPauseKeys(this, () => this.openPause());
+    this.input.keyboard?.on('keydown-H', (event: KeyboardEvent) => {
+      if (!event.repeat) this.openHowTo();
+    });
 
     this.draw(this.sim.snapshot());
     markReady();
@@ -148,6 +152,21 @@ export class GameScene extends Phaser.Scene {
     this.sim.mouse.cancel();
     this.effectsView.stop();
     this.scene.launch('Pause', { sim: this.sim } satisfies PauseData);
+    this.scene.pause();
+  }
+
+  /**
+   * H opens the How to play card over the game: the same path as `openPause` (keys and a grab let
+   * go, nothing once the round is over or while a pause is on its way), with the card in place of
+   * the overlay. Closing the card resumes the game exactly where it stopped.
+   */
+  private openHowTo(): void {
+    if (this.pauseRequested || this.sim.phase === 'roundOver') return;
+    this.pauseRequested = true;
+    this.sim.powerMeter.release();
+    this.sim.mouse.cancel();
+    this.effectsView.stop();
+    this.scene.launch('HowTo', { from: 'Game' } satisfies HowToData);
     this.scene.pause();
   }
 

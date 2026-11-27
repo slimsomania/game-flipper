@@ -6,7 +6,7 @@ import { MUTE_BUTTON } from './muteLayout';
  * No Phaser in here, so e2e tests can import it to click on the buttons.
  *
  * The pause button is the speaker's twin, in the same row and to its left. The overlay dims the
- * whole canvas and puts a white card in the middle with the three buttons stacked in it.
+ * whole canvas and puts a white card in the middle with the four buttons stacked in it.
  */
 /** Between the two clickable areas (not the faces, which are smaller): they never overlap. */
 const HIT_GAP = 4;
@@ -33,14 +33,15 @@ const row = (y: number) => ({ x: CENTER_X, y, width: BUTTON_WIDTH, height: BUTTO
 export const PAUSE_LAYOUT = {
   /** The dark veil over the game (a Graphics fill, not a Rectangle, so it is never mistaken for the result flash). */
   dim: { color: 0x14202e, alpha: 0.55 },
-  card: { x: CENTER_X, y: GAME_HEIGHT / 2, width: CARD_WIDTH, height: 540, radius: 28 },
+  card: { x: CENTER_X, y: GAME_HEIGHT / 2, width: CARD_WIDTH, height: 640, radius: 28 },
   /** Offset of the card's soft shadow. */
   shadow: 8,
-  titleY: 168,
+  titleY: 120,
   /** Font size of the "Paused" title. */
   titleSize: 60,
-  resume: row(290),
-  restart: row(402),
-  quit: row(514),
-  hintY: 596,
+  resume: row(210),
+  howTo: row(318),
+  restart: row(426),
+  quit: row(534),
+  hintY: 628,
 } as const;

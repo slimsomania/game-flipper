@@ -113,7 +113,7 @@ test.describe('the overlay', () => {
 
     const texts = await visibleTexts(page);
     expect([...texts].sort()).toEqual(
-      ['Paused', 'Resume', 'Restart', 'Quit to title', 'Esc or P to resume'].sort(),
+      ['Paused', 'Resume', 'How to play', 'Restart', 'Quit to title', 'Esc or P to resume'].sort(),
     );
     // The veil is not mistaken for the result flash.
     expect(await visibleFlash(page)).toBeNull();

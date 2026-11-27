@@ -11,12 +11,14 @@ const TEXT_DEPTH = 2;
 
 export interface PauseActions {
   onResume: () => void;
+  onHowTo: () => void;
   onRestart: () => void;
   onQuit: () => void;
 }
 
 export interface PauseView {
   resume: ButtonView;
+  howTo: ButtonView;
   restart: ButtonView;
   quit: ButtonView;
 }
@@ -66,6 +68,7 @@ export function createPauseView(
     createButton(scene, { ...spot, name, label, fontSize: 38, depth: TEXT_DEPTH, onActivate });
   const view = {
     resume: button(layout.resume, 'resumeButton', texts.resumeLabel, actions.onResume),
+    howTo: button(layout.howTo, 'howToButton', texts.howToLabel, actions.onHowTo),
     restart: button(layout.restart, 'restartButton', texts.restartLabel, actions.onRestart),
     quit: button(layout.quit, 'quitButton', texts.quitLabel, actions.onQuit),
   };

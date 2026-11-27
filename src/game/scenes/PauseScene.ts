@@ -7,6 +7,7 @@ import { createMuteControl } from '../view/muteButtonView';
 import { createPauseButton } from '../view/pauseButtonView';
 import { createPauseView } from '../view/pauseView';
 import { pauseTexts } from '../view/pauseText';
+import type { HowToData } from './HowToScene';
 import { quitToTitle } from './toTitle';
 
 export interface PauseData {
@@ -40,6 +41,7 @@ export class PauseScene extends Phaser.Scene {
     this.closing = false;
     createPauseView(this, pauseTexts(detectInputKind()), {
       onResume: () => this.resume(),
+      onHowTo: () => this.openHowTo(),
       onRestart: () => this.restart(),
       onQuit: () => this.quit(),
     });
@@ -55,6 +57,13 @@ export class PauseScene extends Phaser.Scene {
     this.closing = true;
     this.scene.resume('Game');
     this.scene.stop();
+  }
+
+  /** The How to play card opens over this overlay, which waits, paused, until the card closes. */
+  private openHowTo(): void {
+    if (this.closing || !this.scene.isActive()) return;
+    this.scene.launch('HowTo', { from: 'Pause' } satisfies HowToData);
+    this.scene.pause();
   }
 
   private restart(): void {

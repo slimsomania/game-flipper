@@ -39,6 +39,7 @@ export async function clickAt(page: Page, spot: { x: number; y: number }): Promi
 /** The corner button: pause while playing, resume while paused. */
 export const clickPauseButton = (page: Page) => clickAt(page, PAUSE_BUTTON);
 export const clickResume = (page: Page) => clickAt(page, PAUSE_LAYOUT.resume);
+export const clickHowTo = (page: Page) => clickAt(page, PAUSE_LAYOUT.howTo);
 export const clickRestart = (page: Page) => clickAt(page, PAUSE_LAYOUT.restart);
 export const clickQuit = (page: Page) => clickAt(page, PAUSE_LAYOUT.quit);
 

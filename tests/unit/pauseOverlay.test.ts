@@ -15,6 +15,7 @@ describe('pauseTexts', () => {
     expect(pauseTexts()).toEqual({
       title: 'Paused',
       resumeLabel: 'Resume',
+      howToLabel: 'How to play',
       restartLabel: 'Restart',
       quitLabel: 'Quit to title',
       keyHint: 'Esc or P to resume',
@@ -89,8 +90,8 @@ describe('PAUSE_BUTTON layout', () => {
 });
 
 describe('PAUSE_LAYOUT', () => {
-  const { card, resume, restart, quit } = PAUSE_LAYOUT;
-  const buttons = [resume, restart, quit];
+  const { card, resume, howTo, restart, quit } = PAUSE_LAYOUT;
+  const buttons = [resume, howTo, restart, quit];
   const top = (b: { y: number; height: number }) => b.y - b.height / 2;
   const bottom = (b: { y: number; height: number }) => b.y + b.height / 2 + BUTTON_LIP;
 
@@ -100,8 +101,9 @@ describe('PAUSE_LAYOUT', () => {
     for (const button of buttons) expect(button.x).toBe(GAME_WIDTH / 2);
   });
 
-  it('stacks Resume, Restart and Quit to title top to bottom with a clear gap', () => {
-    expect(top(restart)).toBeGreaterThanOrEqual(bottom(resume) + 8);
+  it('stacks Resume, How to play, Restart and Quit to title top to bottom with a clear gap', () => {
+    expect(top(howTo)).toBeGreaterThanOrEqual(bottom(resume) + 8);
+    expect(top(restart)).toBeGreaterThanOrEqual(bottom(howTo) + 8);
     expect(top(quit)).toBeGreaterThanOrEqual(bottom(restart) + 8);
   });
 

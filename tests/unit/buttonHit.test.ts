@@ -15,6 +15,7 @@ const screens: Record<string, Record<string, HitSource>> = {
   play: { pause: PAUSE_BUTTON, mute: MUTE_BUTTON },
   pause: {
     resume: PAUSE_LAYOUT.resume,
+    howTo: PAUSE_LAYOUT.howTo,
     restart: PAUSE_LAYOUT.restart,
     quit: PAUSE_LAYOUT.quit,
     cornerResume: PAUSE_BUTTON,
