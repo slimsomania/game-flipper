@@ -4,11 +4,6 @@
 
 Throw a bottle, flip it in the air, land it upright. Every bottle holds a different amount of water, and the water level is your only clue to how hard to throw. A double flip scores more than a single, a triple more still, but their windows are narrower. Plays in a desktop browser and on phones held sideways.
 
-## Credits
-
-- **Idea:** Vlas, who said we should make a game about flipping a bottle.
-- **Development:** Oleksii Kozlovskyi ([slimsomania](https://github.com/slimsomania)), building it feature by feature with autonomous Claude Code agents.
-
 ## About this repository
 
 Players see the game as Flipsy; inside the repository it is called Flipper (package name, code, docs, harness). It is built feature by feature by autonomous Claude Code agents driven by the harness in `harness/`.
