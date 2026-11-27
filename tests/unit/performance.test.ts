@@ -4,6 +4,11 @@ import { Simulation } from '../../src/core/simulation';
 /** F028: a full 5 s throw (300 steps, sloshing on) must be cheap to simulate. */
 describe('simulation cost', () => {
   it('300 steps of a throw take under 50 ms (median of 5 runs)', () => {
+    // Warm-up (not timed): a fresh worker starts with cold JIT code, and in the full suite the
+    // workers share the CPU with heavy files, so the first throw is not representative.
+    const warm = new Simulation({ seed: 99, tuning: { sloshing: 1 } });
+    warm.throwBottle(70);
+    for (let i = 0; i < 300; i++) warm.step();
     const times: number[] = [];
     for (let run = 0; run < 5; run++) {
       const sim = new Simulation({ seed: 1 + run, tuning: { sloshing: 1 } });

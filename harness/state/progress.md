@@ -2378,3 +2378,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 151 · builder F051 · todo → todo · ok · verify FAILED · 1 commit(s) · 67 tool calls · 32m 35s · ~$0.80 API-equivalent
 > [harness] corrected: F051.attempts is counted by the harness (reverted)
+
+## Session 152 · builder · F051 Score a cap landing 5 and keep it from being farmed
+- Did: no change to the F051 rules. The only failure of session 151's verify was `tests/unit/performance.test.ts` (median of 5 runs 144 ms vs 50 ms). Added an untimed warm-up throw to that test (threshold unchanged).
+- Verified: the perf test passes alone (886 ms run). In two full `npm test` runs it failed again (81 ms, 121 ms median; run times 16-437 ms) while the machine was heavily loaded (suite took 63 s and 138 s vs 31 s in session 151; worker startup 0.6-2.2 s vs 0.4 s). Format and typecheck pass. The e2e step of verify was not reached. A first verify run was killed by the 10 min background limit.
+- Status: F051 → todo (verify not green here)
+- Issues / follow-ups: the perf test is a wall-clock test that shares the CPU with the 20-30 s difficulty and flip-windows script tests; it fails whenever the box is busy. Could not inspect processes (no permission), so an orphan from my killed verify run may have been adding load. Suggest the human check for stray node/chromium processes, or run the perf test in its own vitest project/serial pass.
+- Next: rerun `npm run verify` on an idle machine; if the only failure is performance.test.ts, consider moving it out of the parallel pool.
