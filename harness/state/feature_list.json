@@ -1131,9 +1131,9 @@
       "depends_on": [
         "F035"
       ],
-      "status": "todo",
-      "attempts": 0,
-      "notes": "Assumption: 'a full turn in the air' is read as the judge's existing count for a cap, `turns` = completed full turns (Math.trunc of rotation), so a half-turn tip-over has turns 0. The 10% limit is measured per water level, as the design says 'at any water level', not averaged over levels. The planner could not run the measurement in session 150; the 2026-11-22 decision says caps are about 3% of all throws, half of them half-turn tip-overs.",
+      "status": "needs_review",
+      "attempts": 1,
+      "notes": "Built: tuning `capPoints` 5 and `capTipPoints` 1 (tuning.ts), LandingJudge scores a cap capPoints, or capTipPoints with 0 full turns (outcome.ts), `expected.worstCap` {water, aim, chance} in difficulty.ts printed by scripts/flip-windows.ts. Measured: tip-over at 5 gives a worst chance of 14.8% (water 80%, aim 14), over the 10% limit, so the fallback was applied and kept: with the tip-over at 1 the worst is 9.9% (water 90%, aim 78). Points rule: practiced 6.02 vs best fixed 5.11 per 10 before; 6.03 vs 5.60 after (fallback); still higher. Physics untouched; unit and e2e tests updated (cap scores 5 / 1) and added; verify result in progress.md.",
       "review_feedback": ""
     },
     {

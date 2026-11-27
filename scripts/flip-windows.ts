@@ -149,4 +149,9 @@ console.log(
 console.log(
   `expected points per 10, same error: practiced ${expected.practicedPointsPer10.toFixed(2)}, best fixed power (${expected.bestFixedAim.aim}) ${expected.bestFixedAim.pointsPer10.toFixed(2)}`,
 );
+const capPts = tuning.capPoints ?? DEFAULT_TUNING.capPoints;
+const tipPts = tuning.capTipPoints ?? DEFAULT_TUNING.capTipPoints;
+console.log(
+  `worst cap farming (cap ${capPts} points, tip-over ${tipPts}): water ${Math.round(expected.worstCap.water * 100)}%, aim ${expected.worstCap.aim}, ${percent(expected.worstCap.chance)} of throws land on the cap for ${capPts} (limit 10.0%)`,
+);
 console.log(`(power 0 to 100 in steps of 1; ${((Date.now() - started) / 1000).toFixed(1)} s)`);

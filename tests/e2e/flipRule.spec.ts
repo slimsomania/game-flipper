@@ -67,9 +67,9 @@ test('a no flip after a success leaves the score where it was', async ({ page })
   expect(errors).toEqual([]);
 });
 
-// Design section 2 (2026-11-22): resting on the cap is a success worth its completed full turns,
-// at least 1. Placed upside down on the table, with 0 and with 2 turns credited.
-test('a landing on the cap shows "Cap landing!" with the green flash and scores its turns', async ({
+// Design section 2 (2026-11-26): resting on the cap is a success worth 5, or 1 for a half-turn
+// tip-over with no full turn (F051). Placed upside down on the table, with 0 and with 2 turns.
+test('a landing on the cap shows "Cap landing!" with the green flash and scores 5 (1 for a tip-over)', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -86,9 +86,10 @@ test('a landing on the cap shows "Cap landing!" with the green flash and scores 
 
   await page.evaluate(() => window.__FLIPPER__!.skip());
   const second = await land(page, { ...onCap, turns: 2 });
-  expect(second.outcome).toMatchObject({ result: 'success', reason: 'cap', turns: 2, points: 2 });
-  expect(second.score).toBe(3);
-  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +2']);
+  // After full turns the cap scores a flat 5 (F051), not its turns.
+  expect(second.outcome).toMatchObject({ result: 'success', reason: 'cap', turns: 2, points: 5 });
+  expect(second.score).toBe(6);
+  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +5']);
   expect(errors).toEqual([]);
 });
 
@@ -161,9 +162,9 @@ test('a real throw lands by the same rules: its message and score follow its tur
   const { result, reason, turns, points } = decided.outcome!;
 
   // A real throw has no credit: its points are its own turns, and 0 turns can never land upright.
-  // On the cap (a success since 2026-11-22) it scores its completed turns, at least 1.
+  // On the cap it scores a flat 5, or 1 for a tip-over with no full turn (F051).
   if (reason === 'cap') {
-    expect(points).toBe(Math.max(1, Math.abs(turns)));
+    expect(points).toBe(turns === 0 ? 1 : 5);
   } else {
     expect(points).toBe(result === 'success' ? turns : 0);
     if (result === 'success') expect(turns).toBeGreaterThanOrEqual(1);

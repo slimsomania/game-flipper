@@ -70,6 +70,10 @@ export interface Tuning {
   uprightHoldSeconds: number;
   /** Resting more than this many degrees from upright is on the cap; any other tilt is a side. */
   capAngleDeg: number;
+  /** Points a bottle resting on its cap scores (design 2026-11-26), whatever its turns. */
+  capPoints: number;
+  /** Points a cap landing with no completed full turn (a half-turn tip-over) scores. */
+  capTipPoints: number;
   /** "Nearly still" means slower than this, in m/s... */
   stillSpeed: number;
   /** ...and turning slower than this, in rad/s. */
@@ -219,6 +223,10 @@ export const DEFAULT_TUNING: Readonly<Tuning> = {
   timeoutSeconds: 5,
   // Past 135° from upright the bottle is on its cap, otherwise on its side.
   capAngleDeg: 135,
+  capPoints: 5,
+  // Measured (scripts/flip-windows.ts): with the tip-over at 5 the worst fixed aim lands the cap
+  // 14.8% of throws (water 80%, aim 14), above the design's 10% limit; at 1 it is 9.9%.
+  capTipPoints: 1,
   // Planck puts a body to sleep below 0.01 m/s and 2°/s; "nearly still" is a little looser.
   stillSpeed: 0.05,
   stillSpin: 0.1,

@@ -351,6 +351,36 @@ describe('the benchmark of the default tuning', () => {
     );
   });
 
+  // Design section 3 (2026-11-26, F051): no fixed aim may land on the cap for the full capPoints on
+  // more than 1 throw in 10 at any water level. Measured with the tip-over at 5: 14.8% (water 80%,
+  // aim 14), so the half-turn tip-over scores capTipPoints (1); with it, 9.9%.
+  it('no water level and fixed aim lands on the cap for capPoints on more than 10% of throws', () => {
+    const { water, aim, chance } = result.expected.worstCap;
+    expect(chance, `water ${water}, aim ${aim}`).toBeLessThanOrEqual(0.1);
+    expect(chance).toBeGreaterThan(0);
+  });
+
+  it('the cap-farming measure counts only caps that score capPoints, at the worst water and aim', () => {
+    const sweep = (water: number) =>
+      Array.from({ length: 101 }, (_, power) => {
+        const cap = power >= 40 && power < 60;
+        return {
+          power,
+          result: cap ? ('success' as const) : ('fail' as const),
+          reason: cap ? ('cap' as const) : ('side' as const),
+          turns: 0,
+          // Powers 40 to 49 are tip-overs worth 1, 50 to 59 are full-turn caps worth 5.
+          points: cap ? (power >= 50 ? 5 : 1) : 0,
+          water,
+        };
+      });
+    const { expected } = runBenchmark({ bottles: 5, sweep });
+    // Aimed at 54.5 (aim 54 or 55) with sigma 8: the chance of 50 to 59 (rounded: 49.5 to 59.5).
+    expect(expected.worstCap.aim).toBe(54); // 54 and 55 tie by symmetry; the lowest wins
+    const exact = normalCdf((59.5 - 54) / 8) - normalCdf((49.5 - 54) / 8);
+    expect(expected.worstCap.chance).toBeCloseTo(exact, 3);
+  });
+
   it('the expected rates are near what the 200 throws of a seed land (the draw is only luck)', () => {
     // 200 throws at about 50% land with a standard deviation of 3.5 points: 12 points is 3.4 σ.
     expect(Math.abs(result.practiced.landingRate - result.expected.practiced)).toBeLessThan(0.12);

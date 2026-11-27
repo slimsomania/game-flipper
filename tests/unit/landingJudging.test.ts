@@ -45,9 +45,9 @@ describe('judging a landing in the simulation', () => {
     }
   });
 
-  // Design section 2 (2026-11-22): resting on the cap is a success; it scores its completed full
-  // turns, at least 1. This bottle was placed on its cap, so it turned no full turn: 1 point.
-  it('judges a bottle upside down on its cap a success, reason cap, worth 1 point', () => {
+  // Design section 2 (2026-11-26): a cap landing after a full turn scores a flat `capPoints` (5);
+  // a half-turn tip-over (no full turn) scores `capTipPoints` (1), the farming fallback of F051.
+  it('judges a bottle on its cap with no full turn a success and a landing worth capTipPoints', () => {
     const sim = placed({
       x: TABLE_CENTER_X,
       y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02,
@@ -58,8 +58,40 @@ describe('judging a landing in the simulation', () => {
       result: 'success',
       reason: 'cap',
       turns: 0,
-      points: 1,
+      points: DEFAULT_TUNING.capTipPoints,
     });
+    expect(DEFAULT_TUNING.capTipPoints).toBe(1);
+    expect(sim.snapshot()).toMatchObject({ score: 1, landings: 1 });
+  });
+
+  it('scores a cap after a full turn capPoints (5), follows setTuning, and leaves upright alone', () => {
+    const pose = {
+      x: TABLE_CENTER_X,
+      y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02,
+      angle: Math.PI,
+      turns: 1,
+    };
+    const sim = placed(pose);
+    runToOutcome(sim);
+    expect(sim.snapshot().outcome).toMatchObject({ result: 'success', reason: 'cap', points: 5 });
+    expect(sim.snapshot()).toMatchObject({ score: 5, landings: 1 });
+    // The tuning is frozen at the throw, so the next cap after the change scores 7.
+    const seven = placed(pose, { tuning: { capPoints: 7 } });
+    runToOutcome(seven);
+    expect(seven.snapshot().outcome).toMatchObject({ reason: 'cap', points: 7 });
+    expect(seven.snapshot().score).toBe(7);
+    const double = placed({ ...pose, angle: 0, y: TABLE_TOP_Y - 0.05, turns: 2 });
+    runToOutcome(double);
+    expect(double.snapshot().outcome).toMatchObject({ reason: 'upright', points: 2 });
+  });
+
+  it('counts a tip-over as 5 when capTipPoints is 5', () => {
+    const sim = placed(
+      { x: TABLE_CENTER_X, y: TABLE_TOP_Y - BOTTLE_HEIGHT - 0.02, angle: Math.PI },
+      { tuning: { capTipPoints: 5 } },
+    );
+    runToOutcome(sim);
+    expect(sim.snapshot().outcome).toMatchObject({ reason: 'cap', turns: 0, points: 5 });
   });
 
   it('judges a bottle that fell onto its cap and toppled by the time it rests: side, not cap', () => {

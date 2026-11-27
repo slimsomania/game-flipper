@@ -104,16 +104,22 @@ describe('scripts/flip-windows.ts', () => {
     expect(Number(scoring![3])).toBeGreaterThanOrEqual(Number(best![3]));
     // The exact expected rates (free of the luck of the draw), then the expected points, come just
     // before the timing line.
-    const expected = lines[lines.length - 3]!.match(
+    const expected = lines[lines.length - 4]!.match(
       /^expected landing rates, any seed \(aim \d+\.\d\): practiced (\d+\.\d)%, new player (\d+\.\d)%$/,
     );
-    expect(expected, lines[lines.length - 3]).not.toBeNull();
+    expect(expected, lines[lines.length - 4]).not.toBeNull();
     expect(Number(expected![1])).toBeGreaterThan(Number(expected![2])); // reading the water pays
-    const points = lines[lines.length - 2]!.match(
+    const points = lines[lines.length - 3]!.match(
       /^expected points per 10, same error: practiced (\d+\.\d\d), best fixed power \((\d+)\) (\d+\.\d\d)$/,
     );
-    expect(points, lines[lines.length - 2]).not.toBeNull();
+    expect(points, lines[lines.length - 3]).not.toBeNull();
     expect(Number(points![1])).toBeGreaterThan(Number(points![3])); // and it scores more
+    // The worst cap-farming chance, within the design's limit of 10%.
+    const cap = lines[lines.length - 2]!.match(
+      /^worst cap farming \(cap 5 points, tip-over \d+\): water \d+%, aim \d+, (\d+\.\d)% of throws land on the cap for 5 \(limit 10\.0%\)$/,
+    );
+    expect(cap, lines[lines.length - 2]).not.toBeNull();
+    expect(Number(cap![1])).toBeLessThanOrEqual(10);
     // The timing line closes the output.
     expect(lines[lines.length - 1]).toMatch(/^\(power 0 to 100 in steps of 1; [\d.]+ s\)$/);
   }, 70_000);

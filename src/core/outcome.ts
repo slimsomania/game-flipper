@@ -29,7 +29,7 @@ export interface Outcome {
    * turns completed (a bottle on its cap has turned a whole number and a half).
    */
   turns: number;
-  /** What the throw scores: its number of turns for a success (at least 1 on the cap), 0 for a fail. */
+  /** What the throw scores: its turns for an upright success, a flat cap score on the cap, 0 for a fail. */
   points: number;
 }
 
@@ -104,6 +104,8 @@ export function bottleExtent(x: number, y: number, angle: number): Extent {
 export class LandingJudge {
   private readonly uprightRad: number;
   private readonly capRad: number;
+  private readonly capPoints: number;
+  private readonly capTipPoints: number;
   private readonly stillSpeed: number;
   private readonly stillSpin: number;
   private readonly offTableDepth: number;
@@ -126,6 +128,8 @@ export class LandingJudge {
   constructor(tuning: Tuning, releaseAngle: number, creditedTurns = 0) {
     this.uprightRad = tuning.uprightToleranceDeg * DEG;
     this.capRad = tuning.capAngleDeg * DEG;
+    this.capPoints = tuning.capPoints;
+    this.capTipPoints = tuning.capTipPoints;
     this.stillSpeed = tuning.stillSpeed;
     this.stillSpin = tuning.stillSpin;
     this.offTableDepth = tuning.offTableDepth;
@@ -165,7 +169,13 @@ export class LandingJudge {
       // Resting upright counts only after a full turn; without one it is a fail of its own kind.
       const reason = found === 'upright' && turns === 0 ? 'noFlip' : found;
       const success = reason === 'upright' || reason === 'cap';
-      const points = reason === 'cap' ? Math.max(1, pointsForTurns(turns)) : pointsForTurns(turns);
+      // A cap scores a flat bonus; a half-turn tip-over (no full turn) may score less (tuning).
+      const points =
+        reason === 'cap'
+          ? turns === 0
+            ? this.capTipPoints
+            : this.capPoints
+          : pointsForTurns(turns);
       this.decided = {
         result: success ? 'success' : 'fail',
         reason,

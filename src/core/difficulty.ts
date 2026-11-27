@@ -61,7 +61,8 @@ export interface BenchmarkOptions {
 }
 
 /** The part of a sweep point the benchmark reads: how a throw at `power` ended. */
-export type BenchmarkThrow = Pick<SweepPoint, 'power' | 'result' | 'turns' | 'points'>;
+export type BenchmarkThrow = Pick<SweepPoint, 'power' | 'result' | 'turns' | 'points'> &
+  Partial<Pick<SweepPoint, 'reason'>>;
 
 /** What one kind of player achieved over the benchmark's throws. */
 export interface PlayerResult {
@@ -123,6 +124,11 @@ export interface ExpectedRates {
   newPlayerAim: number;
   practicedPointsPer10: number;
   bestFixedAim: { aim: number; pointsPer10: number };
+  /**
+   * The worst cap-farming chance: over every water level and every whole aim 0 to 100, the largest
+   * chance that one throw (with the error) lands on the cap for the full `capPoints`.
+   */
+  worstCap: { water: number; aim: number; chance: number };
 }
 
 /** A number from the normal distribution (mean 0, standard deviation 1), by Box-Muller. */
@@ -285,6 +291,21 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
     const pointsPer10 = per10(() => aim);
     if (pointsPer10 > bestFixedAim.pointsPer10) bestFixedAim = { aim, pointsPer10 };
   }
+  // Cap farming: a fixed aim that keeps landing on the cap for the full capPoints.
+  let worstCap = { water: everyLevel[0]!, aim: MIN_POWER, chance: -1 };
+  for (const water of everyLevel) {
+    for (let aim = MIN_POWER; aim <= MAX_POWER; aim++) {
+      const chances = powerChances(aim, errorSigma);
+      let chance = 0;
+      for (let power = MIN_POWER; power <= MAX_POWER; power++) {
+        const outcome = outcomeAt(water, power);
+        if (outcome.reason === 'cap' && outcome.points === tuning.capPoints) {
+          chance += chances[power]!;
+        }
+      }
+      if (chance > worstCap.chance) worstCap = { water, aim, chance };
+    }
+  }
   const expected: ExpectedRates = {
     practiced:
       everyLevel.reduce((sum, water) => sum + landChance(water, centerOf(water)), 0) /
@@ -295,6 +316,7 @@ export function runBenchmark(options: BenchmarkOptions = {}): BenchmarkResult {
     newPlayerAim: expectedAim,
     practicedPointsPer10: per10(centerOf),
     bestFixedAim,
+    worstCap,
   };
 
   return {

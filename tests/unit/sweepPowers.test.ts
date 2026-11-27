@@ -54,8 +54,8 @@ describe('sweepPowers', () => {
     for (const water of [0.1, 0.3, 0.5, 0.7, 0.9]) {
       for (const r of sweepPowers(water)) {
         if (r.result === 'success' && r.reason === 'cap') {
-          // On the cap (design section 2, 2026-11-22): its completed full turns, at least 1.
-          expect(r.points).toBe(Math.max(1, Math.abs(r.turns)));
+          // On the cap (design 2026-11-26): a flat 5, or 1 for a tip-over with no full turn.
+          expect(r.points).toBe(r.turns === 0 ? 1 : 5);
         } else if (r.result === 'success') {
           expect(r.turns).toBeGreaterThanOrEqual(1);
           expect(r.points).toBe(r.turns);

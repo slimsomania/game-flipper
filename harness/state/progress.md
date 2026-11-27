@@ -2367,3 +2367,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Open questions: should H during play reopen the Pause overlay on close instead of going straight back to play (assumption 5)? Should H also work on the round summary?
 
 > [harness] session 150 · planner · ok · 1 commit(s) · 25 tool calls · 4m 40s · ~$1.88 API-equivalent
+
+## Session 151 · builder · F051 Score a cap landing 5 and keep it from being farmed
+- Did: `capPoints` (5) and `capTipPoints` (1) in tuning.ts; LandingJudge (outcome.ts) scores a cap `capPoints`, or `capTipPoints` when no full turn was completed (still a success and a landing); `expected.worstCap` {water, aim, chance} in difficulty.ts (17 levels x aims 0-100, sigma 8, counts only caps that score `capPoints`), printed by scripts/flip-windows.ts. Updated tests that assumed "turns, at least 1" (sweepPowers, landingJudging, flipRule e2e, the script test's line indices) and added tests for 5 / 1 / setTuning 7 / tip at 5, the worstCap measure and the 10% limit. ARCHITECTURE.md outcome row updated.
+- Measured (npx tsx scripts/flip-windows.ts): tip-over at 5: worst cap chance 14.8% (water 80%, aim 14) > 10%, so the design's fallback applies. With the tip-over at 1 (kept): 9.9% (water 90%, aim 78). Expected landing rates unchanged: practiced 60.2%, new 44.8%. Points per 10, practiced vs bestFixedAim: before 6.02 vs 5.11; after (tip at 5) 6.04 vs 5.60; after (tip at 1, kept) 6.03 vs 5.60. Points rule holds. No physics value changed.
+- Verified: `npm test` 966/966; `npm run verify`: format, typecheck, unit, build green, e2e 384 passed and 1 failed (mouse.spec.ts "the same with the real mouse": the throw did not reach flying in time, a timing flake unrelated to the cap; it passes alone, 6/6, on rerun).
+- Status: F051 → needs_review
+- Issues / follow-ups: the margin is thin (9.9% vs 10%): any later physics retune must re-run flip-windows.ts. The message still reads 'Cap landing! +N' (F052 changes it). A tip-over now says '+1'. I did not run `npm run snap` (no visual change besides the number).
+- Next: reviewer: run `npx tsx scripts/flip-windows.ts capTipPoints=5` and confirm 14.8%, then the default for 9.9%.
