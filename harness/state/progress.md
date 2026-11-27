@@ -2431,3 +2431,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F054 pictures go in `HOW_TO_LAYOUT.pictures` (left 800, top 150, 320x440).
 
 > [harness] session 157 · builder F053 · todo → todo · ok · verify FAILED · 1 commit(s) · 56 tool calls · 8m 52s · ~$0.84 API-equivalent
+
+## Session 158 · builder · F053 How to play card, opened from the Title
+- Did: fixed the verify failure. tests/e2e/phone/thumb.spec.ts expected the Title's buttons without the new howToButton; added it to `expected.title` and a `howToButton` effect (howToOpen() true) to the corner-tap effects. No game code changed.
+- Verified: prettier, typecheck, and `npx playwright test tests/e2e/phone/thumb.spec.ts -g title --project=phone` (6 passed, including the 44x44 area and corner taps for howToButton).
+- Status: F053 -> needs_review
+- Issues / follow-ups: none
+- Next: F054 pictures go in `HOW_TO_LAYOUT.pictures`.

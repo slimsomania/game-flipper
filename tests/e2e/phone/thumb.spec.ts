@@ -72,6 +72,8 @@ type Screen = keyof typeof setups;
 /** What each button does, as a check that waits for it. */
 const effects: Record<string, (page: Page, mutedBefore: boolean) => Promise<void>> = {
   playButton: (page) => expect.poll(() => activeScenes(page)).toEqual(['Game']),
+  howToButton: (page) =>
+    expect.poll(() => page.evaluate(() => window.__FLIPPER__!.howToOpen())).toBe(true),
   pauseButton: (page) => expect.poll(() => paused(page)).not.toBe(undefined),
   muteButton: (page, before) => expect.poll(() => muted(page)).toBe(!before),
   fullscreenButton: (page) => expect.poll(async () => (await fsCalls(page)).req).toBe(1),
@@ -87,7 +89,7 @@ const pauseEffect = (screen: Screen) => (page: Page) =>
   expect.poll(() => paused(page)).toBe(screen === 'play');
 
 const expected: Record<Screen, string[]> = {
-  title: ['playButton', 'muteButton', 'fullscreenButton'],
+  title: ['playButton', 'howToButton', 'muteButton', 'fullscreenButton'],
   play: ['pauseButton', 'muteButton', 'fullscreenButton'],
   pause: [
     'pauseButton',
