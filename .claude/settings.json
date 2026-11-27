@@ -13,8 +13,13 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
-      "Bash(git show*)"
+      "Bash(git show*)",
+      "ClaudeInChromeDomain(github.com)",
+      "ClaudeInChromeDomain(productionresultssa13.blob.core.windows.net)"
     ],
-    "ask": ["Bash(npm run agents)", "Bash(npm run agents -- *)"]
+    "ask": [
+      "Bash(npm run agents)",
+      "Bash(npm run agents -- *)"
+    ]
   }
 }
