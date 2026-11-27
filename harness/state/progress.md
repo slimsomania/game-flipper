@@ -2387,3 +2387,11 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: rerun `npm run verify` on an idle machine; if the only failure is performance.test.ts, consider moving it out of the parallel pool.
 
 > [harness] session 152 · builder F051 · todo → todo · ok · verify passed · 1 commit(s) · 26 tool calls · 24m 43s · ~$0.34 API-equivalent
+
+## Session 153 · builder · F051 Score a cap landing 5 and keep it from being farmed
+- Did: no code change. The only reported verify failure (performance.test.ts, 144 ms vs 50 ms) was machine load; session 152 added a warm-up and the harness verify then passed.
+- Measured (unchanged from session 151): tip-over at 5 gives worst cap chance 14.8% (water 80%, aim 14), over 10%, so the fallback was applied and kept: tip-over at capTipPoints 1 gives 9.9% (water 90%, aim 78). Points per 10, practiced vs bestFixedAim: before 6.02 vs 5.11; after 6.03 vs 5.60. No physics value changed.
+- Verified: npm test 966/966 on an idle machine (25 s, perf test passes); format and typecheck clean. Full e2e passed in the harness verify after session 152.
+- Status: F051 -> needs_review
+- Issues / follow-ups: perf test is wall-clock and flaky under load; the farming margin (9.9% vs 10%) is thin, so any physics retune must re-run scripts/flip-windows.ts.
+- Next: reviewer: run npx tsx scripts/flip-windows.ts capTipPoints=5 to see 14.8%, then the default for 9.9%.
