@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { openTitle, settleInput } from './helpers';
 
 /*
- * F047: the web app manifest, the iPhone tags and the icons, on the dev server (default baseURL)
+ * F047: the web app manifest, the iPhone tags and the icons, on the dev-mode build (default baseURL)
  * and on the production build (port 5197); and the fullscreen button hiding in a home-screen app.
  */
 

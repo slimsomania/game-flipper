@@ -5,8 +5,10 @@ import { openGame } from './helpers';
  * What the four sounds really are, measured: each voice is rendered offline by the browser's own
  * Web Audio (an OfflineAudioContext, so no sound card and no autoplay rules) and the samples are
  * checked: audible, never clipping, a sensible length that ends in silence, and the pitch each
- * sound is meant to have. The page's own module is loaded through the dev server.
+ * sound is meant to have. The page's own module is loaded through the Vite dev server (port 5198
+ * in playwright.config.ts): the bundled builds the other tests use can't serve `/src/...` paths.
  */
+test.use({ baseURL: 'http://localhost:5198' });
 
 interface Measure {
   /** Largest sample, 0 to 1. */
