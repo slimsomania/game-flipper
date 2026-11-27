@@ -49,7 +49,7 @@
     {
       "id": "M10",
       "title": "Cap bonus, How to play and the Flipsy name",
-      "goal": "A landing on the cap scores a flat 5 with its own message, effect and sound, without becoming something a player can farm; a How to play card (Title button, Pause overlay button, H key, opened once by itself at the first Play) explains the goal, controls, the water-to-power idea and scoring with small drawn pictures; the credit 'Created and designed by Vlas' is on the Title and the card; and players see the name Flipsy while every internal name stays Flipper (design sections 1, 2, 3, 6, 9 and 10)."
+      "goal": "A landing on the cap scores a flat 5 with its own message, effect and sound, without becoming something a player can farm; a How to play card (Title button, Pause overlay button, H key, opened once by itself at the first Play) explains the goal, controls, the water-to-power idea and scoring with small drawn pictures; the credit 'Created and designed by Vlas' is on the Title and the card; and players see the name Flipsy while every internal name stays Flipper; and a link preview (name, one line, picture) when the game address is shared (design sections 1, 2, 3, 6, 9 and 10)."
     }
   ],
   "features": [
@@ -1263,6 +1263,28 @@
       "status": "todo",
       "attempts": 0,
       "notes": "",
+      "review_feedback": ""
+    },
+    {
+      "id": "F058",
+      "milestone": "M10",
+      "category": "release",
+      "title": "Show a link preview when the game address is shared",
+      "description": "Design section 10: pasting https://slimsomania.github.io/game-flipper/ into a chat or social app (WhatsApp, Telegram, Discord, X, Facebook) shows a preview card with the name Flipsy, one line about the game and a picture. In index.html add <meta name=\"description\">, the Open Graph tags (og:type website, og:site_name and og:title 'Flipsy', og:description, og:url with the address above, og:image with the absolute address https://slimsomania.github.io/game-flipper/og-image.png, og:image:width 1200, og:image:height 630, og:image:alt) and twitter:card summary_large_image. Description text: 'Flip a water bottle and land it upright. A free skill game for your browser and phone.' The site address is written in one place only (for example a SITE_URL constant that vite.config.ts puts into index.html at build time), so moving to a custom domain later is a one-line change. Keep the tags F047 and F057 added. The picture public/og-image.png (1200x630 PNG, under 300 KB) is drawn by the project itself, like the icons (scripts/iconRender.ts, npm run icons): the name Flipsy, a bottle mid-flip over the table, in the game's colors, with nothing important within 60 px of the edges (some apps crop). Record it in public/assets/CREDITS.md. No player-visible text says 'Flipper'.",
+      "acceptance": [
+        "E2E on the production build: index.html has the description, og:type, og:site_name, og:title, og:description, og:url, og:image, og:image:width, og:image:height, og:image:alt and twitter:card tags with the values the description gives; og:image and og:url are absolute https addresses on slimsomania.github.io/game-flipper/.",
+        "E2E on the production build: og-image.png is served with status 200 and type image/png, its PNG header says 1200x630, and it is under 300 KB.",
+        "Unit: the og image renderer gives a 1200x630 picture, and the same code gives the same bytes twice (no randomness or time).",
+        "Unit: the site address appears in exactly one source file, and og:url and og:image are both built from it.",
+        "E2E: the tags F047 and F057 rely on (title 'Flipsy', manifest link, apple-mobile-web-app-title, icons) are still there.",
+        "The builder opens og-image.png with the Read tool and checks that it reads Flipsy, shows the bottle, and keeps the name clear of the edges."
+      ],
+      "depends_on": [
+        "F057"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Added by the human (2026-11-27) after the game was set up for release on GitHub Pages.",
       "review_feedback": ""
     }
   ]
