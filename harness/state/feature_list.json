@@ -1260,9 +1260,9 @@
         "F047",
         "F053"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "The Title now says Flipsy (titleText.ts), index.html title and apple-mobile-web-app-title, and the manifest name/short_name; a muted 24px credit line sits under Best (titleLayout.ts, titleView.ts). The Title rows were re-stacked: How to play now sits above Best, then credit, then the controls hint. Verified with unit titleScreen, new e2e flipsyName.spec and phone/credit.spec, the updated Title specs, and snaps at 1280x720 and --phone.",
+      "notes": "The Title now says Flipsy (titleText.ts), index.html title and apple-mobile-web-app-title, and the manifest name/short_name; a muted 24px credit line sits under Best (titleLayout.ts, titleView.ts). The Title rows were re-stacked: How to play now sits above Best, then credit, then the controls hint. Verified with unit titleScreen, new e2e flipsyName.spec and phone/credit.spec, the updated Title specs, and snaps at 1280x720 and --phone. Reviewed: harness verify after session 168 covers this code; npm test 983/983; e2e flipsyName, title, homeScreenApp, pauseActions and all phone specs 111/111; grep finds no player-visible 'Flipper' in src/index.html/manifest; snaps at 1280x720, 1024x576 and --phone show Flipsy and a quiet credit under Best with nothing overlapping.",
       "review_feedback": ""
     },
     {
