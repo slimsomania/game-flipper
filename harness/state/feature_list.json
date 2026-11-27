@@ -1282,9 +1282,9 @@
       "depends_on": [
         "F057"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added by the human (2026-11-27) after the game was set up for release on GitHub Pages. Built: SITE_URL in site.config.ts (the only file with the address), a vite.config.ts plugin that fills %SITE_URL% in index.html, the description, Open Graph and twitter tags, and scripts/ogRender.ts (npm run icons writes public/og-image.png). Verified with tests/unit/ogImage.test.ts, tests/e2e/linkPreview.spec.ts and a look at the PNG.",
+      "notes": "Added by the human (2026-11-27) after the game was set up for release on GitHub Pages. Built: SITE_URL in site.config.ts (the only file with the address), a vite.config.ts plugin that fills %SITE_URL% in index.html, the description, Open Graph and twitter tags, and scripts/ogRender.ts (npm run icons writes public/og-image.png). Verified with tests/unit/ogImage.test.ts, tests/e2e/linkPreview.spec.ts and a look at the PNG. Reviewed: harness verify after session 171 covers this code; npm test 987/987; e2e linkPreview, flipsyName, homeScreenApp, homeScreenIcons, productionBuild 18/18; npm run icons reproduces the committed og-image.png byte for byte; dist-e2e/index.html has the absolute og:url and og:image; grep finds the address only in site.config.ts among source files; og-image.png checked with Read (reads Flipsy, bottle mid-flip over the table, game colors, text 100 px+ from the edges).",
       "review_feedback": ""
     }
   ]
