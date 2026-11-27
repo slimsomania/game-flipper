@@ -15,7 +15,11 @@ status: ready
 
 # Flipper: game design
 
+Created and designed by Vlas.
+
 ## 1. Concept
+
+**Name (2026-11-26).** Players see the game as **Flipsy**: the title on the Title screen, the browser tab's title and the name under the home-screen icon (section 10). Everything internal keeps the name Flipper: the repository, the package name, code identifiers such as `window.__FLIPPER__`, the save key in local storage (renaming it would wipe every player's best score), the docs and the harness.
 
 Flipper is a skill game about throwing an object so it flips in the air and lands standing upright. It mimics the game kids play with a plastic bottle partly filled with water: hold the bottle by the top, toss it so it spins, and try to land it exactly on its bottom. If it lands on any other side, the throw fails.
 
@@ -42,13 +46,13 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 
 **Direction.** The throw goes mostly straight up with a small, fixed forward drift so the bottle lands on the table in front of the hand. The player controls only power, not angle. Keeping it to one variable keeps the guess clear.
 
-**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright and nearly still, for at least half a second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides. Coming to rest upside down on its cap also counts, after any rotation: it scores one point per full turn completed in the air, and at least 1.
+**Success.** The bottle makes at least one full turn in the air, then comes to rest standing on its base, within 15° of upright and nearly still, for at least half a second. Every upright landing after one or more turns counts, and it scores one point per turn (see section 5). If it lands at a small angle, the physics may tip it back onto its base, so a landing slightly off vertical can still succeed (a bottle that turns 0.9 of a turn and tips back upright counts as one turn). The bottle isn't snapped upright by a rule: physics decides. Coming to rest upside down on its cap also counts, after any rotation, and scores a flat **5 points** (from M10; until then it scored its completed turns, at least 1), so it is the best single throw in the game. That includes a weak push that tips the bottle half a turn onto its cap, unless that makes the cap easy to farm (section 3).
 
 **Fail.** The bottle comes to rest on its side, or falls off the table (past either end, or below the tabletop). Flying above the top of the screen is not a fail: a marker on the top edge shows where the bottle is, and if it comes down and lands upright on the table it counts as a success. If it hasn't settled after 5 seconds, it counts as a fail so the game can't stall. A bottle that lands upright without a full turn (for example a plain drop at very low power) is also a fail.
 
 **After the result.**
 
-- Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that), or "Cap landing! +N" on the cap. The score goes up by that many points.
+- Success: a green flash and a short message that names the flip and the points: "Nailed it! +1", "Double! +2", "Triple! +3" (and "Flip ×4! +4" above that), or "CAP! +5" on the cap. The score goes up by that many points. The cap landing gets a bigger celebration than a flip: a larger message, its own effect (for example a bigger burst) and its own sound.
 - No flip (upright, but without a full turn): a red flash and the message "No flip!", and the score doesn't change.
 - Fail: a red flash and a short message ("Down!"), and the score doesn't change.
 - After about 1 second the next bottle appears automatically. Space or click skips the wait.
@@ -61,6 +65,7 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 - A heavier bottle gets less speed and less spin from the same power, so the "right" power is different for every bottle. The player must learn this from the visible water level alone.
 - For each bottle there is a window of power that gives a clean single flip. Above it there is a narrower window that gives a double flip (worth 2 points), and a triple above that where the physics allows it. Every bottle should have a reachable double-flip window; triples are not required. When a single-flip target and a double-flip target conflict, the single flip wins. Starting values (best guess, to be tuned by playtesting): the single-flip window is at least 10 points of power wide (about ±6 to ±8 around the ideal); the ideal power rises smoothly and strongly from an empty to a full bottle (a full bottle needs about 2.5 to 4 times the power of an empty one); and the starting target is that an attentive new player lands about 3 of 10 and a practiced player 6 to 8 of 10.
 - **Reading the water must matter.** No single fixed power may land a single flip on more than about 60% of water levels; otherwise a player can leave the bar at one value, press Space ten times and land most bottles without looking at them. This is why the bottles are spread so widely across the power range. The same goes for points (2026-11-20): with the same aiming error, a player who reads the water and aims at each single flip must score more points in the long run than one who throws a single high power at every bottle to go for doubles. A player with no aiming error could still do better with one high power, but nobody throws without error.
+- **The cap must stay a lucky bonus, not a strategy (2026-11-26).** With the cap worth 5 points, the points rule above is checked again with the cap counted at 5, and it must still hold. Also, no single fixed power may land on the cap on more than about 1 throw in 10 at any water level, with the practiced player's aiming error; otherwise a player could learn "low power on a full bottle tips onto the cap" and farm 5 points. If the physics can't meet this while a half-turn tip-over counts, then a cap landing without at least one full turn in the air scores 1 instead of 5 (it still counts as a landing). Expected landing rates count the cap as a landing, as before.
 - Water sloshing is wanted, but not in the first version (see M6): first it is one solid mass, then it becomes a real moving mass inside the bottle.
 - All tuning numbers (throw strength, spin, window width, tolerance angle, friction, bounciness) live in one config module so they are easy to adjust.
 
@@ -72,7 +77,7 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 
 ## 5. Scoring and progression
 
-- A **round** is 10 throws. Each upright landing scores one point per full turn: 1 for a single flip, 2 for a double, 3 for a triple, and so on. A fail (including "No flip!") scores nothing and does not end the round. A round can score more than 10.
+- A **round** is 10 throws. Each upright landing scores one point per full turn: 1 for a single flip, 2 for a double, 3 for a triple, and so on. A landing on the cap scores 5 (from M10, see section 2). A fail (including "No flip!") scores nothing and does not end the round. A round can score more than 10.
 - The round also counts its **landings** (successful throws out of 10). The difficulty targets in section 3 count landings, not points.
 - A streak counter is shown during play (consecutive landings) but has no effect on points yet.
 - The **best round score** is saved in the browser (local storage) and shown on the title screen and the round summary. Settings (mute) are saved too.
@@ -82,10 +87,22 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 
 Screens, in order: **Title → Play → Round summary → Play again or Title**. Pause is an overlay on Play.
 
-- **Title:** game name, a Play button, the best score, a mute toggle, and a one-line hint about the controls.
+- **Title:** the game name (**Flipsy**, section 1), a Play button, a **How to play** button (from M10), the best score, a mute toggle, and a one-line hint about the controls. Under the best score, a small, quiet credit line: "Created and designed by Vlas" (from M10).
 - **Play:** the table, the bottle with its visible water level, the power bar, the throw number ("Throw 3 / 10"), the current score, the streak, and the result flash and message after each throw.
 - **Round summary:** the round's points ("Score: 14") and its landings ("Landed 7 / 10"), the best score (with a "New best!" note if beaten), a Play again button and a Title button.
-- **Pause overlay:** Resume and Quit to title.
+- **Pause overlay:** Resume, **How to play** (from M10) and Quit to title.
+- **How to play card (from M10):** a card over the screen that explains the game in a few short lines, with small pictures drawn in code. English only.
+  - What it says:
+    - the goal: throw the bottle so it flips in the air and lands standing on its base
+    - how to throw on this device: on a desktop, Up/Down or the mouse wheel and then Space, or grab the bottle and push it up with the mouse; on a phone, push the bottle up with a finger, or slide the power bar and then tap the bottle (only the lines for the device in use are shown, as the title's controls hint already does)
+    - the idea: more water makes the bottle heavier, so it needs more power. It states the principle only, with no numbers and no marked windows: reading the water stays the player's guess
+    - scoring: 1 point for a single flip, 2 for a double, 3 for a triple, 5 for landing on the cap. A round is 10 throws, and the best round is saved
+    - the streak counts landings in a row but gives no points
+    - at the bottom, the credit line "Created and designed by Vlas"
+  - Pictures: two small bottles side by side, one with little water next to a short power bar, one with a lot of water next to a tall power bar, so the water-to-power idea reads at a glance.
+  - Opening: the How to play button on the Title or the Pause overlay, or the H key on a desktop. It also opens by itself the first time a player presses Play in this browser, before the first throw; this is remembered in local storage with the other settings, so it happens once.
+  - While it is open, nothing in the round moves or changes: it pauses play like the pause overlay. Closing it returns to the screen it was opened from (the Title, the Pause overlay, or the first throw of the round).
+  - Closing: a Close button, a tap or click outside the card, or Esc or H. All text is readable on a 6-inch phone (section 10) and fits on the card without scrolling.
 - **Fullscreen button (from M8):** a corner button next to the mute button on every screen, which switches fullscreen on and off. Its icon shows whether the game is fullscreen now. On a browser that can't make a page fullscreen (every browser on an iPhone) the button stays, and a tap on it shows a small card instead: "To play full screen on iPhone: tap Share, then Add to Home Screen", with a Close button (a tap outside the card closes it too). The card pauses nothing and changes no game state. The button is hidden only when the game already fills the screen as a home-screen app.
 
 ## 7. Controls
@@ -101,6 +118,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 | Pause | Pause button in the corner | Esc or P |
 | Mute | Speaker button | M |
 | Fullscreen on / off (from M8) | Fullscreen button in the corner | F (Esc also leaves fullscreen: the browser does that itself, and the game pauses as usual) |
+| How to play card (from M10) | How to play button on the Title or the Pause overlay; Close button or a click outside to close | H to open or close; Esc also closes |
 
 **On a phone (from M7):**
 
@@ -122,7 +140,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 
 ## 9. Audio
 
-- Sound effects only, generated in code with the browser's audio API, so there are no audio files to license: a short whoosh on throw, a knock on landing, a happy chime on success, a low thud on fail.
+- Sound effects only, generated in code with the browser's audio API, so there are no audio files to license: a short whoosh on throw, a knock on landing, a happy chime on success, a low thud on fail, and from M10 a bigger, brighter fanfare for a landing on the cap.
 - No music for now. A mute button is available and the choice is remembered.
 - Sound starts only after the first click or key press (browsers require this).
 
@@ -135,7 +153,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - Performance target: a steady 60 fps on an ordinary laptop and on a mid-range phone from the last few years.
 - The logical canvas is **1280×720 landscape**, scaled to fit the window. The scaffold still has the old 720×1280 portrait values (`GAME_WIDTH` and `GAME_HEIGHT` in `src/core/constants.ts`, `docs/ARCHITECTURE.md`, the Playwright viewport in `playwright.config.ts`); the first feature must switch them over. We can change the orientation again later.
 - Fullscreen (from M8): on a desktop, the fullscreen button or F fills the whole monitor with the game, still at 16:9 with bars on the sides if the monitor's shape differs. On an Android phone, fullscreen hides the browser's bars, as in M7. No browser on an iPhone can make a web page fullscreen (all of them use Safari's engine), so the iPhone way is the home-screen app below, and the fullscreen button explains how to add it (section 6).
-- Home-screen app (from M8): the game can be added to a phone's home screen ("Add to Home Screen" in Safari, "Install app" or "Add to Home screen" in Chrome). Opened from its icon, it starts without the browser's address bar and tabs, held sideways, with the game's own name and icon. This needs a web app manifest and the iPhone's home-screen tags in index.html, and an icon drawn by the project itself. It is not an offline app: it still loads from the page's address.
+- Home-screen app (from M8): the game can be added to a phone's home screen ("Add to Home Screen" in Safari, "Install app" or "Add to Home screen" in Chrome). Opened from its icon, it starts without the browser's address bar and tabs, held sideways, with the game's own name (**Flipsy** from M10, section 1) and icon. This needs a web app manifest and the iPhone's home-screen tags in index.html, and an icon drawn by the project itself. It is not an offline app: it still loads from the page's address.
 - Later: itch.io or a hosted page, an offline app.
 
 ## 11. Milestones
@@ -148,6 +166,8 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **M6, sloshing and replay:** water that moves inside the bottle and affects the flip, and a short slow-motion replay of the landing after each throw (skippable).
 - **M7, phones:** play on a phone with touch, as in sections 7 and 10: the finger push and its tuning, taps for every button and for skipping, the sideways-only message, no scrolling or zooming, readable text and big enough buttons, phone e2e tests, and a way for the human to open the game on a real phone. It comes after M6 so the finger push is tuned once, against the final bottle and its sloshing water.
 - **M8, fullscreen, home-screen app, phone power bar, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, setting the power on the bar and tapping to throw on a phone (section 7), then the performance budget and the production-build check, measured on a phone as well as a laptop.
+- **M9, review fixes:** fixes from the outside reviews of M6 to M8 (planned by the agents, 2026-11-25).
+- **M10, cap bonus, How to play and the Flipsy name:** a landing on the cap scores 5 with its own message, effect and sound, and the cap checks of section 3 (no cap farming, and the points rule re-checked with the cap at 5); the How to play card with its buttons, the H key, its pictures and its first-Play opening (section 6); the credit line on the Title and the card; and the name players see becomes Flipsy (the Title, the browser tab's title, the web app manifest and the iPhone home-screen title), with internal names left as Flipper (section 1).
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
 ## 12. Out of scope
@@ -211,6 +231,13 @@ Decided at the M7 stop (2026-11-25):
 - **Fullscreen and home-screen app (2026-11-25).** The player can make the game fullscreen on a PC as well as a phone, with a corner button and the F key, and can add it to a phone's home screen to play without the browser's bars (the only way on an iPhone). Both come in M8, before the performance check. See sections 6, 7 and 10.
 - **The fullscreen button on iPhone explains the home screen (2026-11-25).** The human checked a real iPhone: Safari and the other iPhone browsers show their bars and offer no fullscreen. Instead of hiding the button there, it shows how to add the game to the home screen.
 - **Power bar and tap on a phone (2026-11-25).** The human found that a phone only had the finger push, while a PC can set an exact power and then throw. A phone now gets the same: slide a finger on the power bar to set it, then tap the bottle to throw at that power. The push stays. This replaces "on a phone the push is the only way to throw".
+
+Decided after the M9 review (2026-11-26):
+
+- **The cap scores 5 (section 2).** A landing on the cap is rare (about 3% of throws) and the most impressive way a throw can end, but it scored about the same as a single flip. It now scores a flat 5, more than a triple, with a bigger celebration. To keep it a bonus rather than a strategy, section 3 adds a farming limit and re-checks the points rule with the cap at 5; if the half-turn tip-over makes the cap easy to farm, that tip-over scores 1. This replaces "scores its completed full turns, at least 1" (2026-11-22) and settles the "special score for landing on the cap" idea of 2026-11-18.
+- **A How to play card (section 6).** New players get no explanation beyond a one-line controls hint. The card explains the goal, the controls, the water-to-power idea and the scoring. It states the principle "more water, more power" but no numbers, so it doesn't break "Hints: none beyond the visible water level": the player still judges each bottle from its water alone. It opens by itself once, at the first Play, and pauses play while open.
+- **Credit (section 6).** "Created and designed by Vlas" appears on the Title screen and on the How to play card.
+- **The name players see is Flipsy (section 1).** Only what players see changes; the project, code, save data and docs keep the name Flipper.
 
 Still open, to be settled by playtesting after M1:
 
