@@ -1,9 +1,15 @@
 name: CI
 
+# Runs the full verify gate on pull requests into main (the dev -> main merge).
+# Pushes to dev don't run here: the harness already runs verify locally before it pushes.
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
