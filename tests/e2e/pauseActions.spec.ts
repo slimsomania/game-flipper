@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { TITLE_LAYOUT } from '../../src/game/view/titleLayout';
 import { FLIPPED } from '../shared';
-import { gameState, openGame, powerOf, settleInput, visibleTexts } from './helpers';
+import {
+  gameState,
+  openGame,
+  openTitle,
+  powerOf,
+  settleInput,
+  startGame,
+  visibleTexts,
+} from './helpers';
 import { MUTED, ON, clickMuteButton, muteState } from './muteHelpers';
 import {
   clickAt,
@@ -138,7 +146,10 @@ test.describe('Quit to title', () => {
   });
 
   test('then Play starts a new game that can be paused again', async ({ page }) => {
-    const errors = await openGame(page, '?seed=7');
+    // The save marks How to play as seen, so this Play starts the game rather than the card that
+    // opens by itself at a browser's first Play (F056, tested in howToFirstPlay.spec.ts).
+    const errors = await openTitle(page, '?seed=7');
+    await startGame(page);
     await playTwoThrows(page);
     await pauseWith(page);
     await clickQuit(page);

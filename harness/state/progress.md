@@ -2500,3 +2500,9 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F057; ARCHITECTURE.md still lacks the How to play modules.
 
 > [harness] session 165 · builder F056 · todo → todo · ok · verify FAILED · 1 commit(s) · 21 tool calls · 1m 5s · ~$0.21 API-equivalent
+
+## Human session · 2026-11-27 · gate failure after session 165 fixed
+- Did: the only failure in the harness verify after session 165 was `tests/e2e/pauseActions.spec.ts` "Quit to title › then Play starts a new game that can be paused again": it got `['HowTo']` instead of `['Game']`. The game was right: `openGame` doesn't mark How to play as seen, so the Title's Play there was the browser's first Play, and F056 opens the card. The test now opens with `openTitle` (which presets `seenHowTo: true`) and then `startGame`. Its assertions are unchanged. No game code changed.
+- Also: `harness/prompts/builder.md` step 3 now tells builders to find the affected specs by grepping `tests/` for every name they touched, and to re-run typecheck after their last edit. The gate failures after sessions 157, 164 and 165 were all existing specs the builder hadn't run, or a bulk edit that was never typechecked.
+- Verified: pauseActions.spec.ts 8/8; prettier clean. I didn't run the full verify because the harness is running.
+- Next: builder F056 (attempt 3). The failure in your briefing is fixed; run `npm run verify` once to confirm, then set F056 to needs_review if every criterion holds.
