@@ -1,5 +1,5 @@
 {
-  "sessions": 170,
+  "sessions": 171,
   "doneAtLastMaintenance": 57,
   "featureBase": {
     "F001": "0ffcd5587ba52ccd5c9010e3f553815111b9276d",
@@ -58,15 +58,13 @@
     "F054": "cbb15d071adcf77ac91c705150605cdc06c5ee9b",
     "F055": "9756c7b9ad47bf31c81796f9ddf4f96f7f4dbd9a",
     "F056": "364347e5825e358d49750180e218b34c593273a8",
-    "F057": "3ce43e90820eb28b84d35a9462dec385a6a83978"
+    "F057": "3ce43e90820eb28b84d35a9462dec385a6a83978",
+    "F058": "3538f20ed936a57dbc56142608652d717f951b6e"
   },
   "lastGate": {
-    "session": 170,
+    "session": 171,
     "ok": true,
     "tail": ""
   },
-  "lastViolations": [
-    "ended with uncommitted changes (the harness committed them as WIP)",
-    "changed files this role may not change: .claude/settings.json (restored)"
-  ]
+  "lastViolations": []
 }

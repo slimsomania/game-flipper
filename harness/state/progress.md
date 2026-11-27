@@ -2555,3 +2555,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F058 → needs_review
 - Issues / follow-ups: Vite prints a harmless warning about the extensionless `./site.config` import in vite.config.ts (adding `.ts` would need allowImportingTsExtensions). The og picture's font falls back by machine, so its bytes could differ on another OS; the unit test only compares two renders on one machine.
 - Next: Reviewer: check the picture and that the committed og-image.png matches `npm run icons`.
+
+> [harness] session 171 · builder F058 · todo → needs_review · ok · verify passed · 1 commit(s) · 27 tool calls · 1m 46s · ~$0.32 API-equivalent
