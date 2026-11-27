@@ -2506,3 +2506,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Also: `harness/prompts/builder.md` step 3 now tells builders to find the affected specs by grepping `tests/` for every name they touched, and to re-run typecheck after their last edit. The gate failures after sessions 157, 164 and 165 were all existing specs the builder hadn't run, or a bulk edit that was never typechecked.
 - Verified: pauseActions.spec.ts 8/8; prettier clean. I didn't run the full verify because the harness is running.
 - Next: builder F056 (attempt 3). The failure in your briefing is fixed; run `npm run verify` once to confirm, then set F056 to needs_review if every criterion holds.
+
+## Session 166 · builder · F056 Open How to play by itself at the first Play
+- Did: no code change. The human fix to tests/e2e/pauseActions.spec.ts (Quit-then-Play test opens with openTitle) was already on dev and covers the only gate failure.
+- Verified: format:check, typecheck, npm test, pauseActions.spec 8/8, howToFirstPlay.spec 5/5 desktop, phone howToFirstPlay 1/1. I could not run npm run verify (no approval available in this session); the harness gate runs it next.
+- Status: F056 -> needs_review
+- Issues / follow-ups: none
+- Next: F057; ARCHITECTURE.md still lacks the How to play modules.
