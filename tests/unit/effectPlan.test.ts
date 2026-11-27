@@ -5,6 +5,7 @@ import {
   BURST_BASE_COUNT,
   BURST_MAX_COUNT,
   BURST_PER_EXTRA_POINT,
+  CAP_BURST_COUNT,
   SHAKE_QUIETEST,
   burstCount,
   planEffects,
@@ -113,6 +114,26 @@ describe('planEffects', () => {
     ]);
     const [, burst] = planEffects([outcome('success', 3)], T);
     expect(burst).toEqual({ name: 'burst', intensity: burstCount(3), tick: 40 });
+  });
+
+  it('gives a cap landing its own capBurst, bigger than any flip burst, besides the pop', () => {
+    const cap: SimEvent = {
+      type: 'outcome',
+      tick: 40,
+      result: 'success',
+      reason: 'cap',
+      points: 5,
+    };
+    expect(planEffects([cap], T)).toEqual([
+      { name: 'pop', intensity: 1, tick: 40 },
+      { name: 'capBurst', intensity: CAP_BURST_COUNT, tick: 40 },
+    ]);
+    expect(CAP_BURST_COUNT).toBeGreaterThan(burstCount(3));
+    expect(CAP_BURST_COUNT).toBeGreaterThan(BURST_MAX_COUNT);
+    for (let points = 1; points <= 9; points++) {
+      const names = planEffects([outcome('success', points)], T).map((c) => c.name);
+      expect(names).not.toContain('capBurst');
+    }
   });
 
   it('only pops the message for a fail: no burst', () => {

@@ -131,6 +131,29 @@ function chime(ctx: AudioContext, out: AudioNode, volume: number): void {
   });
 }
 
+/**
+ * A fanfare for the cap: a quick rising C major run of five bell-like notes up to E7, each with a
+ * bright octave above, the last one ringing longer. Bigger and brighter than the chime.
+ */
+function fanfare(ctx: AudioContext, out: AudioNode, volume: number): void {
+  const notes = [1046.5, 1318.5, 1568.0, 2093.0, 2637.0]; // C6, E6, G6, C7, E7
+  notes.forEach((hz, i) => {
+    const last = i === notes.length - 1;
+    const delay = i * 0.09;
+    const duration = last ? 0.8 : 0.45;
+    tone(ctx, out, { type: 'sine', from: hz, to: hz, delay, duration, peak: 0.2 * volume });
+    tone(ctx, out, { type: 'triangle', from: hz, to: hz, delay, duration, peak: 0.06 * volume });
+    tone(ctx, out, {
+      type: 'sine',
+      from: hz * 2,
+      to: hz * 2,
+      delay,
+      duration: duration * 0.5,
+      peak: 0.06 * volume,
+    });
+  });
+}
+
 /** A low thud: a deep note sinking in pitch over a soft, dark thump of noise. */
 function thud(ctx: AudioContext, out: AudioNode, volume: number): void {
   tone(ctx, out, { type: 'sine', from: 130, to: 45, duration: 0.4, peak: 0.9 * volume });
@@ -148,6 +171,7 @@ const VOICES: Record<SoundName, (ctx: AudioContext, out: AudioNode, volume: numb
   whoosh,
   knock,
   chime,
+  fanfare,
   thud,
 };
 

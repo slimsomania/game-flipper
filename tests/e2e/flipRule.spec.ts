@@ -18,15 +18,7 @@ async function land(page: Page, pose: PlacedPose) {
   return stepUntilOutcome(page);
 }
 
-const RESULT_MESSAGES = [
-  'Nailed it!',
-  'Double!',
-  'Triple!',
-  'Flip ×',
-  'Cap landing!',
-  'No flip!',
-  'Down!',
-];
+const RESULT_MESSAGES = ['Nailed it!', 'Double!', 'Triple!', 'Flip ×', 'CAP!', 'No flip!', 'Down!'];
 const messagesIn = (texts: string[]) =>
   texts.filter((text) => RESULT_MESSAGES.some((message) => text.startsWith(message)));
 
@@ -69,7 +61,7 @@ test('a no flip after a success leaves the score where it was', async ({ page })
 
 // Design section 2 (2026-11-26): resting on the cap is a success worth 5, or 1 for a half-turn
 // tip-over with no full turn (F051). Placed upside down on the table, with 0 and with 2 turns.
-test('a landing on the cap shows "Cap landing!" with the green flash and scores 5 (1 for a tip-over)', async ({
+test('a landing on the cap shows "CAP!" with the green flash and scores 5 (1 for a tip-over)', async ({
   page,
 }) => {
   const errors = await openGame(page, '?seed=7');
@@ -81,7 +73,7 @@ test('a landing on the cap shows "Cap landing!" with the green flash and scores 
   const first = await land(page, onCap);
   expect(first.outcome).toMatchObject({ result: 'success', reason: 'cap', points: 1 });
   expect(first.score).toBe(1);
-  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +1']);
+  expect(messagesIn(await visibleTexts(page))).toEqual(['CAP! +1']);
   expect((await visibleFlash(page))?.color).toBe(COLORS.successFlash);
 
   await page.evaluate(() => window.__FLIPPER__!.skip());
@@ -89,7 +81,7 @@ test('a landing on the cap shows "Cap landing!" with the green flash and scores 
   // After full turns the cap scores a flat 5 (F051), not its turns.
   expect(second.outcome).toMatchObject({ result: 'success', reason: 'cap', turns: 2, points: 5 });
   expect(second.score).toBe(6);
-  expect(messagesIn(await visibleTexts(page))).toEqual(['Cap landing! +5']);
+  expect(messagesIn(await visibleTexts(page))).toEqual(['CAP! +5']);
   expect(errors).toEqual([]);
 });
 

@@ -24,7 +24,12 @@ export interface ResultStyle {
   /** Flash color as a hex number, text color as a CSS color. */
   flash: number;
   text: string;
+  /** How big the message is drawn, as a multiple of the usual size: 1, or `CAP_MESSAGE_SIZE` on the cap. */
+  size: number;
 }
+
+/** The cap's message is drawn this much larger than the flip messages: the bigger celebration. */
+export const CAP_MESSAGE_SIZE = 1.4;
 
 /** The success message for an upright landing of `points` points (its turns): names flip and points. */
 export function successMessage(points: number): string {
@@ -36,24 +41,24 @@ export function successMessage(points: number): string {
 
 /**
  * The message and colors for a throw's outcome. Success is green and names the flip and the
- * points ("Nailed it! +1", "Double! +2", ...), or "Cap landing! +N" on the cap. Every fail is red: "No flip!" for a bottle that
+ * points ("Nailed it! +1", "Double! +2", ...), or "CAP! +N" on the cap (drawn larger). Every fail is red: "No flip!" for a bottle that
  * stood up without a full turn, "Down!" for any other.
  */
 export function resultStyle(outcome: Pick<Outcome, 'result' | 'reason' | 'points'>): ResultStyle {
   if (outcome.result === 'success') {
     return {
       message:
-        outcome.reason === 'cap'
-          ? `Cap landing! +${outcome.points}`
-          : successMessage(outcome.points),
+        outcome.reason === 'cap' ? `CAP! +${outcome.points}` : successMessage(outcome.points),
       flash: COLORS.successFlash,
       text: COLORS.successText,
+      size: outcome.reason === 'cap' ? CAP_MESSAGE_SIZE : 1,
     };
   }
   return {
     message: outcome.reason === 'noFlip' ? 'No flip!' : 'Down!',
     flash: COLORS.failFlash,
     text: COLORS.failText,
+    size: 1,
   };
 }
 

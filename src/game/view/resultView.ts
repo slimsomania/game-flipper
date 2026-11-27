@@ -69,7 +69,7 @@ export function createResultView(scene: Phaser.Scene): ResultView {
       message
         .setText(style.message)
         .setColor(style.text)
-        .setScale(popScale(resultSteps))
+        .setScale(popScale(resultSteps) * style.size)
         .setVisible(true);
     },
   };

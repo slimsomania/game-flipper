@@ -15,6 +15,8 @@ import { COLORS } from '../theme';
 export const PARTICLE_LIFE_SECONDS = 0.7;
 /** The burst fans out upward within this many degrees either side of straight up. */
 const FAN_DEGREES = 70;
+/** The cap's burst fans out wider. */
+export const CAP_FAN_DEGREES = 88;
 const SPEED_MIN = 240;
 const SPEED_MAX = 580;
 /** Pixels per second squared: falls back down like the bottle does, only a little lighter. */
@@ -61,11 +63,17 @@ export interface Particle {
 export const BURST_STEPS = Math.round(PARTICLE_LIFE_SECONDS * SIM_HZ);
 
 /** Start a burst of `count` particles at (`x`, `y`) pixels on `tick`. The same inputs give the same burst. */
-export function makeBurst(x: number, y: number, count: number, tick: number): Burst {
+export function makeBurst(
+  x: number,
+  y: number,
+  count: number,
+  tick: number,
+  fanDegrees: number = FAN_DEGREES,
+): Burst {
   const rng = createRng(tick * 7919 + Math.round(count));
   const launches: Launch[] = [];
   for (let i = 0; i < Math.max(0, Math.round(count)); i++) {
-    const angle = ((rng.range(-FAN_DEGREES, FAN_DEGREES) - 90) * Math.PI) / 180;
+    const angle = ((rng.range(-fanDegrees, fanDegrees) - 90) * Math.PI) / 180;
     const speed = rng.range(SPEED_MIN, SPEED_MAX);
     launches.push({
       offset: rng.range(-BASE_HALF_WIDTH_PX, BASE_HALF_WIDTH_PX),

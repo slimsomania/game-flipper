@@ -2,7 +2,7 @@ import type { SimEvent } from '../../core/events';
 import { PIXELS_PER_METER } from '../../core/constants';
 import type { Tuning } from '../../core/tuning';
 import { planEffects, type EffectCue } from './effectPlan';
-import { burstParticles, makeBurst, type Burst, type Particle } from './particles';
+import { CAP_FAN_DEGREES, burstParticles, makeBurst, type Burst, type Particle } from './particles';
 import { ShakeEffect, type Offset } from './shake';
 
 /**
@@ -32,10 +32,11 @@ export class Effects {
     for (const cue of cues) {
       if (cue.name === 'shake') {
         this.shake.trigger(cue.tick, cue.intensity, tuning.shakeSeconds);
-      } else if (cue.name === 'burst') {
+      } else if (cue.name === 'burst' || cue.name === 'capBurst') {
         const x = base.x * PIXELS_PER_METER;
         const y = base.y * PIXELS_PER_METER;
-        this.bursts.push(makeBurst(x, y, cue.intensity, cue.tick));
+        const fan = cue.name === 'capBurst' ? CAP_FAN_DEGREES : undefined;
+        this.bursts.push(makeBurst(x, y, cue.intensity, cue.tick, fan));
       }
     }
     return cues;

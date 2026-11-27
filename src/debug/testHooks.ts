@@ -54,10 +54,10 @@ export interface FlipperTestApi {
   textBounds(): TextBounds[];
   /**
    * The small effects the game has played since its Game scene started, oldest first: `name`
-   * ('shake', 'burst' or 'pop'), `intensity` and the `tick` of the event behind it. A `shake`'s
+   * ('shake', 'burst', 'capBurst' or 'pop'), `intensity` and the `tick` of the event behind it. A `shake`'s
    * intensity is the farthest it moves the picture in game pixels (never above the tuning's
    * `shakeMaxPixels`; an impact softer than `shakeMinSpeed` makes none); a `burst` (a success only)
-   * is its number of particles; a `pop` (every result message) is 1. Like `sounds()` it shows what
+   * is its number of particles (a landing on the cap logs a bigger `capBurst` instead); a `pop` (every result message) is 1. Like `sounds()` it shows what
    * the scene last drained: wait a frame after stepping.
    */
   effects(): EffectLogEntry[];
@@ -88,7 +88,7 @@ export interface FlipperTestApi {
    */
   shadow(): DrawnShadow | null;
   /**
-   * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime' or 'thud'),
+   * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime', 'fanfare' or 'thud'; a cap landing plays the fanfare instead of the chime),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to
    * hear, so it fills even where the browser keeps the audio context locked until the first click
    * or key press. Like `texts()` it shows what the scene last drained: wait a frame after stepping.

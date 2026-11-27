@@ -7,7 +7,7 @@ import type { Tuning } from '../../core/tuning';
  * never to its state, and time is the events' own `tick`.
  */
 
-export type EffectName = 'shake' | 'burst' | 'pop';
+export type EffectName = 'shake' | 'burst' | 'capBurst' | 'pop';
 
 /**
  * One effect to play. `intensity` says how strong, in the unit of each effect: a `shake` is the
@@ -27,6 +27,8 @@ export const SHAKE_QUIETEST = 0.2;
 export const BURST_BASE_COUNT = 14;
 export const BURST_PER_EXTRA_POINT = 6;
 export const BURST_MAX_COUNT = 40;
+/** The cap's burst: more particles than any flip's, thrown in a wider fan (see particles.ts). */
+export const CAP_BURST_COUNT = 64;
 
 const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
 
@@ -64,7 +66,9 @@ export function planEffects(events: readonly SimEvent[], tuning: Tuning): Effect
       }
       case 'outcome':
         cues.push({ name: 'pop', intensity: 1, tick: event.tick });
-        if (event.result === 'success') {
+        if (event.result === 'success' && event.reason === 'cap') {
+          cues.push({ name: 'capBurst', intensity: CAP_BURST_COUNT, tick: event.tick });
+        } else if (event.result === 'success') {
           cues.push({ name: 'burst', intensity: burstCount(event.points), tick: event.tick });
         }
         break;

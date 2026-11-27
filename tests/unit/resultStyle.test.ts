@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SIM_HZ } from '../../src/core/constants';
 import { COLORS } from '../../src/game/theme';
 import {
+  CAP_MESSAGE_SIZE,
   FLASH_PEAK_ALPHA,
   FLASH_SECONDS,
   flashAlpha,
@@ -23,6 +24,7 @@ describe('resultStyle', () => {
       message: 'Nailed it! +1',
       flash: COLORS.successFlash,
       text: COLORS.successText,
+      size: 1,
     });
   });
 
@@ -38,15 +40,23 @@ describe('resultStyle', () => {
     expect(successMessage(12)).toBe('Flip ×12! +12');
   });
 
-  it('says "Cap landing! +N" in green for a landing on the cap (a success since 2026-11-22)', () => {
-    expect(resultStyle({ result: 'success', reason: 'cap', points: 1 })).toEqual({
-      message: 'Cap landing! +1',
+  it('says "CAP! +N" in green, drawn larger than every flip message', () => {
+    const cap = resultStyle({ result: 'success', reason: 'cap', points: 5 });
+    expect(cap).toEqual({
+      message: 'CAP! +5',
       flash: COLORS.successFlash,
       text: COLORS.successText,
+      size: CAP_MESSAGE_SIZE,
     });
-    expect(resultStyle({ result: 'success', reason: 'cap', points: 2 }).message).toBe(
-      'Cap landing! +2',
-    );
+    expect(resultStyle({ result: 'success', reason: 'cap', points: 1 }).message).toBe('CAP! +1');
+    for (const points of [1, 2, 3, 4, 9]) {
+      expect(cap.size).toBeGreaterThanOrEqual(1.25 * resultStyle(success(points)).size);
+    }
+  });
+
+  it('draws the fail messages at the usual size', () => {
+    expect(resultStyle(FAIL).size).toBe(1);
+    expect(resultStyle(NO_FLIP).size).toBe(1);
   });
 
   it('says "Down!" in red for a fail', () => {
@@ -54,6 +64,7 @@ describe('resultStyle', () => {
       message: 'Down!',
       flash: COLORS.failFlash,
       text: COLORS.failText,
+      size: 1,
     });
     for (const reason of ['cap', 'offTable', 'offScreen', 'timeout'] as const) {
       expect(resultStyle({ ...FAIL, reason }).message).toBe('Down!');
@@ -65,6 +76,7 @@ describe('resultStyle', () => {
       message: 'No flip!',
       flash: COLORS.failFlash,
       text: COLORS.failText,
+      size: 1,
     });
   });
 

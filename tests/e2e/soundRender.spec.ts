@@ -19,6 +19,8 @@ interface Measure {
   tailPeak: number;
   /** Zero crossings per second over the first 0.15 s: a rough pitch. */
   crossings: number;
+  /** The highest rough pitch (Hz) of any 40 ms stretch that is clearly audible. */
+  highestHz: number;
 }
 
 type Rendered = Record<string, Measure>;
@@ -31,7 +33,7 @@ async function render(page: Page, volume: number): Promise<Rendered> {
     const { MASTER_GAIN } = await load('/src/game/audio/sfx.ts');
     const rate = 44100;
     const result: Record<string, Measure> = {};
-    for (const name of ['whoosh', 'knock', 'chime', 'thud']) {
+    for (const name of ['whoosh', 'knock', 'chime', 'fanfare', 'thud']) {
       const ctx = new OfflineAudioContext(1, rate * 2, rate);
       const master = ctx.createGain();
       master.gain.value = MASTER_GAIN;
@@ -49,11 +51,25 @@ async function render(page: Page, volume: number): Promise<Rendered> {
         if (i >= samples.length - rate * 0.2) tailPeak = Math.max(tailPeak, level);
         if (i > 0 && i < rate * 0.15 && samples[i - 1] < 0 !== samples[i] < 0) crossings++;
       }
+      // The highest pitch: zero crossings per second (a rough pitch) in the loudest-enough 40 ms
+      // windows of the sound.
+      const win = Math.round(rate * 0.04);
+      let highest = 0;
+      for (let from = 0; from + win <= samples.length; from += win) {
+        let windowPeak = 0;
+        let count = 0;
+        for (let i = from; i < from + win; i++) {
+          windowPeak = Math.max(windowPeak, Math.abs(samples[i]));
+          if (i > from && samples[i - 1] < 0 !== samples[i] < 0) count++;
+        }
+        if (windowPeak > 0.05) highest = Math.max(highest, count / 0.04 / 2);
+      }
       result[name] = {
         peak,
         audibleSeconds: last / rate,
         tailPeak,
         crossings: crossings / 0.15,
+        highestHz: highest,
       };
     }
     return result;
@@ -92,6 +108,14 @@ test('the thud is low and the chime high', async ({ page }) => {
   expect(m.knock.crossings).toBeLessThan(m.chime.crossings);
   expect(m.chime.crossings).toBeGreaterThan(1500);
   expect(m.thud.crossings).toBeLessThan(800);
+  expect(errors).toEqual([]);
+});
+
+test('the fanfare lasts longer than the chime and reaches a higher pitch', async ({ page }) => {
+  const errors = await openGame(page);
+  const m = await render(page, 1);
+  expect(m.fanfare.audibleSeconds).toBeGreaterThan(m.chime.audibleSeconds);
+  expect(m.fanfare.highestHz).toBeGreaterThan(m.chime.highestHz);
   expect(errors).toEqual([]);
 });
 

@@ -41,6 +41,17 @@ describe('the sound for each event', () => {
     expect(plan([outcome(100, 'fail')]).map((c) => c.name)).toEqual(['thud']);
   });
 
+  it('is a fanfare, and no chime, for a landing on the cap', () => {
+    const cap: SimEvent = {
+      type: 'outcome',
+      tick: 100,
+      result: 'success',
+      reason: 'cap',
+      points: 5,
+    };
+    expect(plan([cap]).map((c) => c.name)).toEqual(['fanfare']);
+  });
+
   it('is a knock for an impact that is hard enough', () => {
     expect(plan([hit(50, 5)]).map((c) => c.name)).toEqual(['knock']);
   });

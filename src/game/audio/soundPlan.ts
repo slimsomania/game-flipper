@@ -1,5 +1,5 @@
 import { stepsFor } from '../../core/constants';
-import type { ImpactEvent, SimEvent } from '../../core/events';
+import type { ImpactEvent, OutcomeEvent, SimEvent } from '../../core/events';
 import type { Tuning } from '../../core/tuning';
 
 /*
@@ -8,7 +8,7 @@ import type { Tuning } from '../../core/tuning';
  * step's events or ninety steps' worth (a test stepping the simulation by hand).
  */
 
-export type SoundName = 'whoosh' | 'knock' | 'chime' | 'thud';
+export type SoundName = 'whoosh' | 'knock' | 'chime' | 'fanfare' | 'thud';
 
 /** One sound to play: its name, its loudness (above 0, up to 1) and the tick of the event behind it. */
 export interface SoundCue {
@@ -38,6 +38,12 @@ export function whooshVolume(power: number): number {
   return WHOOSH_QUIETEST + (1 - WHOOSH_QUIETEST) * clamp01(power / 100);
 }
 
+/** A cap landing plays the fanfare, any other success the chime, a fail the thud. */
+function outcomeSound(event: OutcomeEvent): SoundName {
+  if (event.result !== 'success') return 'thud';
+  return event.reason === 'cap' ? 'fanfare' : 'chime';
+}
+
 /** Turns simulation events into sounds, keeping the one fact the rate limit needs: the last knock. */
 export class SoundPlanner {
   private lastKnockTick: number | null = null;
@@ -59,7 +65,7 @@ export class SoundPlanner {
       case 'impact':
         return this.knockFor(event, tuning);
       case 'outcome':
-        return { name: event.result === 'success' ? 'chime' : 'thud', volume: 1, tick: event.tick };
+        return { name: outcomeSound(event), volume: 1, tick: event.tick };
     }
   }
 

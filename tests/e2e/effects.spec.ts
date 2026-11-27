@@ -3,7 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../../src/core/constants';
 import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
 import { burstCount } from '../../src/game/effects/effectPlan';
 import { OVERSCAN_PX } from '../../src/game/effects/effects';
-import { FLIPPED, SIDE, UPRIGHT, flipped, type PlacedPose } from '../shared';
+import { CAP, FLIPPED, SIDE, UPRIGHT, flipped, type PlacedPose } from '../shared';
 import { gameState, openGame, settleInput, stepFrames, stepUntilOutcome } from './helpers';
 
 /*
@@ -14,7 +14,7 @@ import { gameState, openGame, settleInput, stepFrames, stepUntilOutcome } from '
  */
 
 interface Effect {
-  name: 'shake' | 'burst' | 'pop';
+  name: 'shake' | 'burst' | 'capBurst' | 'pop';
   intensity: number;
   tick: number;
 }
@@ -155,6 +155,62 @@ test('a double flip bursts with more particles than a single', async ({ page }) 
   expect(errors).toEqual([]);
 });
 
+test('a cap landing logs its own capBurst, bigger than a triple, and no plain burst', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7');
+  const cap = await landing(page, CAP);
+  const bursts = cap.made.filter((effect) => effect.name === 'capBurst');
+  expect(bursts).toHaveLength(1);
+  expect(bursts[0].tick).toBe(cap.outcomeTick);
+  expect(bursts[0].intensity).toBeGreaterThan(burstCount(3));
+  expect(namesOf(cap.made)).not.toContain('burst');
+  expect(namesOf(cap.made)).toContain('pop');
+  await page.evaluate(() => window.__FLIPPER__!.skip());
+
+  // No flip ever gives the cap's cue.
+  for (const pose of [FLIPPED, flipped(3), UPRIGHT, SIDE]) {
+    expect(namesOf((await landing(page, pose)).made)).not.toContain('capBurst');
+    await page.evaluate(() => window.__FLIPPER__!.skip());
+  }
+  expect(errors).toEqual([]);
+});
+
+test('the cap message is at least 1.25 times as tall as a flip message, and stays on the canvas', async ({
+  page,
+}) => {
+  const errors = await openGame(page, '?seed=7');
+  const box = async (text: string) => {
+    await settleInput(page);
+    const boxes = await page.evaluate(() => window.__FLIPPER__!.textBounds());
+    return boxes.find((b) => b.text === text);
+  };
+
+  await place(page, FLIPPED);
+  await stepUntilOutcome(page);
+  await stepFrames(page, 20);
+  const flip = (await box('Nailed it! +1'))!;
+  expect(flip).toBeDefined();
+  await page.evaluate(() => window.__FLIPPER__!.skip());
+
+  await place(page, CAP);
+  await stepUntilOutcome(page);
+  expect(await page.evaluate(() => window.__FLIPPER__!.texts())).toContain('CAP! +5');
+  // Through the pop and the shake: the box always stays inside the canvas.
+  for (const frames of [0, 3, 3, 4, 10, 20]) {
+    await stepFrames(page, frames);
+    const big = (await box('CAP! +5'))!;
+    expect(big).toBeDefined();
+    expect(big.left).toBeGreaterThanOrEqual(0);
+    expect(big.top).toBeGreaterThanOrEqual(0);
+    expect(big.right).toBeLessThanOrEqual(GAME_WIDTH);
+    expect(big.bottom).toBeLessThanOrEqual(GAME_HEIGHT);
+  }
+  const big = (await box('CAP! +5'))!;
+  expect(big.bottom - big.top).toBeGreaterThanOrEqual(1.25 * (flip.bottom - flip.top));
+  expect(errors).toEqual([]);
+});
+
 test('every result pops its message in, success or fail', async ({ page }) => {
   const errors = await openGame(page, '?seed=7');
   const win = await landing(page, FLIPPED);
@@ -245,7 +301,7 @@ test('no text is closer to the canvas edge than the largest shake, whatever the 
   };
 
   await insideByCap(); // aiming: the HUD and the power bar
-  for (const pose of [FLIPPED, flipped(2), flipped(12), UPRIGHT, SIDE]) {
+  for (const pose of [FLIPPED, flipped(2), flipped(12), CAP, UPRIGHT, SIDE]) {
     await place(page, pose);
     await stepUntilOutcome(page);
     // At its full size and at its biggest (the pop swells it past full size for a few steps).

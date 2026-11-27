@@ -3,6 +3,7 @@ import { findWindows, sweepPowers, widestWindow } from '../../src/core/flipWindo
 import { Simulation } from '../../src/core/simulation';
 import { TABLE_CENTER_X, TABLE_TOP_Y } from '../../src/core/table';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
+import { CAP, FLIPPED } from '../shared';
 import { gameState, openGame, settleInput, stepUntilOutcome } from './helpers';
 import {
   contextStates,
@@ -214,6 +215,37 @@ test('an impact below the minimum speed makes no knock, and one above it does', 
   await page.evaluate(() => window.__FLIPPER__!.skip());
   await drop(1.5); // arrives at about 5.4 m/s
   expect((await soundNames(page)).slice(1)).toEqual(['knock', 'thud']);
+  expect(errors).toEqual([]);
+  expect(audio).toEqual([]);
+});
+
+test('a landing on the cap plays the fanfare and no chime, an upright landing still the chime, and muted nothing', async ({
+  page,
+}) => {
+  const { errors, audio } = await open(page);
+  await page.evaluate(() => window.__FLIPPER__!.pause());
+
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), CAP);
+  const decided = await stepUntilOutcome(page);
+  expect(decided.outcome).toMatchObject({ result: 'success', reason: 'cap', points: 5 });
+  let names = await soundNames(page);
+  expect(names.at(-1)).toBe('fanfare');
+  expect(names).not.toContain('chime');
+  await page.evaluate(() => window.__FLIPPER__!.skip());
+
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), FLIPPED);
+  await stepUntilOutcome(page);
+  names = await soundNames(page);
+  expect(names.filter((n) => n === 'fanfare')).toHaveLength(1);
+  expect(names.at(-1)).toBe('chime');
+  await page.evaluate(() => window.__FLIPPER__!.skip());
+
+  await page.keyboard.press('KeyM');
+  await settleInput(page);
+  const before = (await sounds(page)).length;
+  await page.evaluate((pose) => window.__FLIPPER__!.placeBottle(pose), CAP);
+  await stepUntilOutcome(page);
+  expect((await sounds(page)).length).toBe(before);
   expect(errors).toEqual([]);
   expect(audio).toEqual([]);
 });

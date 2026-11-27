@@ -1152,9 +1152,9 @@
       "depends_on": [
         "F051"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: if F051 applied the fallback, a half-turn tip-over shows 'CAP! +1' with the same celebration (the message always names the points scored).",
+      "notes": "Built: resultStyle returns message 'CAP! +N' and a size (CAP_MESSAGE_SIZE 1.4; resultView scales by it); effectPlan gives a cap outcome pop + capBurst (64 particles, 88 degree fan via makeBurst's new fanDegrees) and no plain burst; soundPlan plays 'fanfare' (five-note rising run to E7 in synth.ts) instead of chime. A tip-over shows 'CAP! +1' with the same celebration. Verified with unit tests, the effects/flipRule/sound/soundRender/muteSound specs, and a screenshot.",
       "review_feedback": ""
     },
     {
