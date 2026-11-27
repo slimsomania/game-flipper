@@ -1195,9 +1195,9 @@
       "depends_on": [
         "F053"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: water levels about 0.2 and 0.8, bar fills about 30% and 80%; any values that read clearly are fine (they are not a hint about real powers).",
+      "notes": "Built the pictures: pure numbers in src/game/view/howToPicture.ts (levels 0.2 and 0.8, fills 0.3 and 0.8), baked Images in howToPictureView.ts (bottle from BOTTLE_PARTS/waterRect, bar in the power bar's colors), hook howToPicture(). Verified by unit howToPicture.test.ts, e2e howTo.spec and phone/howToReadable.spec (via tests/e2e/howToPictureHelpers.ts), and snaps at 1280x720 and --phone.",
       "review_feedback": ""
     },
     {

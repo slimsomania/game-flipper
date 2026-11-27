@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../../core/constants';
 import { COLORS, FONT_FAMILY } from '../theme';
 import { createButton } from './buttonView';
 import { HOW_TO_LAYOUT } from './howToLayout';
+import { createHowToPictures } from './howToPictureView';
 import type { HowToTexts } from './howToText';
 
 const DIM_DEPTH = 0;
@@ -59,6 +60,8 @@ export function createHowToView(
     depth: TEXT_DEPTH,
     onActivate: actions.onClose,
   });
+
+  createHowToPictures(scene, TEXT_DEPTH);
 
   const { body, credit } = layout;
   let top: number = body.top;

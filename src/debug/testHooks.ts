@@ -16,6 +16,7 @@ import { visibleFlash, type FlashView } from './visibleFlash';
 import { visibleButtons, type ButtonArea } from './visibleButtons';
 import { visibleFullscreenButton, type FullscreenButtonView } from './visibleFullscreenButton';
 import { visibleMuteButton, type MuteButtonView } from './visibleMuteButton';
+import { drawnPictures } from '../game/view/howToPictureView';
 import { visibleTextBounds, visibleTexts, type TextBounds } from './visibleTexts';
 
 /**
@@ -137,6 +138,26 @@ export interface FlipperTestApi {
    * paused). It opens a frame after the button or H, so poll this after pressing.
    */
   howToOpen(): boolean;
+  /**
+   * The two water-to-power pictures on the open How to play card: each bottle's and bar's box in
+   * game pixels and whether it is a baked Image. Null while the card is closed.
+   */
+  howToPicture(): {
+    bottles: {
+      kind: 'image' | 'graphics' | 'other';
+      left: number;
+      top: number;
+      right: number;
+      bottom: number;
+    }[];
+    bars: {
+      kind: 'image' | 'graphics' | 'other';
+      left: number;
+      top: number;
+      right: number;
+      bottom: number;
+    }[];
+  } | null;
   /** Whether the "Turn your phone sideways" message covers the page (a touch device held upright). */
   rotateMessage(): boolean;
   /** Stop the real-time clock; the simulation then only advances through step(). */
@@ -278,6 +299,8 @@ export function installTestHooks(game: Phaser.Game): void {
     buttons: () => visibleButtons(game.scene.getScenes(true)),
     gamePaused: () => game.scene.isActive('Pause'),
     howToOpen: () => game.scene.isActive('HowTo'),
+    howToPicture: () =>
+      drawnPictures(game.scene.isActive('HowTo') ? game.scene.getScene('HowTo') : null),
     rotateMessage: () => rotateMessageShowing(),
     pause: () => {
       testControls.paused = true;
