@@ -17,7 +17,10 @@ The work is in the commits `{{REVIEW_RANGE}}`: see `git log {{REVIEW_RANGE}}` an
 ## How to review
 
 1. Read the acceptance criteria, the builder's notes, and the builder's latest entry in `harness/state/progress.md`. Then read the diff.
-2. Run `npm run verify`. Any failure means the feature fails review.
+2. Make sure the build is green. The full `npm run verify` takes about 25 minutes, and the harness has normally just run it on this work:
+   - If the briefing says the harness's `npm run verify` passed after the latest session, check that no code changed since: find that session's harness commit with `git log --oneline -1 --grep "chore(harness): session <N> "` and run `git diff --stat <that commit> HEAD -- . ':!harness/state'`. Empty output means that run covered this code; don't run `npm run verify` again. Run `npm test` and the feature's e2e specs yourself (step 3).
+   - Otherwise (the briefing says it failed, reports no run, or code changed since), run `npm run verify`.
+   - Any failure means the feature fails review.
 3. Check every acceptance criterion with your own evidence: run the relevant tests, and play the feature with `npm run snap -- --do "..."` (`npm run snap -- --help` lists the actions), then look at the screenshots with the Read tool. Try at least one thing the builder may not have: an edge case, rapid or repeated input, restarting midway, or a smaller desktop window (`--width 1024 --height 576`). The game is desktop-only (mouse and keyboard, landscape), so don't test phone sizes or touch.
 4. Look for regressions in nearby features that are already done.
 5. Check the code against CLAUDE.md: rules and physics in `src/core` with unit tests, nothing weakened or skipped in the tests (`git diff {{REVIEW_RANGE}} -- tests`), no leftover debug code.

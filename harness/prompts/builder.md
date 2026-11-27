@@ -19,7 +19,9 @@ This is attempt {{ATTEMPT}} of {{MAX_ATTEMPTS}} for this feature.
 1. Run `git status` and `git log --oneline -15`.
 2. Read the latest entries of the session log: `tail -n 120 harness/state/progress.md`.
 3. Read the parts of `docs/GAME_DESIGN.md` and `docs/ARCHITECTURE.md` that relate to this feature, and the code you will touch.
-4. Run `npm run verify`. If it fails before you have changed anything, fixing it comes first; don't build on a red build. Mention what was broken in your progress entry.
+4. Make sure you start from a green build. The full `npm run verify` takes about 25 minutes, so don't repeat one the harness has already run on this code:
+   - If the briefing says the harness's `npm run verify` passed after the latest session, check that no code changed since: find that session's harness commit with `git log --oneline -1 --grep "chore(harness): session <N> "` and run `git diff --stat <that commit> HEAD -- . ':!harness/state'`. Empty output means the build is green; don't run `npm run verify` now.
+   - Otherwise (the briefing says it failed, reports no run, or code changed since), run `npm run verify`. If it fails before you have changed anything, fixing it comes first; don't build on a red build. Mention what was broken in your progress entry.
 
 ## 2. Build it
 
@@ -32,7 +34,7 @@ This is attempt {{ATTEMPT}} of {{MAX_ATTEMPTS}} for this feature.
 
 ## 3. Verify it like a player
 
-1. Run `npm run format`, then `npm run verify`. It must pass.
+1. Run `npm run format`, then `npm run format:check`, `npm run typecheck`, `npm test` and `npm run build`. All must pass. Then run the e2e specs your change can affect: the ones you added or changed, and the ones that exercise the scenes, hooks or helpers you touched, e.g. `npx playwright test tests/e2e/round.spec.ts tests/e2e/summary.spec.ts`. They must pass. Don't run the whole e2e suite: the harness runs the full `npm run verify` after your session, and if it fails the feature comes back to you as `todo` with the output. The exception is a change that many tests share (`tests/e2e/*Helpers.ts`, `tests/e2e/helpers.ts`, `src/debug/testHooks.ts`, `playwright.config.ts`, scene boot or layout used by every screen): then run `npm run verify`. Name the specs you ran in your progress entry.
 2. Look at the game. Run `npm run snap` with actions that exercise the feature, for example
    `npm run snap -- --do "pause,shot:start,drag:300;450;310;250;120,step:90,shot:after"`
    (coordinates are on the 1280×720 landscape canvas; `npm run snap -- --help` lists all actions), then open the screenshots it lists with the Read tool. Check that the feature is visibly there and nothing else looks broken: overlapping or cut-off text, elements off screen, wrong scale.
