@@ -2385,3 +2385,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F051 → todo (verify not green here)
 - Issues / follow-ups: the perf test is a wall-clock test that shares the CPU with the 20-30 s difficulty and flip-windows script tests; it fails whenever the box is busy. Could not inspect processes (no permission), so an orphan from my killed verify run may have been adding load. Suggest the human check for stray node/chromium processes, or run the perf test in its own vitest project/serial pass.
 - Next: rerun `npm run verify` on an idle machine; if the only failure is performance.test.ts, consider moving it out of the parallel pool.
+
+> [harness] session 152 · builder F051 · todo → todo · ok · verify passed · 1 commit(s) · 26 tool calls · 24m 43s · ~$0.34 API-equivalent
