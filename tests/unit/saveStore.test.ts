@@ -59,12 +59,10 @@ describe('parseSave', () => {
       best: 12,
       muted: false,
       seenHowTo: false,
-      seenHowTo: false,
     });
     expect(parseSave(JSON.stringify({ version: 1, best: 0 }))).toEqual({
       best: 0,
       muted: false,
-      seenHowTo: false,
       seenHowTo: false,
     });
   });
@@ -97,7 +95,6 @@ describe('parseSave', () => {
         best: 0,
         muted: false,
         seenHowTo: false,
-        seenHowTo: false,
       });
     }
     // JSON has no NaN or Infinity, and a number too big to be exact is not trusted either.
@@ -105,12 +102,10 @@ describe('parseSave', () => {
       best: 0,
       muted: false,
       seenHowTo: false,
-      seenHowTo: false,
     });
     expect(parseSave('{"version":1,"best":1e30}')).toEqual({
       best: 0,
       muted: false,
-      seenHowTo: false,
       seenHowTo: false,
     });
   });
@@ -121,12 +116,10 @@ describe('parseSave', () => {
       best: 4,
       muted: true,
       seenHowTo: false,
-      seenHowTo: false,
     });
     expect(read({ best: 4, muted: false, seenHowTo: false })).toEqual({
       best: 4,
       muted: false,
-      seenHowTo: false,
       seenHowTo: false,
     });
     expect(read({ muted: true })).toEqual({ best: 0, muted: true, seenHowTo: false });
@@ -153,7 +146,6 @@ describe('parseSave', () => {
       best: 8,
       muted: false,
       seenHowTo: false,
-      seenHowTo: false,
     });
   });
 });
@@ -163,7 +155,6 @@ describe('SaveStore', () => {
     expect(new SaveStore(memoryStorage()).load()).toEqual({
       best: 0,
       muted: false,
-      seenHowTo: false,
       seenHowTo: false,
     });
   });

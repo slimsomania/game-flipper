@@ -2491,3 +2491,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Next: F057; ARCHITECTURE.md still lacks the How to play modules.
 
 > [harness] session 164 · builder F056 · todo → todo · ok · verify FAILED · 1 commit(s) · 55 tool calls · 22m 46s · ~$0.78 API-equivalent
+
+## Session 165 · builder · F056 Open How to play by itself at the first Play
+- Did: fixed the red build from session 164: a bulk edit had left `seenHowTo: false,` twice in nine object literals in tests/unit/saveStore.test.ts (TS1117). Removed the duplicates only; no assertion changed.
+- Verified: format:check, typecheck, npm test (79 files, 982 pass). E2E not re-run (no source changes since session 164, which already ran them); the harness runs verify next.
+- Status: F056 → needs_review
+- Issues / follow-ups: none
+- Next: F057; ARCHITECTURE.md still lacks the How to play modules.
