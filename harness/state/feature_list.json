@@ -1195,9 +1195,9 @@
       "depends_on": [
         "F053"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built the pictures: pure numbers in src/game/view/howToPicture.ts (levels 0.2 and 0.8, fills 0.3 and 0.8), baked Images in howToPictureView.ts (bottle from BOTTLE_PARTS/waterRect, bar in the power bar's colors), hook howToPicture(). Verified by unit howToPicture.test.ts, e2e howTo.spec and phone/howToReadable.spec (via tests/e2e/howToPictureHelpers.ts), and snaps at 1280x720 and --phone.",
+      "notes": "Built the pictures: pure numbers in src/game/view/howToPicture.ts (levels 0.2 and 0.8, fills 0.3 and 0.8), baked Images in howToPictureView.ts (bottle from BOTTLE_PARTS/waterRect, bar in the power bar's colors), hook howToPicture(). Verified by unit howToPicture.test.ts, e2e howTo.spec and phone/howToReadable.spec (via tests/e2e/howToPictureHelpers.ts), and snaps at 1280x720 and --phone. Reviewed: npm test 978/978; e2e howTo, phone/howToReadable, title 34/34; harness verify after session 160 covers the code (only playwright.config reporter changed since); snaps at 1280x720, --phone and a reopened card show both bottles in the game bottle look, 20% vs 80% water, short vs tall orange bars, all four boxes baked Images clear of the text.",
       "review_feedback": ""
     },
     {
