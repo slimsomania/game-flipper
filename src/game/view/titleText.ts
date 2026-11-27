@@ -10,6 +10,8 @@ export interface TitleTexts {
   startHint: string | null;
   /** "Best: 14": the best round score saved so far (0 before any round scored). */
   bestLine: string;
+  /** The quiet line under the best score: who made the game. */
+  creditLine: string;
   /** One line about the controls: mouse and keyboard, or fingers. */
   controlsHint: string;
 }
@@ -23,11 +25,12 @@ export interface TitleTexts {
 export function titleTexts(best: number, kind: InputKind = 'keyboard'): TitleTexts {
   const touch = kind === 'touch';
   return {
-    name: 'Flipper',
+    name: 'Flipsy',
     playLabel: 'Play',
     howToLabel: 'How to play',
     startHint: touch ? null : 'or press Enter or Space',
     bestLine: `Best: ${best}`,
+    creditLine: 'Created and designed by Vlas',
     controlsHint: touch
       ? 'Push the bottle up, or set the power bar and tap the bottle'
       : 'Up/Down or wheel: power · Space: throw · or grab the bottle and push up',

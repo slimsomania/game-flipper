@@ -54,7 +54,7 @@ test.describe('what the title screen shows', () => {
 
     expect(await activeScenes(page)).toEqual(['Title']);
     const texts = await visibleTexts(page);
-    expect(texts).toContain('Flipper');
+    expect(texts).toContain('Flipsy');
     expect(texts).toContain('Play');
     expect(texts).toContain('Best: 17');
     expect(texts).toContain(HINT);
@@ -220,9 +220,7 @@ test.describe('back from the round summary', () => {
     await page.mouse.click(at.x, at.y);
 
     await expect.poll(() => activeScenes(page)).toEqual(['Title']);
-    expect(await visibleTexts(page)).toEqual(
-      expect.arrayContaining(['Flipper', 'Play', 'Best: 3']),
-    );
+    expect(await visibleTexts(page)).toEqual(expect.arrayContaining(['Flipsy', 'Play', 'Best: 3']));
     expect(await visibleTexts(page)).not.toContain('Best: 1');
     expect(await visibleTexts(page)).not.toContain('Round over');
     // The finished round is gone: no simulation runs, and the saved best is the one shown.

@@ -12,10 +12,13 @@ export const TITLE_LAYOUT = {
   /** `x`, `y` are the middle of the face when it isn't pressed. */
   play: { x: GAME_WIDTH / 2, y: 360, width: 360, height: 96 },
   startHintY: 448,
-  bestY: 532,
-  /** How to play: a smaller button under the best score; its hit area is 88 game px tall. */
-  howTo: { x: GAME_WIDTH / 2, y: 588, width: 300, height: 64, hitWidth: 300, hitHeight: 88 },
-  controlsHintY: 640,
+  /** How to play: a smaller button under the key hint; its hit area is 88 game px tall. */
+  howTo: { x: GAME_WIDTH / 2, y: 518, width: 300, height: 64, hitWidth: 300, hitHeight: 88 },
+  bestY: 590,
+  /** The quiet credit line under the best score, and its font size (smaller than the best line's 40). */
+  creditY: 640,
+  creditSize: 24,
+  controlsHintY: 686,
   /** A line is shrunk to fit if it is ever wider than this (the canvas less its margins). */
   maxTextWidth: 1120,
 } as const;

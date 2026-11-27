@@ -141,7 +141,7 @@ test.describe('Quit to title', () => {
     expect(await page.evaluate(() => window.__FLIPPER__!.state())).toBeNull();
     // The round in progress was not finished, so it is not scored: the best is still 0.
     const texts = await visibleTexts(page);
-    expect(texts).toEqual(expect.arrayContaining(['Flipper', 'Play', 'Best: 0']));
+    expect(texts).toEqual(expect.arrayContaining(['Flipsy', 'Play', 'Best: 0']));
     expect(errors).toEqual([]);
   });
 
