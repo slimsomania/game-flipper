@@ -132,6 +132,11 @@ export interface FlipperTestApi {
    * overlay opens a frame after the key press, so poll this after pressing.
    */
   gamePaused(): boolean;
+  /**
+   * Whether the How to play card is open (the HowTo scene is running over the Title, which waits
+   * paused). It opens a frame after the button or H, so poll this after pressing.
+   */
+  howToOpen(): boolean;
   /** Whether the "Turn your phone sideways" message covers the page (a touch device held upright). */
   rotateMessage(): boolean;
   /** Stop the real-time clock; the simulation then only advances through step(). */
@@ -272,6 +277,7 @@ export function installTestHooks(game: Phaser.Game): void {
     fullscreenButton: () => visibleFullscreenButton(game.scene.getScenes(true)),
     buttons: () => visibleButtons(game.scene.getScenes(true)),
     gamePaused: () => game.scene.isActive('Pause'),
+    howToOpen: () => game.scene.isActive('HowTo'),
     rotateMessage: () => rotateMessageShowing(),
     pause: () => {
       testControls.paused = true;

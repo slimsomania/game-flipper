@@ -8,6 +8,8 @@ import type { TitleTexts } from './titleText';
 export interface TitleView {
   /** The Play button (its click and the keyboard shortcuts do the same thing). */
   play: ButtonView;
+  /** The How to play button. */
+  howTo: ButtonView;
 }
 
 /**
@@ -19,6 +21,7 @@ export function createTitleView(
   scene: Phaser.Scene,
   texts: TitleTexts,
   onPlay: (pointer?: Phaser.Input.Pointer) => void,
+  onHowTo: () => void,
 ): TitleView {
   const layout = TITLE_LAYOUT;
   const line = (y: number, content: string, size: number, color: string, bold = true) => {
@@ -48,7 +51,14 @@ export function createTitleView(
   });
   if (texts.startHint !== null) line(layout.startHintY, texts.startHint, 24, COLORS.muted, false);
   line(layout.bestY, texts.bestLine, 40, COLORS.text);
+  const howTo = createButton(scene, {
+    ...layout.howTo,
+    name: 'howToButton',
+    label: texts.howToLabel,
+    fontSize: 32,
+    onActivate: onHowTo,
+  });
   line(layout.controlsHintY, texts.controlsHint, 26, COLORS.text, false);
 
-  return { play: button };
+  return { play: button, howTo };
 }

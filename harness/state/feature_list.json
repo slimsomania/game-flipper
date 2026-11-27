@@ -1175,9 +1175,9 @@
         "F043",
         "F051"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the card is a Phaser scene like Pause and Summary (D27, D32), not DOM, so texts(), textBounds() and buttons() see it. The corner mute and fullscreen buttons are not on the card; a press outside the card only closes it.",
+      "notes": "Built the HowTo scene (src/game/scenes/HowToScene.ts) over the Title, which is paused while it is open; words in view/howToText.ts, geometry in view/howToLayout.ts, drawing in view/howToView.ts. The Title has a How to play button (howToButton) and the H key, and the hook howToOpen() exists. Verified with tests/unit/howTo.test.ts, tests/e2e/howTo.spec.ts, tests/e2e/phone/howToReadable.spec.ts and snaps at 1280x720 and --phone. The right-hand strip (HOW_TO_LAYOUT.pictures) is left empty for F054.",
       "review_feedback": ""
     },
     {

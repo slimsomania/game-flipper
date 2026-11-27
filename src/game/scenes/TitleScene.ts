@@ -34,6 +34,7 @@ export class TitleScene extends Phaser.Scene {
       this,
       titleTexts(saveStore().load().best, detectInputKind()),
       (pointer) => this.play(pointer),
+      () => this.openHowTo(),
     );
     createMuteControl(this);
     createFullscreenControl(this);
@@ -41,6 +42,9 @@ export class TitleScene extends Phaser.Scene {
     const keyboard = this.input.keyboard;
     if (keyboard) {
       keyboard.addCapture('SPACE,ENTER'); // keep the browser from scrolling or clicking a button
+      keyboard.on('keydown-H', (event: KeyboardEvent) => {
+        if (!event.repeat) this.openHowTo();
+      });
       for (const name of ['ENTER', 'SPACE']) {
         keyboard.on(`keydown-${name}`, (event: KeyboardEvent) => {
           if (!event.repeat) this.view.play.activate();
@@ -48,6 +52,13 @@ export class TitleScene extends Phaser.Scene {
       }
     }
     markReady();
+  }
+
+  /** The How to play card opens over this scene, which waits, paused, until the card closes. */
+  private openHowTo(): void {
+    if (this.starting || !this.scene.isActive()) return;
+    this.scene.launch('HowTo');
+    this.scene.pause();
   }
 
   /** Start a round: the Game scene replaces this one. */

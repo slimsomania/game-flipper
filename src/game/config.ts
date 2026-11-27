@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../core/constants';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
+import { HowToScene } from './scenes/HowToScene';
 import { PauseScene } from './scenes/PauseScene';
 import { SummaryScene } from './scenes/SummaryScene';
 import { TitleScene } from './scenes/TitleScene';
@@ -21,6 +22,6 @@ export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
     // it would open an AudioContext of its own at boot and unlock it on the first click or key.
     audio: { noAudio: true },
     // Overlays come after the Game scene, so they are drawn over it.
-    scene: [BootScene, TitleScene, GameScene, SummaryScene, PauseScene],
+    scene: [BootScene, TitleScene, GameScene, SummaryScene, PauseScene, HowToScene],
   };
 }

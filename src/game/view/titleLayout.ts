@@ -13,6 +13,8 @@ export const TITLE_LAYOUT = {
   play: { x: GAME_WIDTH / 2, y: 360, width: 360, height: 96 },
   startHintY: 448,
   bestY: 532,
+  /** How to play: a smaller button under the best score; its hit area is 88 game px tall. */
+  howTo: { x: GAME_WIDTH / 2, y: 588, width: 300, height: 64, hitWidth: 300, hitHeight: 88 },
   controlsHintY: 640,
   /** A line is shrunk to fit if it is ever wider than this (the canvas less its margins). */
   maxTextWidth: 1120,

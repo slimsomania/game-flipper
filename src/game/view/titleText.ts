@@ -5,6 +5,7 @@ export interface TitleTexts {
   /** The game's name. */
   name: string;
   playLabel: string;
+  howToLabel: string;
   /** Under the Play button: the keys that do the same thing; null on a touch device (no keys). */
   startHint: string | null;
   /** "Best: 14": the best round score saved so far (0 before any round scored). */
@@ -24,6 +25,7 @@ export function titleTexts(best: number, kind: InputKind = 'keyboard'): TitleTex
   return {
     name: 'Flipper',
     playLabel: 'Play',
+    howToLabel: 'How to play',
     startHint: touch ? null : 'or press Enter or Space',
     bestLine: `Best: ${best}`,
     controlsHint: touch

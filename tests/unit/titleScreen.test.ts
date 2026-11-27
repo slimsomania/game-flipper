@@ -10,6 +10,7 @@ describe('titleTexts', () => {
     expect(titleTexts(14)).toEqual({
       name: 'Flipper',
       playLabel: 'Play',
+      howToLabel: 'How to play',
       startHint: 'or press Enter or Space',
       bestLine: 'Best: 14',
       controlsHint: 'Up/Down or wheel: power · Space: throw · or grab the bottle and push up',
