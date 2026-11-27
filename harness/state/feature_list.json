@@ -1282,9 +1282,9 @@
       "depends_on": [
         "F057"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Added by the human (2026-11-27) after the game was set up for release on GitHub Pages.",
+      "notes": "Added by the human (2026-11-27) after the game was set up for release on GitHub Pages. Built: SITE_URL in site.config.ts (the only file with the address), a vite.config.ts plugin that fills %SITE_URL% in index.html, the description, Open Graph and twitter tags, and scripts/ogRender.ts (npm run icons writes public/og-image.png). Verified with tests/unit/ogImage.test.ts, tests/e2e/linkPreview.spec.ts and a look at the PNG.",
       "review_feedback": ""
     }
   ]

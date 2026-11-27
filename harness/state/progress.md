@@ -2548,3 +2548,10 @@ best-scoring fixed power (95, no error)                            55.5%        
 
 > [harness] session 170 · maintainer · ok · verify passed · 3 commit(s) · 31 tool calls · 38m 40s · ~$0.59 API-equivalent
 > [harness] corrected: ended with uncommitted changes (the harness committed them as WIP); changed files this role may not change: .claude/settings.json (restored)
+
+## Session 171 · builder · F058 Show a link preview when the game address is shared
+- Did: `site.config.ts` holds SITE_URL (the only place the address is written); a plugin in `vite.config.ts` replaces `%SITE_URL%` in `index.html`, which got the description, Open Graph and twitter:card tags. `scripts/ogRender.ts` draws `public/og-image.png` (1200x630, name Flipsy, bottle mid-flip over a table, 100 px+ from the edges); `npm run icons` now writes it too. Listed in CREDITS.md.
+- Verified: format:check, typecheck, build, `npm test -- tests/unit/ogImage.test.ts tests/unit/architecture.test.ts`; e2e linkPreview, flipsyName, homeScreenApp, homeScreenIcons (desktop project) all pass. Opened og-image.png with Read: reads Flipsy, bottle visible, name clear of the edges.
+- Status: F058 → needs_review
+- Issues / follow-ups: Vite prints a harmless warning about the extensionless `./site.config` import in vite.config.ts (adding `.ts` would need allowImportingTsExtensions). The og picture's font falls back by machine, so its bytes could differ on another OS; the unit test only compares two renders on one machine.
+- Next: Reviewer: check the picture and that the committed og-image.png matches `npm run icons`.
