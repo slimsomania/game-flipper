@@ -2429,3 +2429,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F053 -> needs_review
 - Issues / follow-ups: the paused Title's corner buttons show dimmed behind the veil, and the fullscreen button peeks out above the card's edge; harmless. The layout unit test checks constants only; real text heights are checked in the phone e2e.
 - Next: F054 pictures go in `HOW_TO_LAYOUT.pictures` (left 800, top 150, 320x440).
+
+> [harness] session 157 · builder F053 · todo → todo · ok · verify FAILED · 1 commit(s) · 56 tool calls · 8m 52s · ~$0.84 API-equivalent
