@@ -1261,7 +1261,7 @@
         "F053"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "The Title now says Flipsy (titleText.ts), index.html title and apple-mobile-web-app-title, and the manifest name/short_name; a muted 24px credit line sits under Best (titleLayout.ts, titleView.ts). The Title rows were re-stacked: How to play now sits above Best, then credit, then the controls hint. Verified with unit titleScreen, new e2e flipsyName.spec and phone/credit.spec, the updated Title specs, and snaps at 1280x720 and --phone.",
       "review_feedback": ""
     },

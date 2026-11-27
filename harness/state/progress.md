@@ -2530,3 +2530,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F057 -> needs_review
 - Issues / follow-ups: ARCHITECTURE.md still lacks the How to play modules; startScene keeps old data (reviewer note from session 167).
 - Next: F058 (release); check ARCHITECTURE.md mentions of the Title layout.
+
+> [harness] session 168 · builder F057 · todo → needs_review · ok · verify passed · 1 commit(s) · 42 tool calls · 7m 38s · ~$0.50 API-equivalent
