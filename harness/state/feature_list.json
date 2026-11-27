@@ -1152,9 +1152,9 @@
       "depends_on": [
         "F051"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built: resultStyle returns message 'CAP! +N' and a size (CAP_MESSAGE_SIZE 1.4; resultView scales by it); effectPlan gives a cap outcome pop + capBurst (64 particles, 88 degree fan via makeBurst's new fanDegrees) and no plain burst; soundPlan plays 'fanfare' (five-note rising run to E7 in synth.ts) instead of chime. A tip-over shows 'CAP! +1' with the same celebration. Verified with unit tests, the effects/flipRule/sound/soundRender/muteSound specs, and a screenshot.",
+      "notes": "Built: resultStyle returns message 'CAP! +N' and a size (CAP_MESSAGE_SIZE 1.4; resultView scales by it); effectPlan gives a cap outcome pop + capBurst (64 particles, 88 degree fan via makeBurst's new fanDegrees) and no plain burst; soundPlan plays 'fanfare' (five-note rising run to E7 in synth.ts) instead of chime. A tip-over shows 'CAP! +1' with the same celebration. Verified with unit tests, the effects/flipRule/sound/soundRender/muteSound specs, and a screenshot. Reviewed: harness verify after session 155 covers HEAD (no code diff since); npm test 969/969; effects, flipRule, sound, soundRender, muteSound specs 52/52; test diff only renames 'Cap landing!' to 'CAP!' and adds tests; snaps of a real seed-3 cap throw (water 90%, power 77) at 1280x720, 4/8/20 steps after the outcome, show a large green 'CAP! +5' and a wide 64-dot burst; a 1024x576 tip-over (power 14, water 80%) shows 'CAP! +1', logs fanfare + capBurst 64, and R clears it.",
       "review_feedback": ""
     },
     {
