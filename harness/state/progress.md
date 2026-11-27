@@ -2489,3 +2489,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F056 → needs_review
 - Issues / follow-ups: `openTitle(page, query, firstVisit = false)` presets `seenHowTo: true` (merged into any saved entry); `openGame` passes true because it uses the hook. Saved entries now carry `seenHowTo`, so the saved-entry `toEqual` checks in bestScore, muteSound, muteSummary and title specs gained that field (not weakened). While the card is open over a fresh Game, `activeScenes()` lists only HowTo (Game is paused), so wait on `state() !== null`.
 - Next: F057; ARCHITECTURE.md still lacks the How to play modules.
+
+> [harness] session 164 · builder F056 · todo → todo · ok · verify FAILED · 1 commit(s) · 55 tool calls · 22m 46s · ~$0.78 API-equivalent
