@@ -1238,9 +1238,9 @@
       "depends_on": [
         "F055"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumption: the card counts as seen when it opens, not when it closes, so a reload while it is open doesn't show it again.",
+      "notes": "Built: seenHowTo in SaveData (src/game/storage.ts; key and version unchanged). TitleScene.play starts Game with { showHowTo: !seenHowTo }; GameScene.create marks the save seen as the card opens (F055 path); startScene never opens it. Verified with tests/unit/seenHowTo.test.ts, e2e howToFirstPlay (desktop and phone) and every spec using openTitle; openTitle now presets seenHowTo unless firstVisit is true.",
       "review_feedback": ""
     },
     {

@@ -57,12 +57,22 @@ test.describe('on the round summary', () => {
     await page.keyboard.press('KeyM');
     await expect.poll(() => muteState(page)).toEqual(MUTED);
     expect(await page.evaluate(() => window.__FLIPPER__!.muted())).toBe(true);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: score, muted: true });
+    expect(await savedEntry(page)).toEqual({
+      version: 1,
+      best: score,
+      muted: true,
+      seenHowTo: false,
+    });
     await expectSummaryStillOpen(page);
 
     await page.keyboard.press('KeyM');
     await expect.poll(() => muteState(page)).toEqual(ON);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: score, muted: false });
+    expect(await savedEntry(page)).toEqual({
+      version: 1,
+      best: score,
+      muted: false,
+      seenHowTo: false,
+    });
     await expectSummaryStillOpen(page);
     expect(errors).toEqual([]);
   });
@@ -75,12 +85,22 @@ test.describe('on the round summary', () => {
 
     await clickMuteButton(page);
     await expect.poll(() => muteState(page)).toEqual(MUTED);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: score, muted: true });
+    expect(await savedEntry(page)).toEqual({
+      version: 1,
+      best: score,
+      muted: true,
+      seenHowTo: false,
+    });
     await expectSummaryStillOpen(page);
 
     await clickMuteButton(page);
     await expect.poll(() => muteState(page)).toEqual(ON);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: score, muted: false });
+    expect(await savedEntry(page)).toEqual({
+      version: 1,
+      best: score,
+      muted: false,
+      seenHowTo: false,
+    });
     await expectSummaryStillOpen(page);
     expect(errors).toEqual([]);
   });

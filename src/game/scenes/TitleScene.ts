@@ -67,6 +67,7 @@ export class TitleScene extends Phaser.Scene {
     if (this.starting) return;
     this.starting = true;
     if (pointer?.wasTouch) requestPhoneFullscreen(); // inside the tap, which the browser needs
-    this.scene.start('Game');
+    // The first Play in this browser opens the How to play card over throw 1 (the Game scene does it).
+    this.scene.start('Game', { showHowTo: !saveStore().load().seenHowTo });
   }
 }

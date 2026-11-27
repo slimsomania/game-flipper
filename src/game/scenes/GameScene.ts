@@ -9,6 +9,7 @@ import { markReady, testControls } from '../../debug/testHooks';
 import { tuningControl } from '../../debug/tuningControl';
 import { sharedSfx } from '../audio/sfx';
 import { SoundPlanner } from '../audio/soundPlan';
+import { saveStore } from '../storage';
 import { createEffectsView, type EffectsView } from '../effects/effectsView';
 import { bindGameInput } from '../gameInput';
 import { bindPauseKeys } from '../pauseKeys';
@@ -32,6 +33,8 @@ import type { SummaryData } from './SummaryScene';
 
 interface GameSceneData {
   seed?: number;
+  /** Open the How to play card over the first throw (the first Play from the Title). */
+  showHowTo?: boolean;
 }
 
 /**
@@ -104,6 +107,10 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.draw(this.sim.snapshot());
+    if (data.showHowTo) {
+      saveStore().update({ seenHowTo: true }); // seen as it opens, so a reload doesn't show it again
+      this.openHowTo();
+    }
     markReady();
   }
 

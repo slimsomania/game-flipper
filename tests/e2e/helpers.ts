@@ -5,8 +5,33 @@ import type { SimSnapshot } from '../../src/core/simulation';
  * Opens the page and waits until it accepts input: the game boots to the Title scene, so there is
  * no simulation yet. Returns a live list of console and page errors; assert it is empty at the end
  * of the test. Tests of the title screen itself use this; every other test wants `openGame`.
+ *
+ * The How to play card opens by itself at the first Play in a browser (F056), so unless
+ * `firstVisit` is true, a save marking it as seen is put in an empty localStorage first: a test
+ * that presses Play for something else then keeps testing what it did before.
  */
-export async function openTitle(page: Page, query = ''): Promise<string[]> {
+export async function openTitle(page: Page, query = '', firstVisit = false): Promise<string[]> {
+  if (!firstVisit) {
+    await page.addInitScript(() => {
+      try {
+        const key = 'flipper.save.v1';
+        const text = window.localStorage.getItem(key);
+        let entry: Record<string, unknown> = { version: 1, best: 0, muted: false };
+        if (text !== null) {
+          try {
+            entry = JSON.parse(text) as Record<string, unknown>;
+          } catch {
+            return; // a damaged entry is left for the test that put it there
+          }
+        }
+        if (entry !== null && typeof entry === 'object' && !('seenHowTo' in entry)) {
+          window.localStorage.setItem(key, JSON.stringify({ ...entry, seenHowTo: true }));
+        }
+      } catch {
+        // Blocked storage: nothing to preset.
+      }
+    });
+  }
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
   page.on('console', (msg) => {
@@ -38,7 +63,7 @@ export async function startGame(page: Page, replayOff = true): Promise<void> {
  * a live list of console and page errors; assert it is empty at the end of the test.
  */
 export async function openGame(page: Page, query = '', replayOff = true): Promise<string[]> {
-  const errors = await openTitle(page, query);
+  const errors = await openTitle(page, query, true);
   await startGame(page, replayOff);
   return errors;
 }
