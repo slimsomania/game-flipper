@@ -45,6 +45,11 @@
       "id": "M9",
       "title": "Review fixes",
       "goal": "Fixes from the outside reviews of M6-M8 (Copilot and Antigravity, 2026-11-25): performance budgets that measure the whole frame, including Phaser's render and the slow-motion replay, and four small polish fixes (a listener leak on the iPhone home-screen card, the round summary's flat background against the page gradient, older iOS home-screen detection, a fullscreen test stub that checks its target)."
+    },
+    {
+      "id": "M10",
+      "title": "Cap bonus, How to play and the Flipsy name",
+      "goal": "A landing on the cap scores a flat 5 with its own message, effect and sound, without becoming something a player can farm; a How to play card (Title button, Pause overlay button, H key, opened once by itself at the first Play) explains the goal, controls, the water-to-power idea and scoring with small drawn pictures; the credit 'Created and designed by Vlas' is on the Title and the card; and players see the name Flipsy while every internal name stays Flipper (design sections 1, 2, 3, 6, 9 and 10)."
     }
   ],
   "features": [
@@ -1108,6 +1113,156 @@
       "status": "done",
       "attempts": 1,
       "notes": "buttonView.ts removes its pause and shutdown listeners when its zone is destroyed; SummaryScene hides the Game scene (and shows it again on shutdown) and summaryView drops the camera background; pageGuards treats navigator.standalone === true as a home-screen app; the fullscreen stub records whether each request targeted documentElement (fsOnRoot), asserted in the corner-button, F, phone Play and Play again tests. New tests: summaryBackground.spec.ts, standalone cases in homeScreenApp.spec.ts, the 5x card leak test in phone/fullscreenButton.spec.ts. Verified with npm run verify (385 e2e passed) and snaps at 1280x720 and --phone. Reviewed: session 149 verify green (unit 962/962, e2e 385/385 in 24.8 min); with the zone 'destroy' cleanup removed the 5x card leak test fails (pause listeners grew to 9), and passes with it; snaps of the summary at 1280x720, --phone (740x360) and 1024x700 show the page gradient through the bars with no flat rectangle and nothing of the Game scene; Enter on the summary brings the Game scene back and a new throw flies.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F051",
+      "milestone": "M10",
+      "category": "gameplay",
+      "title": "Score a cap landing 5 and keep it from being farmed",
+      "description": "Design sections 2, 3 and 5 (2026-11-26): a bottle that comes to rest on its cap scores a flat 5 points instead of its completed turns (at least 1, F004 and the 2026-11-22 decision). In LandingJudge (src/core/outcome.ts) a `cap` success scores a new tuning field `capPoints` (5, in src/core/tuning.ts, so the panel can change it). The cap must stay a lucky bonus: add to src/core/difficulty.ts a cap-farming measure in `expected`: for each of the 17 water levels the game draws and each whole aim 0 to 100, the chance (with powerChances and the practiced player's error, sigma 8) that the throw lands on the cap for the full cap points; report the worst (water, aim, chance) and print it in scripts/flip-windows.ts. Measure it first with every cap scoring 5. If the worst chance is above 0.10, apply the design's fallback: a cap landing with 0 completed full turns (the half-turn tip-over of a weak throw) scores a new tuning field `capTipPoints` (1) and is still a success and a landing; then the measure counts only the caps that score `capPoints`. Then re-check the points rule with the cap at its new value. Don't retune the physics: if the farming limit or the points rule still fails with the fallback, set the feature to blocked and put the numbers in notes for the human.",
+      "acceptance": [
+        "Unit: a bottle that comes to rest on its cap after at least one full turn (a placed pose with turns credited) is a success with reason cap and 5 points, and the round score rises by 5; with `capPoints` set to 7 through setTuning the next cap scores 7. Upright landings still score their turns.",
+        "Unit: runBenchmark's `expected` reports the worst cap-farming chance (any water level, any fixed aim, sigma 8, counting caps that score `capPoints`), and difficulty.test.ts requires it to be at most 0.10 with the default tuning.",
+        "Unit: a cap landing with 0 completed full turns is a success and counts as a landing; it scores 5 if the farming limit holds with it at 5, otherwise `capTipPoints` (1). The feature's notes and the progress entry give the measured worst chance with the tip-over at 5 (and with the fallback, if it was applied) and which rule was kept.",
+        "Unit: with the cap counted at its points, the practiced player's expected points per 10 throws are still higher than bestFixedAim's (the existing points test); the progress entry lists both numbers before and after the change.",
+        "The calibration and difficulty tests for landings and windows pass unchanged: flip windows still count upright landings only, the cap still counts as a landing in the expected rates, and no physics tuning value changed."
+      ],
+      "depends_on": [
+        "F035"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: 'a full turn in the air' is read as the judge's existing count for a cap, `turns` = completed full turns (Math.trunc of rotation), so a half-turn tip-over has turns 0. The 10% limit is measured per water level, as the design says 'at any water level', not averaged over levels. The planner could not run the measurement in session 150; the 2026-11-22 decision says caps are about 3% of all throws, half of them half-turn tip-overs.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F052",
+      "milestone": "M10",
+      "category": "visuals",
+      "title": "Celebrate a cap landing: CAP! +5, a bigger burst, a fanfare",
+      "description": "Design sections 2 and 9: the cap gets a bigger celebration than a flip. In src/game/view/resultStyle.ts the cap's message becomes 'CAP! +N' (N is outcome.points, so 'CAP! +5'; it replaces 'Cap landing! +N'), green like every success and drawn larger than the flip messages (a size factor that resultStyle returns, pure). In src/game/effects/effectPlan.ts a cap outcome gives a cue of its own (for example `capBurst`: more particles and a wider spread than any flip's burst) as well as the pop; effectsView draws it. In src/game/audio/soundPlan.ts a cap plays a new voice `fanfare` instead of the `chime`, built in synth.ts: bigger and brighter than the chime, for example a short rising run of notes. Add a cap pose to tests/shared.ts next to FLIPPED and SIDE if the tests need one.",
+      "acceptance": [
+        "Unit: resultStyle gives a cap outcome with 5 points the message 'CAP! +5' in the success color and a size at least 1.25 times that of every flip message; the flip, 'No flip!' and 'Down!' messages are unchanged.",
+        "E2E: a bottle placed to come to rest on its cap shows 'CAP! +5' in texts(); its textBounds() box is at least 1.25 times as tall as the 'Nailed it! +1' box of an upright landing, and stays inside the 1280x720 canvas through the whole result, including while the camera shakes.",
+        "Unit and E2E: for a cap the effects() log has the cap's own cue, which no flip ever gives, with more particles than a triple's burst; sounds() logs `fanfare` and no `chime` for the cap, and an upright landing still logs `chime`. While muted nothing is logged, as before.",
+        "E2E (soundRender.spec.ts): the fanfare rendered offline is audible, unclipped, ends in silence, lasts longer than the chime, and its highest measured pitch is above the chime's.",
+        "A snap at 1280x720 a few steps after a cap landing shows the large 'CAP! +5' and the bigger burst; the builder looked at it and describes it in the progress entry."
+      ],
+      "depends_on": [
+        "F051"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: if F051 applied the fallback, a half-turn tip-over shows 'CAP! +1' with the same celebration (the message always names the points scored).",
+      "review_feedback": ""
+    },
+    {
+      "id": "F053",
+      "milestone": "M10",
+      "category": "ui",
+      "title": "How to play card, opened from the Title",
+      "description": "Design section 6: a card over the screen that explains the game. Make it a scene (`HowTo`) launched over the Title, with its words in a pure src/game/view/howToText.ts (`howToTexts(kind)`, unit-tested, English only) and its geometry in howToLayout.ts (constants, so e2e tests can click). Lines: the goal; the controls for the device in use only (desktop: Up/Down or the mouse wheel then Space, or grab the bottle and push it up with the mouse; phone: push the bottle up with a finger, or slide the power bar and then tap the bottle); the principle that more water makes the bottle heavier so it needs more power, with no numbers; scoring 1 single, 2 double, 3 triple, 5 cap, 10-throw rounds and the saved best; the streak counts landings in a row but gives no points; at the bottom 'Created and designed by Vlas'. Add a How to play button to the Title (createButton) and the H key on the Title (ignore auto-repeat). Close with a Close button, a press outside the card (which does nothing else), Esc or H; it returns to the Title. While the card is open the Title must not react (Enter, Space and the Play button don't start play). Add the hook `howToOpen()` (the HowTo scene is running). All text must fit on the card without scrolling and be readable on the phone. The pictures come in F054; leave room for them.",
+      "acceptance": [
+        "Unit: howToTexts('keyboard') has the goal, the desktop controls, the water-to-power line (containing no digit), the scoring line naming 1, 2, 3 and 5 points, the 10-throw round and the saved best, the streak line, and 'Created and designed by Vlas' as its last line; howToTexts('touch') has the finger controls instead and no key names (Up, Down, Space, Enter, Esc, H).",
+        "E2E: on the Title, the How to play button and the H key each open the card (howToOpen() true, its lines in texts()); while it is open, Enter, Space and a click where the Play button is don't start the Game scene.",
+        "E2E: the Close button, a click outside the card, Esc and H each close the card and leave the Title showing, and Play then starts throw 1; the click outside starts nothing and doesn't toggle mute; a held H doesn't reopen it by auto-repeat.",
+        "Unit (layout) and E2E (phone project): every card text is at least 24 game px tall (F043's minimum), inside the card's box and overlapping no other text; the Close button and the Title's How to play button have hit areas at least 88x88 game px (F042) that overlap no other button.",
+        "Snaps of the open card at 1280x720 and with --phone, looked at by the builder: nothing cut off or crowded, the credit at the bottom, the space for the pictures left clear."
+      ],
+      "depends_on": [
+        "F018",
+        "F043",
+        "F051"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the card is a Phaser scene like Pause and Summary (D27, D32), not DOM, so texts(), textBounds() and buttons() see it. The corner mute and fullscreen buttons are not on the card; a press outside the card only closes it.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F054",
+      "milestone": "M10",
+      "category": "visuals",
+      "title": "Draw the water-to-power pictures on the How to play card",
+      "description": "Design section 6: two small bottles side by side on the card, one with little water next to a short power bar and one with a lot of water next to a tall power bar, so 'more water, more power' reads at a glance. Draw them in code from the game's own bottle geometry (src/core/bottleShape.ts, the bottle's colors) and the power bar's look, at a small scale, with no numbers, labels or marked windows on the bars. They are static, so bake them (src/game/view/bakedGraphics.ts) instead of keeping live Graphics. Keep the picture's numbers (the two water levels and bar fills, positions) in a pure module so they are unit-testable, and expose their boxes through a hook (for example `howToPicture()`).",
+      "acceptance": [
+        "Unit: the picture module gives two bottles with water levels in increasing order (low at most 0.3, high at least 0.7) and bar fills in the same order, the fuller bottle's bar at least twice as tall as the other's.",
+        "E2E: with the card open, the hook reports the two bottles and two bars inside the card's box and clear of every card text's textBounds() box, on the desktop and in the phone project; they are baked Images, not live Graphics.",
+        "E2E: the pictures contain no text (texts() with the card open lists only the card's lines and buttons).",
+        "Snaps of the open card at 1280x720 and with --phone, looked at by the builder: both bottles read as the game's bottle, the water levels are clearly different, the bars are clearly short and tall."
+      ],
+      "depends_on": [
+        "F053"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: water levels about 0.2 and 0.8, bar fills about 30% and 80%; any values that read clearly are fine (they are not a hint about real powers).",
+      "review_feedback": ""
+    },
+    {
+      "id": "F055",
+      "milestone": "M10",
+      "category": "ui",
+      "title": "Open How to play from the Pause overlay and with H in play",
+      "description": "Design sections 6 and 7: the Pause overlay gets a How to play button (src/game/view/pauseView.ts, pauseText.ts, pauseLayout.ts; four buttons must still fit the card and the phone), and H opens the card during play on a desktop. Opened from the Pause overlay, the card sits over it, the Game scene stays paused, and closing returns to the overlay. Opened with H during play, it goes through the same path as GameScene.openPause (let go of held keys and a mouse grab, refuse once the round is over) and pauses the Game scene; closing resumes play exactly, as Resume does. Esc while the card is open only closes the card (it doesn't also open or close the pause overlay). H does nothing on the round summary. The existing pause tests (pauseFreeze.spec.ts) show how to prove a frozen and exactly resumed flight.",
+      "acceptance": [
+        "E2E: the Pause overlay shows a How to play button; clicking it opens the card (howToOpen() true) while the simulation's tick stays the same; Close, a click outside the card, Esc and H each return to the Pause overlay (gamePaused() true, card closed), and Resume then continues play.",
+        "E2E: H while aiming and H during a flight open the card; over 1 s of real time the simulation's tick and the bottle's pose don't change and Space, Up and the mouse do nothing; after closing, the flight continues step for step as the same flight without the card; an Up held when H was pressed is let go.",
+        "E2E: one Esc press with the card open from play closes the card and leaves the game running and not paused; H on the round summary opens nothing; H while the round-over summary is about to open opens nothing.",
+        "Unit (layout) and E2E (phone project): the overlay's four buttons have hit areas at least 88x88 game px, inside the canvas and overlapping nothing; the overlay's texts are at least 24 game px tall and overlap nothing.",
+        "Snaps of the Pause overlay with the new button and of the card opened from it, at 1280x720 and with --phone, looked at by the builder."
+      ],
+      "depends_on": [
+        "F019",
+        "F053"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: closing a card opened with H during play goes straight back to play, not to the Pause overlay (the design lists the Title, the Pause overlay and the first throw as the screens to return to; play is the screen H was pressed on). Assumption: H does nothing on the summary, since nothing there is in progress.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F056",
+      "milestone": "M10",
+      "category": "persistence",
+      "title": "Open How to play by itself at the first Play",
+      "description": "Design section 6: the card opens by itself the first time a player presses Play in this browser, before the first throw, and only once. Add `seenHowTo` to the save in src/game/storage.ts (false by default; a missing or invalid field reads as false while the other fields are kept; no change to SAVE_KEY or the version, as with `muted`). When play is started from the Title (Play button, Enter, Space or a Play tap on a phone) and `seenHowTo` is false, the Game scene opens the card over the first throw through F055's path, and the save is marked as seen when the card opens. Closing it leaves throw 1 ready to throw. The hook startScene('Game') (used by openGame and npm run snap) never opens it, so the existing play tests are unaffected; tests that press Play on the Title for something else preset `seenHowTo` in their helper (openTitle), which only keeps them testing what they tested before.",
+      "acceptance": [
+        "Unit: parseSave reads `seenHowTo` (true or false), gives false for a missing or invalid value and keeps a valid best and muted beside it; SaveStore.update({ seenHowTo: true }) keeps the best and the mute setting.",
+        "E2E: with an empty localStorage, Play on the Title opens the Game scene with the card open (howToOpen() true), throwNumber 1 and phase aiming; while it is open, Space, Up and a push on the bottle neither throw nor change the power, and the tick doesn't move; after closing, throw 1 can be thrown, and the saved entry has seenHowTo true.",
+        "E2E: after a reload, Play opens no card; neither do Play again on the summary, Restart, or Quit to title followed by Play.",
+        "E2E: with storage whose setItem throws, the card opens at the first Play and not at a second Play in the same visit (Quit to title, then Play); with no usable storage, the same.",
+        "E2E (phone project): the first Play tap opens the card and still asks for fullscreen (the fullscreen stub records the request); a tap outside the card closes it without throwing or skipping."
+      ],
+      "depends_on": [
+        "F055"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "Assumption: the card counts as seen when it opens, not when it closes, so a reload while it is open doesn't show it again.",
+      "review_feedback": ""
+    },
+    {
+      "id": "F057",
+      "milestone": "M10",
+      "category": "release",
+      "title": "Show the Flipsy name and Vlas's credit on the Title",
+      "description": "Design sections 1, 6 and 10: players see the game as Flipsy. Change only what players see: the Title's name (src/game/view/titleText.ts), index.html's <title> and apple-mobile-web-app-title, and the manifest's name and short_name (public/manifest.webmanifest). Everything internal stays Flipper: window.__FLIPPER__, SAVE_KEY flipper.save.v1, package.json, the docs and the harness. The tests that check the old names (title, homeScreenApp.spec.ts and the like) change to Flipsy because the design changed, which the progress entry says. Under the best score on the Title add a small, quiet credit line, 'Created and designed by Vlas' (a smaller font than the best line and a muted color), with the Title's rows still clear of each other and of the corner buttons.",
+      "acceptance": [
+        "Unit: titleTexts gives the name 'Flipsy' and a credit line 'Created and designed by Vlas'; the Title layout keeps its rows in order (name, Play, How to play, best, credit, controls hint) and clear of each other and of the corner buttons.",
+        "E2E: document.title is 'Flipsy', the apple-mobile-web-app-title meta is 'Flipsy', and the manifest's name and short_name are 'Flipsy', on the dev server and on the production build; no text the player sees on the Title, in play, on the Pause overlay, the summary or the How to play card contains 'Flipper'.",
+        "E2E: the save key is still flipper.save.v1, and a best saved under it before the change still shows on the Title; window.__FLIPPER__ is still the hook object.",
+        "E2E (phone project): the credit line is at least 24 game px tall, inside the canvas, overlapping no text or button, and its font is smaller than the best line's.",
+        "Snaps of the Title at 1280x720 and with --phone, looked at by the builder: the name reads Flipsy and the credit sits quietly under the best score."
+      ],
+      "depends_on": [
+        "F047",
+        "F053"
+      ],
+      "status": "todo",
+      "attempts": 0,
+      "notes": "",
       "review_feedback": ""
     }
   ]

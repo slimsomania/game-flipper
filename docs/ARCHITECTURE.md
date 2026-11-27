@@ -166,26 +166,24 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 
 ## Plan
 
-Written by the planner (session 1, extended in session 87 for phones) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F045, milestones M1–M8; M7 "Phones" is F037–F045); this section is the intended shape.
+Written by the planner (session 1, extended in sessions 87 for phones and 150 for M10) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F057, milestones M1–M10; M10 is F051–F057); this section is the intended shape.
 
 ### Expected modules
 
 | Path | Responsibility | Features |
 | --- | --- | --- |
-| `src/core/tuning.ts` | `DEFAULT_TUNING` / `Tuning`: every tunable gameplay number; later features add fields (touch push numbers in F045) | F002 on |
-| `src/core/table.ts`, `bottleShape.ts`, `bottle.ts` | the table; bottle shape, mass and center of mass per water level; the physics body and the water draw | F001, F002 |
-| `src/core/throw.ts`, `outcome.ts` | power (0–100) → launch impulse and spin; judging rest (upright, side, cap, off table, timeout) | F003, F004 |
-| `src/core/simulation.ts` | planck world, phases, throw cycle, score, rounds; `snapshot()` and events | F001–F013 |
-| `src/core/powerMeter.ts`, `push.ts`, `grab.ts`, `mouseControl.ts` | power bar (taps, hold acceleration, wheel); a mouse or finger push → power, one grab for both, the pointer kind picking its tuning | F006, F011, F037, F045 |
-| `src/core/round.ts`; `flipWindow.ts`, `difficulty.ts` | round counters, streak, `updateBest`; power sweeps, flip windows, the simulated-player benchmark (`scripts/flip-windows.ts` prints them) | F013, F015; F008, F020 |
-| `src/core/replay.ts` | per-step recording, the landing clip, and the replay timing (`replayStepCount`, `replayFrameAt`; the result phase lasts the delay plus clip / `replaySpeed`, `snapshot.replay` is the frame to draw, `replaySpeed` 0 turns it off; unit tests default it to 0 via `tests/unit/noReplaySetup.ts`, e2e `startGame` sets it to 0) | F026, F027 |
-| `src/core/offscreen.ts` | the off-screen marker on the top edge while the bottle is above the screen (`offscreenMarkerView.ts` draws it) | F034 follow-up |
-| `src/game/scenes/` | Boot → Title → Game; the Summary and Pause overlays | F001, F014, F018, F019 |
-| `src/game/view/` | bottle, table, power bar, HUD, result flash, effects; the `*Layout.ts` / `*Text.ts` modules hold button hit areas (thumb-sized since F042) and words (finger hints since F043) | F002–F007, F021, F042, F043 |
-| `src/game/audio/`, `src/game/storage.ts` | Web Audio effects; the versioned localStorage save (best score, mute) | F015–F017 |
-| `index.html`, a page module in `src/game` | phone page behavior: no scroll, zoom, selection or long-press menu, `100dvh`, safe-area padding, fullscreen on the Play tap, the "Turn your phone sideways" overlay | F040, F041 |
-| `src/debug/testHooks.ts`, `tuningPanel.ts` | `window.__FLIPPER__`; the developer tuning panel (dev or `?debug`; a touch button opens it on phones) | all, F010, F044 |
-| `tests/e2e/phone/`, a shared phone device module | the `phone` Playwright project (Chromium, 740×360 landscape, touch) and touch helpers on a virtual clock; `npm run snap -- --phone` | F037, F038 |
+| `src/core/tuning.ts`, `table.ts`, `bottleShape.ts`, `bottle.ts`, `throw.ts` | every tunable number; the table; bottle shape and mass per water level; power (0–100) → impulse and spin | F001–F003, F045 |
+| `src/core/outcome.ts`, `simulation.ts`, `round.ts` | judging rest (upright, side, cap, off table, timeout) and points (a cap scores `capPoints`, 5, from F051); phases, score, rounds, `updateBest`; `snapshot()` and events | F004–F013, F051 |
+| `src/core/powerMeter.ts`, `push.ts`, `grab.ts`, `mouseControl.ts`, `touchTap.ts` | power bar; a mouse or finger push → power, one grab for both; the phone tap | F006, F011, F045, F048 |
+| `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, the simulated-player benchmark, the cap-farming measure (F051) | F008, F020, F051 |
+| `src/core/replay.ts`, `slosh.ts`, `offscreen.ts` | the landing replay; sloshing water; the off-screen marker | F023–F027 |
+| `src/game/scenes/` | Boot → Title → Game; Summary, Pause and (from F053) HowTo overlays | F014, F018, F019, F053 |
+| `src/game/view/` | everything drawn; `*Layout.ts` / `*Text.ts` hold hit areas and words (`howToText.ts`, `howToLayout.ts` from F053) | F002–F007, F042, F053–F057 |
+| `src/game/effects/`, `src/game/audio/` | tick-driven shake, bursts and the cap's own burst; Web Audio voices, the cap's fanfare | F016, F021, F052 |
+| `src/game/storage.ts` | the versioned save: best, muted, `seenHowTo` (F056; same key and version) | F015, F017, F056 |
+| `index.html`, `public/manifest.webmanifest`, `pageGuards.ts` | phone page behavior, fullscreen, home-screen app; the player-facing name Flipsy (F057) | F040, F046, F047, F057 |
+| `src/debug/` | `window.__FLIPPER__` (adds `howToOpen()` in F053), the tuning panel, frame cost | all |
+| `tests/e2e/phone/` | the `phone` Playwright project (740×360, touch); `npm run snap -- --phone` | F037, F038 |
 
 ### Core state
 
@@ -197,7 +195,7 @@ interface SimSnapshot {
   bottle: BodySnapshot & { water: number; waterOffset?: number }; // water: filled fraction 0–1
   lastThrow: { power: number; water: number; source: 'keyboard' | 'mouse' | 'touch' } | null; // touch from F037
   outcome: { result: 'success' | 'fail'; reason: 'upright' | 'noFlip' | 'side' | 'cap' | 'offTable' | 'offScreen' | 'timeout';
-             rotation: number; turns: number; points: number } | null; // points: turns for a success, 0 for a fail
+             rotation: number; turns: number; points: number } | null; // points: turns for an upright landing, capPoints (5) on the cap, 0 for a fail
   resultSteps: number | null; // steps since the outcome; null outside the result phase
   score: number; throws: number; throwNumber: number; throwsPerRound: number; landings: number; streak: number;
 }
@@ -223,3 +221,5 @@ Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `ski
 | P12 | Phones use the same 1280×720 canvas, rules and tuning; only the input path and page behavior adapt, and a finger push goes through the mouse's grab with its own tuning | one game for both; the push stays one rule in core |
 | P13 | Phone tests are a second Playwright project (740×360, touch) over `tests/e2e/phone/` only | the desktop suite isn't run twice, and 740×360 draws the canvas at exactly half size |
 | P14 | "Touch device" means no fine pointer (`(any-pointer: fine)` false); it picks the hints, the portrait message and fullscreen | a touchscreen laptop keeps the desktop behavior |
+| P15 | The How to play card is a Phaser scene over the scene it was opened from, which pauses like it does for the Pause overlay | the hooks already see scenes, and pausing a scene freezes the round with no new rule in core |
+| P16 | Only player-visible names become Flipsy; the save key and `window.__FLIPPER__` stay | renaming the key would wipe every saved best |
