@@ -44,6 +44,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Some unit tests render in headless Chromium (the icons and the link-preview picture).
+      - run: npx playwright install --with-deps chromium
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
