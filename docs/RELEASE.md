@@ -5,7 +5,7 @@ The game is published at https://slimsomania.github.io/game-flipper/ by GitHub P
 ## Branches and tags
 
 - `dev`: all work happens here. The harness and agent sessions commit and push to `dev`.
-- `main`: stable code. It only changes when the human merges a pull request from `dev`.
+- `main`: stable code. It only changes when the human merges a pull request from `dev`. The "Protect main" ruleset (Settings → Rules) enforces it: no direct pushes, force pushes or deletion; a pull request whose `verify` check passed; merge commits only.
 - `v*` tags on `main` (`v1.0.0`, `v1.1.0`, `v1.0.1`): releases. Pushing a tag deploys the game.
 
 ## Workflows
@@ -13,7 +13,7 @@ The game is published at https://slimsomania.github.io/game-flipper/ by GitHub P
 | Workflow | Runs on | Does |
 | --- | --- | --- |
 | `.github/workflows/ci.yml` | pull requests into `main` | `npm run verify` |
-| `.github/workflows/deploy.yml` | `v*` tags, or by hand with a tag | checks the tag is on `main`, `npm run verify`, publishes `dist/` to Pages |
+| `.github/workflows/deploy.yml` | `v*` tags, or by hand with a tag | checks the tag is on `main`, typecheck, unit tests, build, publishes `dist/` to Pages (about 2 min) |
 
 Pushes to `dev` run nothing on GitHub: the harness runs `npm run verify` locally before every push.
 
