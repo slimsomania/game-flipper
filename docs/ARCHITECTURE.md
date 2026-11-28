@@ -169,24 +169,22 @@ Phaser calls `GameScene.update(time, delta)` once per display frame. The scene f
 
 ## Plan
 
-Written by the planner (session 1, extended in sessions 87 for phones and 150 for M10) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F057, milestones M1–M10; M10 is F051–F057); this section is the intended shape.
+Written by the planner (session 1, extended in sessions 87 for phones, 150 for M10 and 173 for M11) from `docs/GAME_DESIGN.md`. `harness/state/feature_list.json` is the build order (F001–F065, milestones M1–M11; M11, the two-player mode, is F059–F065); this section is the intended shape.
 
 ### Expected modules
 
 | Path | Responsibility | Features |
 | --- | --- | --- |
-| `src/core/tuning.ts`, `table.ts`, `bottleShape.ts`, `bottle.ts`, `throw.ts` | every tunable number; the table; bottle shape and mass per water level; power (0–100) → impulse and spin | F001–F003, F045 |
-| `src/core/outcome.ts`, `simulation.ts`, `round.ts` | judging rest (upright, side, cap, off table, timeout) and points (a cap scores `capPoints`, 5, from F051); phases, score, rounds, `updateBest`; `snapshot()` and events | F004–F013, F051 |
+| `src/core/tuning.ts`, `table.ts`, `bottleShape.ts`, `bottle.ts`, `throw.ts`, `slosh.ts`, `replay.ts`, `offscreen.ts` | every tunable number; the table; bottle shape and mass per water level; power (0–100) → impulse and spin; sloshing water, the landing replay, the off-screen marker | F001–F003, F023–F027, F045 |
+| `src/core/outcome.ts`, `simulation.ts`, `round.ts` | judging rest and points (a cap scores `capPoints`, 5); phases, score, rounds, `updateBest`; `snapshot()` and events | F004–F013, F051 |
+| `src/core/duel.ts` (F059) | the two-player game: active player, a `Round` and a kept bar value per player, one water draw per pair, the waiting player's next water | F059, F065 |
 | `src/core/powerMeter.ts`, `push.ts`, `grab.ts`, `mouseControl.ts`, `touchTap.ts` | power bar; a mouse or finger push → power, one grab for both; the phone tap | F006, F011, F045, F048 |
-| `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, the simulated-player benchmark, the cap-farming measure (F051) | F008, F020, F051 |
-| `src/core/replay.ts`, `slosh.ts`, `offscreen.ts` | the landing replay; sloshing water; the off-screen marker | F023–F027 |
-| `src/game/scenes/` | Boot → Title → Game; Summary, Pause and (from F053) HowTo overlays | F014, F018, F019, F053 |
-| `src/game/view/` | everything drawn; `*Layout.ts` / `*Text.ts` hold hit areas and words (`howToText.ts`, `howToLayout.ts` from F053) | F002–F007, F042, F053–F057 |
-| `src/game/effects/`, `src/game/audio/` | tick-driven shake, bursts and the cap's own burst; Web Audio voices, the cap's fanfare | F016, F021, F052 |
-| `src/game/storage.ts` | the versioned save: best, muted, `seenHowTo` (F056; same key and version) | F015, F017, F056 |
-| `index.html`, `public/manifest.webmanifest`, `pageGuards.ts` | phone page behavior, fullscreen, home-screen app; the player-facing name Flipsy (F057) | F040, F046, F047, F057 |
-| `src/debug/` | `window.__FLIPPER__` (adds `howToOpen()` in F053), the tuning panel, frame cost | all |
-| `tests/e2e/phone/` | the `phone` Playwright project (740×360, touch); `npm run snap -- --phone` | F037, F038 |
+| `src/core/flipWindow.ts`, `difficulty.ts` | power sweeps, flip windows, the simulated-player benchmark, the cap-farming and (F065) table-room measures | F008, F020, F051, F065 |
+| `src/game/scenes/` | Boot → Title → Game (`{ players: 1 \| 2 }` from F060); Summary (a duel's winner from F064), Pause and HowTo overlays | F014, F018, F019, F053, F064 |
+| `src/game/view/` | everything drawn; `*Layout.ts` / `*Text.ts` hold hit areas and words; the pure mirror for Player 2 and the duel HUD (F060, F061) | F002–F007, F042, F053–F057, F060–F063 |
+| `src/game/effects/`, `src/game/audio/`, `src/game/storage.ts` | tick-driven shake and bursts; Web Audio voices; the versioned save (best, muted, `seenHowTo`) | F016, F021, F052, F056 |
+| `index.html`, `public/manifest.webmanifest`, `pageGuards.ts` | phone page behavior, fullscreen, home-screen app, the name Flipsy, the link preview | F040, F046, F047, F057, F058 |
+| `src/debug/`, `tests/e2e/phone/` | `window.__FLIPPER__` (adds `drawnBottle()` and a duel-sides hook in M11), the tuning panel, frame cost; the phone Playwright project | all |
 
 ### Core state
 
@@ -201,10 +199,11 @@ interface SimSnapshot {
              rotation: number; turns: number; points: number } | null; // points: turns for an upright landing, capPoints (5) on the cap, 0 for a fail
   resultSteps: number | null; // steps since the outcome; null outside the result phase
   score: number; throws: number; throwNumber: number; throwsPerRound: number; landings: number; streak: number;
+  players: 1 | 2; duel: { active: 1 | 2; sides: { score; landings; streak; power }[]; waitingWater: number | null } | null; // F059; in a duel score…throwNumber are the active player's
 }
 ```
 
-Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `skip()` → `aiming`, or `roundOver` after throw 10. The simulation also queues events (`throw`, `impact` with speed, `outcome`) that the scene drains each frame for sound and effects.
+Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `skip()` → `aiming`, or `roundOver` after throw 10 (in a duel the turn passes as the result ends, and `roundOver` comes after 10 throws each). The simulation also queues events (`throw`, `impact` with speed, `outcome`) that the scene drains each frame for sound and effects.
 
 ### Key decisions
 
@@ -226,3 +225,4 @@ Flow: `aiming` → throw → `flying` → outcome → `result` → delay or `ski
 | P14 | "Touch device" means no fine pointer (`(any-pointer: fine)` false); it picks the hints, the portrait message and fullscreen | a touchscreen laptop keeps the desktop behavior |
 | P15 | The How to play card is a Phaser scene over the scene it was opened from, which pauses like it does for the Pause overlay | the hooks already see scenes, and pausing a scene freezes the round with no new rule in core |
 | P16 | Only player-visible names become Flipsy; the save key and `window.__FLIPPER__` stay | renaming the key would wipe every saved best |
+| P17 | A duel is one Simulation with two players' books and one PowerMeter whose value is swapped at each turn; every throw is simulated from the left hand and Player 2's is only drawn (and its pointer read) mirrored | the same power and water give the same result on either side by construction, and no input needs a second path |
