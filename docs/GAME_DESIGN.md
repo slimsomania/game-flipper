@@ -87,18 +87,18 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 
 Two friends play against each other on one phone or PC, passing it between turns. Each player has their own side of the screen; only the side whose turn it is can be played, and the other side is grayed out. No network and no accounts: everything happens on the one device.
 
-- **Starting it.** The Title screen has two play buttons: **1 Player** (the game as before) and **2 Players** (section 6).
-- **Layout.** One table, as wide as in solo play. Player 1's hand, bottle and power bar are on the left; Player 2's are on the right, mirrored, so Player 2's throw drifts to the left and both bottles land toward the middle of the table. Each side shows its label ("Player 1", "Player 2"), that player's score and that player's streak.
-- **Active and waiting.** The active side is drawn in full color, with that player's own color on their label and accents (for example orange for Player 1 and purple for Player 2, never the water's blue, section 8). The waiting side is grayed out: its bottle, power bar and label. The waiting bottle is only a picture, not part of the physics, so a thrown bottle can't hit it. A banner says whose turn it is ("Player 2's turn · Throw 3 / 10").
+- **Starting it.** The mode is chosen on the Title screen before the game starts: two play buttons, **1 Player** (the game as before) and **2 Players** (section 6). Enter and Space start 1 Player; 2 Players is clicked or tapped and has no key of its own.
+- **Layout.** One table, the same table as in solo play: the mode only adds Player 2's controls at the other end, and all the physics stays the same. Player 1's hand, bottle and power bar are on the left; Player 2's are on the right, mirrored, so Player 2's throw drifts to the left and both bottles land toward the middle of the table. Each side shows its label ("Player 1", "Player 2"), that player's score and that player's streak.
+- **Active and waiting.** Both players use the game's usual colors; there are no per-player colors. The active side is drawn in full color. The waiting side is grayed out and disabled: its bottle, power bar and label are gray, and its bottle and power bar take no input until it is that player's turn. The waiting bottle is only a picture, not part of the physics, so a thrown bottle can't hit it. A banner says whose turn it is ("Player 2's turn · Throw 3 / 10").
 - **Turns.** The players alternate every throw: Player 1, Player 2, Player 1, … for 10 throws each, 20 in all. Player 1 always starts. After the result message the turn passes by itself: the other side lights up and the first side grays out. There is no "ready" card between turns; the next throw is simply the next player's push or Space.
 - **Same bottles.** Both throws of a pair use the same water level: on throw 3, both players get a bottle with the same water, so neither gets easier bottles. The waiting player's grayed bottle already shows the water it will have.
-- **Controls.** Every input of section 7 works for whichever player is active: the push, the power bar with slide-and-tap on a phone, Up/Down, the wheel and Space. Each player's power bar keeps its own value between that player's throws.
+- **Controls.** Player 2 uses exactly the same controls as Player 1. Every input of section 7 works for whichever player is active: the push, the power bar with slide-and-tap on a phone, Up/Down, the wheel and Space. Each player's power bar keeps its own value between that player's throws.
 - **Scoring.** The same as solo, counted per player: points per flip, 5 for the cap, landings and the streak.
-- **End.** After 10 throws each, the summary shows the winner ("Player 1 wins!") in their color, or "Draw!" on equal points. Below it are both players' points and landings, a **Play again** button (a new two-player game) and a **Title** button.
+- **End.** After 10 throws each, the summary shows the winner ("Player 1 wins!", in the usual text colors), or "Draw!" on equal points. Below it are both players' points and landings, a **Play again** button (a new two-player game) and a **Title** button.
 - **Pause and restart.** As in solo play. Restart starts the whole two-player game over. Quitting to the title abandons it.
 - **Best score.** A two-player game never changes the saved best score: that stays a solo record.
 - **Fair sides.** A mirrored throw must behave exactly like a normal one: the same power and water give the same result on either side, so the targets of section 3 hold for both players. The simplest way is to simulate Player 2's throw like any other and only draw it mirrored, rather than building mirrored physics.
-- **Room on the table.** With a hand at each end, check that a strong throw from either side still lands on the table and doesn't fly past the other player's end more often than in solo play. If it does, the table may be wider in this mode.
+- **Room on the table.** The table is not made wider for this mode, and nothing in the physics or tuning changes for it. Because the waiting bottle is only a picture, a throw that comes to rest near the other player's end behaves exactly as in solo play; the thrown bottle is simply drawn in front of the grayed picture. A measure of how often that happens is useful, but it doesn't block the mode.
 
 ## 6. Screens and UI
 
@@ -115,6 +115,7 @@ Screens, in order: **Title → Play → Round summary → Play again or Title**.
     - the idea: more water makes the bottle heavier, so it needs more power. It states the principle only, with no numbers and no marked windows: reading the water stays the player's guess
     - scoring: 1 point for a single flip, 2 for a double, 3 for a triple, 5 for landing on the cap. A round is 10 throws, and the best round is saved
     - the streak counts landings in a row but gives no points
+    - two players (from M11): pick 2 Players on the Title to play a friend on one device, taking turns; each pair of throws gets the same water, the waiting side is grayed out, and the most points after 10 throws each wins. Shown in both modes.
     - at the bottom, the credit line "Created and designed by Vlas"
   - Pictures: two small bottles side by side, one with little water next to a short power bar, one with a lot of water next to a tall power bar, so the water-to-power idea reads at a glance.
   - Opening: the How to play button on the Title or the Pause overlay, or the H key on a desktop. It also opens by itself the first time a player presses Play in this browser, before the first throw; this is remembered in local storage with the other settings, so it happens once.
@@ -265,6 +266,13 @@ Decided on 2026-11-28:
 - **Play with a friend, on one device (section 5, M11).** The simplest way to play together: two players share one phone or PC and take turns, each on their own side of the screen, with the waiting side grayed out. Playing at the same time on a split screen (it needs two-finger touch) and online play (it needs a server or shared links) were considered and left for later.
 - **Turns alternate every throw, with the same water for both throws of a pair.** It keeps both players involved and makes the bottles fair. A tie is a draw, with no sudden death. There is no "ready" card between turns, the names are fixed as Player 1 and Player 2, and the mode is for exactly two players.
 - **A two-player game doesn't count toward the best score.** With players taking turns it isn't comparable to a solo round.
+
+Decided on 2026-11-28, answering the M11 planner's open questions:
+
+- **Choosing the mode.** The mode is picked on the Title before the game starts (1 Player or 2 Players). 2 Players has no key of its own; Enter and Space stay 1 Player. Player 2 uses the same controls as Player 1.
+- **No player colors.** Both players use the game's usual colors. Whose turn it is shows through the waiting side being grayed out and disabled, plus the turn banner, not through orange and purple accents. This replaces "that player's own color on their label and accents".
+- **How to play mentions the two-player mode.** One short line, shown in both modes.
+- **The table stays the same.** The two-player mode only adds the second player's controls at the other end; the table width, the physics and the tuning don't change. This replaces "the table may be wider in this mode".
 
 Still open, to be settled by playtesting after M1:
 

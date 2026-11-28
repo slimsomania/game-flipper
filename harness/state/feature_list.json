@@ -1340,11 +1340,11 @@
       "milestone": "M11",
       "category": "ui",
       "title": "Show both sides: the grayed waiting side, player labels and scores, and the turn banner",
-      "description": "Design section 5. In a duel the solo HUD gives way to one per side: Player 1's on the left, Player 2's on the right (clear of the corner buttons), each with its label ('Player 1', 'Player 2'), that player's score and streak. The active side is in full color with the player's own color on its label and accents (Player 1 orange, Player 2 purple as the design suggests, in theme.ts; both clearly different from the water's blue, the result green and red, and each other). The waiting side is grayed out: its label, its power bar at its own hand (showing that player's kept value) and a picture of its bottle at its hand with the water it will have (`duel.waitingWater`; no bottle when that player has no throws left). The picture is a baked Image, never a physics body. A banner at the top says whose turn it is, 'Player 2's turn · Throw 3 / 10', with the duel's words in a pure text module. Add a hook (for example `duelSides()`) giving per side its label, color, active or grayed, bar value and the waiting picture's box and water.",
+      "description": "Design section 5. In a duel the solo HUD gives way to one per side: Player 1's on the left, Player 2's on the right (clear of the corner buttons), each with its label ('Player 1', 'Player 2'), that player's score and streak. Both players use the game's usual colors, with no per-player colors (design section 13, 2026-11-28): the active side is in full color and the waiting side is grayed out and disabled (F062 makes it ignore input): its label, its power bar at its own hand (showing that player's kept value) and a picture of its bottle at its hand with the water it will have (`duel.waitingWater`; no bottle when that player has no throws left). The picture is a baked Image, never a physics body, drawn behind the live bottle so a thrown bottle that ends near it shows in front. A banner at the top says whose turn it is, 'Player 2's turn · Throw 3 / 10', with the duel's words in a pure text module. Add a hook (for example `duelSides()`) giving per side its label, active or grayed, bar value and the waiting picture's box and water.",
       "acceptance": [
-        "Unit: the banner is 'Player 1's turn · Throw 1 / 10' at the start and 'Player 2's turn · Throw 3 / 10' on Player 2's third throw; each side's lines carry its label, 'Score: N' and 'Streak: N'; the two player colors differ from each other, from COLORS.water and from the success and fail colors.",
+        "Unit: the banner is 'Player 1's turn · Throw 1 / 10' at the start and 'Player 2's turn · Throw 3 / 10' on Player 2's third throw; each side's lines carry its label, 'Score: N' and 'Streak: N'; both labels use the usual HUD text color (there are no per-player colors).",
         "E2E: in a duel texts() has both labels, both scores and streaks and the banner, and no solo 'Throw N / 10' line; after Player 1 lands a single and Player 2 fails, Player 1's side shows Score: 1 and Streak: 1, Player 2's Score: 0 and Streak: 0.",
-        "E2E: the hook shows the active side in its color and the other grayed, swapping when the turn passes; while Player 1 aims, Player 2's picture is at the right hand with the water Player 2's bottle then gets and its bar shows Player 2's kept value; a bottle placed to fly through the picture's box follows the same path as in solo (the picture is not physics).",
+        "E2E: the hook shows the active side in full color and the other grayed, swapping when the turn passes; while Player 1 aims, Player 2's picture is at the right hand with the water Player 2's bottle then gets and its bar shows Player 2's kept value; a bottle placed to fly through the picture's box follows the same path as in solo (the picture is not physics).",
         "Unit (layout) and E2E (phone project): every duel HUD text is at least 24 game px tall, inside the canvas, and overlaps no other text, no corner button's hit area and neither power bar; the phone performance spec's Graphics budget (F049) also holds in a duel.",
         "Snaps at 1280x720 and with --phone on each player's turn, looked at by the builder: whose turn it is reads at a glance, the waiting side is clearly gray, nothing overlaps."
       ],
@@ -1353,7 +1353,7 @@
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Assumption: when the waiting player has no throws left (Player 1 during Player 2's last throw), their side shows no bottle picture, only the grayed label and bar.",
+      "notes": "Assumption: when the waiting player has no throws left (Player 1 during Player 2's last throw), their side shows no bottle picture, only the grayed label and bar. Design update 2026-11-28: no player colors (orange/purple dropped); the waiting side is grayed out and disabled.",
       "review_feedback": ""
     },
     {
@@ -1381,13 +1381,14 @@
       "milestone": "M11",
       "category": "ui",
       "title": "Put the 1 Player and 2 Players buttons on the Title",
-      "description": "Design sections 5 and 6: the Title's Play button becomes two buttons, 1 Player (the game as before) and 2 Players (a duel, F059 to F062). Enter and Space still start 1 Player, and the key hint under the buttons says so. The first-Play How to play card (F056) opens at whichever button is pressed first, before the first throw. On a phone, a 2 Players tap asks for fullscreen as Play does. The Title's rows are tight (session 169 note), so re-lay them in titleLayout.ts: both buttons with hit areas of at least 88x88 game px, clear of each other, the other rows and the corner buttons. Title tests that click Play change to the 1 Player button because the design changed; the progress entry says so.",
+      "description": "Design sections 5 and 6: the Title's Play button becomes two buttons, 1 Player (the game as before) and 2 Players (a duel, F059 to F062). Enter and Space still start 1 Player, and the key hint under the buttons says so. The How to play card gets the design's new two-player line (section 6), shown in both modes, and must still fit without scrolling. The first-Play How to play card (F056) opens at whichever button is pressed first, before the first throw. On a phone, a 2 Players tap asks for fullscreen as Play does. The Title's rows are tight (session 169 note), so re-lay them in titleLayout.ts: both buttons with hit areas of at least 88x88 game px, clear of each other, the other rows and the corner buttons. Title tests that click Play change to the 1 Player button because the design changed; the progress entry says so.",
       "acceptance": [
         "Unit: titleTexts has the labels '1 Player' and '2 Players'; the layout keeps the rows in order (name, the two buttons, key hint, How to play, best, credit, controls hint) and clear of each other and of the corner buttons; both buttons' hit areas are at least 88x88 and don't overlap.",
         "E2E: a click on 1 Player, Enter and Space each start a solo game (players 1, throw 1); a click on 2 Players starts a duel (players 2, Player 1's turn, throw 1); a click between the two buttons starts nothing.",
         "E2E: with an empty save, 2 Players opens the How to play card over the duel's first throw, and after it is closed neither button opens it again.",
         "E2E (phone project): a tap on 2 Players starts a duel and records a fullscreen request (the fullscreen stub); every Title text is at least 24 game px tall and overlaps nothing.",
-        "Snaps of the Title at 1280x720 and with --phone, looked at by the builder: two clear buttons, nothing crowded."
+        "Snaps of the Title at 1280x720 and with --phone, looked at by the builder: two clear buttons, nothing crowded.",
+        "Unit and E2E (phone project): the How to play text has the two-player line in both modes; every card text stays at least 24 game px tall and the card fits without scrolling at 1280x720 and on the phone."
       ],
       "depends_on": [
         "F062",
@@ -1395,7 +1396,7 @@
       ],
       "status": "todo",
       "attempts": 0,
-      "notes": "Assumptions: the 2 Players button has no key of its own (Enter and Space stay 1 Player); the How to play card's text is unchanged (the design doesn't ask it to explain the duel).",
+      "notes": "Assumptions: the 2 Players button has no key of its own (Enter and Space stay 1 Player) (decided by the human 2026-11-28). The How to play card now mentions the two-player mode (design update 2026-11-28).",
       "review_feedback": ""
     },
     {
@@ -1403,10 +1404,10 @@
       "milestone": "M11",
       "category": "ui",
       "title": "End a two-player game with the winner on the summary",
-      "description": "Design section 5: after 10 throws each the summary shows the winner, 'Player 1 wins!' in that player's color, or 'Draw!' on equal points (landings don't break a tie), then both players' points and landings, a Play again button (a new duel: restartRound() on the same simulation) and a Title button, with the same keys as the solo summary. A duel never changes the saved best: SummaryScene doesn't call recordRound for it, and the duel summary has no Best line or 'New best!'. Pause works as in solo: the overlay's Restart and R restart the whole duel, and Quit to title abandons it. Words in summaryText.ts (pure), layout in summaryLayout.ts; expose the winner line's color through a hook.",
+      "description": "Design section 5: after 10 throws each the summary shows the winner, 'Player 1 wins!' in the usual text colors (no per-player colors), or 'Draw!' on equal points (landings don't break a tie), then both players' points and landings, a Play again button (a new duel: restartRound() on the same simulation) and a Title button, with the same keys as the solo summary. A duel never changes the saved best: SummaryScene doesn't call recordRound for it, and the duel summary has no Best line or 'New best!'. Pause works as in solo: the overlay's Restart and R restart the whole duel, and Quit to title abandons it. Words in summaryText.ts (pure), layout in summaryLayout.ts.",
       "acceptance": [
         "Unit: the duel summary's words: more points wins ('Player 2 wins!'), equal points is 'Draw!' even with different landings; each player's line names the player, their points and 'Landed N / 10'.",
-        "E2E: a scripted duel (shortened with setTuningValue throwsPerRound, placed landings) ends on the summary with the winner line in the winner's color, both players' lines and the two buttons; a tied one shows 'Draw!'.",
+        "E2E: a scripted duel (shortened with setTuningValue throwsPerRound, placed landings) ends on the summary with the winner line, both players' lines and the two buttons; a tied one shows 'Draw!'.",
         "E2E: a duel scoring more than the saved best leaves the saved entry's best unchanged and shows no 'Best' or 'New best!'; a solo round afterwards still records its best.",
         "E2E: Play again (click, Enter, Space or R) starts a new duel at Player 1's turn, throw 1, both scores 0; Title returns to the Title; R and the overlay's Restart mid-duel restart the whole duel; Quit to title and then 1 Player starts a solo game.",
         "E2E (phone project) and snaps at 1280x720 and --phone of a win and a draw, looked at by the builder: summary texts at least 24 game px tall, buttons at least 88x88, nothing overlaps."
@@ -1424,10 +1425,10 @@
       "milestone": "M11",
       "category": "gameplay",
       "title": "Check that throws from either end stay on the table",
-      "description": "Design section 5, 'Room on the table'. Player 2 is simulated from the left hand and only drawn mirrored (F060), so falling off the far end is exactly as likely as in solo; what can differ is a bottle coming to rest where the waiting player's bottle picture stands, at the other hand. Measure it headless: give sweepPowers' results the bottle's x when the outcome is decided, and add a measure (in difficulty.ts or a small new core module) that over the 17 water levels and powers 0 to 100 reports the share of throws that end off the far end and the share that come to rest within the waiting picture's box (the mirrored HAND_X plus or minus half the bottle's width and 0.2 m), counted over all throws and over throws inside a single- or double-flip window; print it in scripts/flip-windows.ts. If an in-window throw reaches the picture's box, change neither the table nor the tuning: set the feature to blocked with the numbers in notes for the human (the design allows a wider table in this mode).",
+      "description": "Design section 5, 'Room on the table'. Player 2 is simulated from the left hand and only drawn mirrored (F060), so falling off the far end is exactly as likely as in solo; what can differ is a bottle coming to rest where the waiting player's bottle picture stands, at the other hand. Measure it headless: give sweepPowers' results the bottle's x when the outcome is decided, and add a measure (in difficulty.ts or a small new core module) that over the 17 water levels and powers 0 to 100 reports the share of throws that end off the far end and the share that come to rest within the waiting picture's box (the mirrored HAND_X plus or minus half the bottle's width and 0.2 m), counted over all throws and over throws inside a single- or double-flip window; print it in scripts/flip-windows.ts. Whatever it finds, change neither the table nor the tuning and don't block: the human decided on 2026-11-28 that the table stays the same and the physics is unchanged in a duel; a thrown bottle that ends at the picture is drawn in front of it (F061).",
       "acceptance": [
         "Unit: the sweep results carry the bottle's x at the deciding step, and the measure counts far-end and picture-box cases correctly on a made-up sweep (the `sweep` option, no physics).",
-        "Unit: with the default tuning no throw inside any single- or double-flip window, at any of the 17 levels, comes to rest within the waiting picture's box or falls off the far end.",
+        "Unit: with the default tuning no throw inside any single- or double-flip window, at any of the 17 levels, falls off the far end (as in solo); the share that comes to rest within the waiting picture's box is reported, not asserted.",
         "The progress entry gives the measured shares over all powers and inside the windows, matching what `npx tsx scripts/flip-windows.ts` prints; no tuning or table value changed."
       ],
       "depends_on": [
