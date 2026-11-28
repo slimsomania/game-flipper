@@ -5,6 +5,7 @@ import { rotateMessageShowing } from '../game/rotateMessage';
 import { sharedSfx } from '../game/audio/sfx';
 import { sharedEffectLog } from '../game/effects/effectLog';
 import { drawnBottle } from '../game/view/bottleView';
+import { drawnDuelSides } from '../game/view/duelHudView';
 import { drawnPowerBar } from '../game/view/powerBarView';
 import { drawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
@@ -69,6 +70,10 @@ export function installTestHooks(game: Phaser.Game): void {
     powerBar: () => {
       const scene = currentSimulation() ? game.scene.getScene('Game') : null;
       return scene ? drawnPowerBar(scene) : null;
+    },
+    duelSides: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      return scene ? drawnDuelSides(scene) : null;
     },
     shadow: () => {
       const scene = currentSimulation() ? game.scene.getScene('Game') : null;

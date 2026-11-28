@@ -27,6 +27,12 @@ export const COLORS = {
   powerTrack: 0xd3dce8,
   powerFill: 0xe8963c,
   powerOutline: 0x6b7a90,
+  /** The waiting side of a duel is grayed out: its text, bar fill and bottle picture. */
+  waiting: '#a3adbb',
+  waitingFill: 0xb4bcc8,
+  waitingBottle: 0xb8c0cc,
+  waitingWater: 0x95a0af,
+  waitingCap: 0xe3e7ed,
   /** A white card on a soft shadow (the round summary), for text that must be easy to read. */
   card: 0xffffff,
   cardShadow: 0xd5deea,

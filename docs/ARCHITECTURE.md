@@ -184,7 +184,7 @@ Written by the planner (session 1, extended in sessions 87 for phones, 150 for M
 | `src/game/view/` | everything drawn; `*Layout.ts` / `*Text.ts` hold hit areas and words; the pure mirror for Player 2 and the duel HUD (F060, F061) | F002–F007, F042, F053–F057, F060–F063 |
 | `src/game/effects/`, `src/game/audio/`, `src/game/storage.ts` | tick-driven shake and bursts; Web Audio voices; the versioned save (best, muted, `seenHowTo`) | F016, F021, F052, F056 |
 | `index.html`, `public/manifest.webmanifest`, `pageGuards.ts` | phone page behavior, fullscreen, home-screen app, the name Flipsy, the link preview | F040, F046, F047, F057, F058 |
-| `src/debug/`, `tests/e2e/phone/` | `window.__FLIPPER__` (adds `drawnBottle()` and a duel-sides hook in M11), the tuning panel, frame cost; the phone Playwright project | all |
+| `src/debug/`, `tests/e2e/phone/` | `window.__FLIPPER__` (adds `drawnBottle()` and `duelSides()` in M11; the duel HUD is `duelHudView.ts`, `waitingSideView.ts`, `duelLayout.ts` and `duelText.ts` in `src/game/view/`), the tuning panel, frame cost; the phone Playwright project | all |
 
 ### Core state
 

@@ -7,6 +7,7 @@ import type { SoundLogEntry } from '../game/audio/sfx';
 import type { EffectLogEntry } from '../game/effects/effectLog';
 import type { DrawnShadow } from '../game/view/bottleShadowView';
 import type { DrawnBottle } from '../game/view/bottleView';
+import type { DrawnDuelSide } from '../game/view/duelHudView';
 import type { DrawnPowerBar } from '../game/view/powerBarView';
 import type { FrameCost } from './frameCost';
 import type { FlashView } from './visibleFlash';
@@ -104,6 +105,14 @@ export interface FlipperTestApi {
    * scene running. It stands by the right hand on Player 2's turn. Wait a frame after stepping.
    */
   powerBar(): DrawnPowerBar | null;
+  /**
+   * The two sides of a duel as the Game scene last drew them (Player 1 first), or null outside a
+   * duel: each side's `label`, `look` ('active' in full color, 'grayed' while waiting), label
+   * color, score and streak lines, power bar value and box, and for the grayed side its bottle
+   * `picture` (box in game pixels and `water`; null when it has no throws left). Wait a frame
+   * after stepping.
+   */
+  duelSides(): DrawnDuelSide[] | null;
   /**
    * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime', 'fanfare' or 'thud'; a cap landing plays the fanfare instead of the chime),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to

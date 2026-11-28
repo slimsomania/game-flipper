@@ -19,7 +19,9 @@ import { createBottleShadowView, type BottleShadowView } from '../view/bottleSha
 import { createBottleView, type BottleView } from '../view/bottleView';
 import { createCursorView, type CursorView } from '../view/cursorView';
 import { createFullscreenControl } from '../view/fullscreenButtonView';
-import { createHudView, type HudView } from '../view/hudView';
+import { createDuelHudView } from '../view/duelHudView';
+import { createHudView } from '../view/hudView';
+import { createWaitingSideView } from '../view/waitingSideView';
 import { createMuteControl } from '../view/muteButtonView';
 import { createOffscreenMarkerView, type OffscreenMarkerView } from '../view/offscreenMarkerView';
 import { createPauseButton } from '../view/pauseButtonView';
@@ -54,7 +56,7 @@ export class GameScene extends Phaser.Scene {
   private resultView!: ResultView;
   private replayLabelView!: ReplayLabelView;
   private offscreenMarkerView!: OffscreenMarkerView;
-  private hudView!: HudView;
+  private hudView!: { update(snapshot: SimSnapshot): void };
   private cursorView!: CursorView;
   private effectsView!: EffectsView;
   private planner = new SoundPlanner();
@@ -94,13 +96,15 @@ export class GameScene extends Phaser.Scene {
     });
 
     createTableView(this);
+    // The waiting side's picture goes in before the live bottle's view, so a bottle lands in front.
+    const waiting = data.players === 2 ? createWaitingSideView(this) : null;
     this.shadowView = createBottleShadowView(this);
     this.bottleView = createBottleView(this);
     this.offscreenMarkerView = createOffscreenMarkerView(this);
     this.powerBarView = createPowerBarView(this);
     this.resultView = createResultView(this);
     this.replayLabelView = createReplayLabelView(this);
-    this.hudView = createHudView(this);
+    this.hudView = waiting ? createDuelHudView(this, waiting) : createHudView(this);
     this.cursorView = createCursorView(this);
     this.effectsView = createEffectsView(this);
     createPauseButton(this, 'pause', () => this.openPause());

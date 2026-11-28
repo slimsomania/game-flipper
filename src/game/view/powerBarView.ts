@@ -33,8 +33,11 @@ export interface DrawnPowerBar {
 }
 
 /** What the hook reports: the bar as last drawn. */
-export function drawnPowerBar(scene: Phaser.Scene): DrawnPowerBar | null {
-  const bar = scene.children.getByName(POWER_BAR_NAME) as Phaser.GameObjects.Container | null;
+export function drawnPowerBar(
+  scene: Phaser.Scene,
+  name: string = POWER_BAR_NAME,
+): DrawnPowerBar | null {
+  const bar = scene.children.getByName(name) as Phaser.GameObjects.Container | null;
   if (!bar) return null;
   return {
     left: BAR_LEFT + bar.x,
@@ -50,13 +53,27 @@ export function drawnPowerBar(scene: Phaser.Scene): DrawnPowerBar | null {
  * value as a percentage below it. Only the player's own setting is shown: it says nothing about
  * the bottle.
  */
-export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
+export const WAITING_BAR_NAME = 'power-bar-waiting';
+
+/** How the bar looks: the active player's in full color, the waiting player's grayed out. */
+export interface PowerBarOptions {
+  name?: string;
+  grayed?: boolean;
+}
+
+export function createPowerBarView(
+  scene: Phaser.Scene,
+  { name = POWER_BAR_NAME, grayed = false }: PowerBarOptions = {},
+): PowerBarView {
   // The track and the marks never change: each is drawn once into a texture (bakedGraphics.ts).
   const boxLeft = BAR_LEFT - BAR_PAD;
   const boxTop = BAR_TOP - BAR_PAD;
   const boxWidth = BAR_WIDTH + 2 * BAR_PAD;
   const boxHeight = BAR_HEIGHT + 2 * BAR_PAD;
-  const container = scene.add.container(0, 0).setName(POWER_BAR_NAME);
+  const container = scene.add
+    .container(0, 0)
+    .setName(name)
+    .setAlpha(grayed ? 0.7 : 1);
   const bakedImage = (key: string, draw: (g: Phaser.GameObjects.Graphics) => void): void => {
     container.add(
       scene.add
@@ -94,7 +111,7 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
       fontFamily: FONT_FAMILY,
       fontSize: '24px',
       fontStyle: 'bold',
-      color: COLORS.muted,
+      color: grayed ? COLORS.waiting : COLORS.muted,
     })
     .setOrigin(0.5, 1);
   const label = scene.add
@@ -102,7 +119,7 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
       fontFamily: FONT_FAMILY,
       fontSize: '30px',
       fontStyle: 'bold',
-      color: COLORS.text,
+      color: grayed ? COLORS.waiting : COLORS.text,
     })
     .setOrigin(0.5, 0);
   container.add([caption, label]);
@@ -123,7 +140,7 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
         const bottomRadius = Math.min(FILL_RADIUS, height / 2);
         const topRadius = height >= FILL_HEIGHT - FILL_RADIUS ? bottomRadius : 0;
         fill
-          .fillStyle(COLORS.powerFill, 1)
+          .fillStyle(grayed ? COLORS.waitingFill : COLORS.powerFill, 1)
           .fillRoundedRect(
             BAR_LEFT + FILL_INSET,
             BAR_BOTTOM - FILL_INSET - height,
