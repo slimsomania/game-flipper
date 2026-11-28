@@ -26,6 +26,7 @@ import { createPauseButton } from '../view/pauseButtonView';
 import { createPowerBarView, type PowerBarView } from '../view/powerBarView';
 import { createReplayLabelView, type ReplayLabelView } from '../view/replayLabelView';
 import { createResultView, type ResultView } from '../view/resultView';
+import { mirrorMeters, viewPose } from '../view/mirror';
 import { createTableView } from '../view/tableView';
 import type { HowToData } from './HowToScene';
 import type { PauseData } from './PauseScene';
@@ -35,6 +36,8 @@ interface GameSceneData {
   seed?: number;
   /** Open the How to play card over the first throw (the first Play from the Title). */
   showHowTo?: boolean;
+  /** 2 starts a two-player duel; 1 or nothing starts solo play. */
+  players?: 1 | 2;
 }
 
 /**
@@ -65,7 +68,11 @@ export class GameScene extends Phaser.Scene {
   create(data: GameSceneData): void {
     const seed = data.seed ?? intParam('seed') ?? Math.floor(Math.random() * 1_000_000);
     // The developer tuning (edits and water lock from the panel) carries over to a restarted game.
-    this.sim = new Simulation({ seed, ...tuningControl().simulationOptions() });
+    this.sim = new Simulation({
+      seed,
+      players: data.players === 2 ? 2 : 1,
+      ...tuningControl().simulationOptions(),
+    });
     this.stepper.reset();
     this.planner = new SoundPlanner(); // its knock rate limit counts this simulation's ticks
     registerSimulation(this.sim);
@@ -123,7 +130,12 @@ export class GameScene extends Phaser.Scene {
     // What happened since the last frame (core never plays or draws anything): heard and seen.
     const events = this.sim.drainEvents();
     this.playSounds(events);
-    this.effectsView.update(events, snapshot, this.sim.tuning);
+    this.effectsView.update(
+      events,
+      snapshot,
+      this.sim.tuning,
+      snapshot.duel?.active === 2 ? mirrorMeters(snapshot.bottle.x) : undefined,
+    );
     if (this.sim.phase === 'roundOver') this.openSummary();
   }
 
@@ -189,11 +201,14 @@ export class GameScene extends Phaser.Scene {
           waterOffset: replay.waterOffset,
         }
       : snapshot.bottle;
-    this.bottleView.update(shown, replay ? replay.tick : snapshot.tick);
-    this.shadowView.update(shown);
-    this.offscreenMarkerView.update(shown);
+    // Player 2's throw is simulated from the left hand like any other and only drawn mirrored.
+    const mirrored = snapshot.duel?.active === 2;
+    const drawn = viewPose(shown, mirrored);
+    this.bottleView.update(drawn, replay ? replay.tick : snapshot.tick);
+    this.shadowView.update(drawn);
+    this.offscreenMarkerView.update(drawn);
     this.replayLabelView.update(replay !== null);
-    this.powerBarView.update(snapshot.power);
+    this.powerBarView.update(snapshot.power, mirrored);
     this.resultView.update(snapshot.outcome, snapshot.resultSteps);
     this.hudView.update(snapshot);
     const pointer = this.input.activePointer;

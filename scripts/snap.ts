@@ -51,7 +51,8 @@ Actions (coordinates are game coordinates on the ${GAME_WIDTH}x${GAME_HEIGHT} lo
                                     <ms> (0 jumps). The finger carries over, so a push can be
                                     photographed halfway: touchdown, touchmove, shot, touchup.
   touchup                           lift the finger where it is (throws if it was moving up)
-  scene:<Key>                   jump to a scene (window.__FLIPPER__.startScene)
+  scene:<Key>[;<name>=<n>...]       jump to a scene (window.__FLIPPER__.startScene); the options are
+                                    its data, e.g. scene:Game;players=2 starts a two-player duel
   pause / resume                    freeze / unfreeze the real-time simulation clock
   step:<frames>                     advance the simulation by exactly <frames> fixed steps
   call:<method>;<arg>;...           call window.__FLIPPER__.<method>(args); each arg is a number,
@@ -217,7 +218,10 @@ async function perform(
       break;
     }
     case 'scene':
-      await page.evaluate((key) => window.__FLIPPER__!.startScene(key), action.key);
+      await page.evaluate(({ key, data }) => window.__FLIPPER__!.startScene(key, data), {
+        key: action.key,
+        data: action.data,
+      });
       await page.waitForFunction(
         (key) => window.__FLIPPER__!.activeScenes().includes(key),
         action.key,

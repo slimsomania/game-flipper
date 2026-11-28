@@ -16,6 +16,22 @@ const SHELL_PAD_PX = 2;
 /** More simulation steps than this between two draws means the water starts over. */
 const MAX_STEPS_BETWEEN_DRAWS = 30;
 
+/** The bottle's name in the scene, for the test hook. */
+export const BOTTLE_NAME = 'bottle';
+
+/** The pose the bottle view last drew: base center in game pixels, angle in radians. */
+export interface DrawnBottle {
+  x: number;
+  y: number;
+  angle: number;
+}
+
+/** What the hook reports: the bottle as last drawn. */
+export function drawnBottle(scene: Phaser.Scene): DrawnBottle | null {
+  const bottle = scene.children.getByName(BOTTLE_NAME) as Phaser.GameObjects.Container | null;
+  return bottle ? { x: bottle.x, y: bottle.y, angle: bottle.rotation } : null;
+}
+
 export interface BottleView {
   /**
    * Move the bottle to the snapshot's pose and redraw the water. `tick` is the simulation step the
@@ -60,7 +76,7 @@ export function createBottleView(scene: Phaser.Scene): BottleView {
 
   const water = scene.add.graphics();
   // The container carries the pose; both graphics are drawn in the bottle's local coordinates.
-  const container = scene.add.container(0, 0, [shell, water]);
+  const container = scene.add.container(0, 0, [shell, water]).setName(BOTTLE_NAME);
   const motion = new WaterMotion();
   // Heights above the base of the center of mass and of the water's centroid, per water level.
   // The densities are the default tuning's: the drawing only needs them roughly.

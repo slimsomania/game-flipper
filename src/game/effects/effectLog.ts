@@ -7,7 +7,8 @@ import type { EffectCue } from './effectPlan';
  */
 
 /** An effect the game played, as `window.__FLIPPER__.effects()` lists it. */
-export type EffectLogEntry = EffectCue;
+/** `x` is where a burst started, in game pixels (set for bursts only). */
+export type EffectLogEntry = EffectCue & { x?: number };
 
 /** The oldest entries are dropped past this many, so a long session keeps a small log. */
 const LOG_LIMIT = 200;
@@ -15,8 +16,10 @@ const LOG_LIMIT = 200;
 export class EffectLog {
   private entries: EffectLogEntry[] = [];
 
-  record(cue: EffectCue): void {
-    this.entries.push({ name: cue.name, intensity: cue.intensity, tick: cue.tick });
+  record(cue: EffectCue, x?: number): void {
+    const entry: EffectLogEntry = { name: cue.name, intensity: cue.intensity, tick: cue.tick };
+    if (x !== undefined) entry.x = x;
+    this.entries.push(entry);
     if (this.entries.length > LOG_LIMIT) this.entries.splice(0, this.entries.length - LOG_LIMIT);
   }
 

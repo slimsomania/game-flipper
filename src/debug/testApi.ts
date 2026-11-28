@@ -6,6 +6,8 @@ import type { Tuning } from '../core/tuning';
 import type { SoundLogEntry } from '../game/audio/sfx';
 import type { EffectLogEntry } from '../game/effects/effectLog';
 import type { DrawnShadow } from '../game/view/bottleShadowView';
+import type { DrawnBottle } from '../game/view/bottleView';
+import type { DrawnPowerBar } from '../game/view/powerBarView';
 import type { FrameCost } from './frameCost';
 import type { FlashView } from './visibleFlash';
 import type { ButtonArea } from './visibleButtons';
@@ -91,6 +93,17 @@ export interface FlipperTestApi {
    * Wait a frame after stepping.
    */
   shadow(): DrawnShadow | null;
+  /**
+   * The pose the bottle view last drew (the live bottle, or the replay frame during the replay):
+   * base center in game pixels and angle in radians, or null with no game scene running. In a
+   * duel it is the mirror of the snapshot's pose on Player 2's throw. Wait a frame after stepping.
+   */
+  drawnBottle(): DrawnBottle | null;
+  /**
+   * The power bar's track as last drawn (game pixels) and the value it shows, or null with no game
+   * scene running. It stands by the right hand on Player 2's turn. Wait a frame after stepping.
+   */
+  powerBar(): DrawnPowerBar | null;
   /**
    * The sounds the game has played, oldest first: `name` ('whoosh', 'knock', 'chime', 'fanfare' or 'thud'; a cap landing plays the fanfare instead of the chime),
    * `volume` (0 to 1) and the `tick` of the event behind it. It records what the game asked to

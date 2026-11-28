@@ -4,6 +4,8 @@ import { setMute } from '../game/audio/mute';
 import { rotateMessageShowing } from '../game/rotateMessage';
 import { sharedSfx } from '../game/audio/sfx';
 import { sharedEffectLog } from '../game/effects/effectLog';
+import { drawnBottle } from '../game/view/bottleView';
+import { drawnPowerBar } from '../game/view/powerBarView';
 import { drawnShadow } from '../game/view/bottleShadowView';
 import { OFFSCREEN_MARKER_NAME } from '../game/view/offscreenMarkerView';
 import { frameCost, resetFrameCost } from './frameCost';
@@ -59,6 +61,14 @@ export function installTestHooks(game: Phaser.Game): void {
       const marker = scene?.children.getByName(OFFSCREEN_MARKER_NAME) as
         Phaser.GameObjects.Graphics | null | undefined;
       return marker?.visible ? { x: marker.x, alpha: marker.alpha } : null;
+    },
+    drawnBottle: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      return scene ? drawnBottle(scene) : null;
+    },
+    powerBar: () => {
+      const scene = currentSimulation() ? game.scene.getScene('Game') : null;
+      return scene ? drawnPowerBar(scene) : null;
     },
     shadow: () => {
       const scene = currentSimulation() ? game.scene.getScene('Game') : null;
@@ -120,7 +130,8 @@ export function installTestHooks(game: Phaser.Game): void {
       for (const scene of game.scene.getScenes(false)) {
         if (scene.scene.isActive() || scene.scene.isPaused()) game.scene.stop(scene.scene.key);
       }
-      game.scene.start(key, data);
+      // Phaser keeps the previous start's data when none is given: a bare start means no data.
+      game.scene.start(key, data ?? {});
     },
     info: () => ({
       renderer:

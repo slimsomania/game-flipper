@@ -12,7 +12,7 @@ export type Action =
   | { kind: 'touchdown'; x: number; y: number }
   | { kind: 'touchmove'; x: number; y: number; ms: number }
   | { kind: 'touchup' }
-  | { kind: 'scene'; key: string }
+  | { kind: 'scene'; key: string; data?: Record<string, number> }
   | { kind: 'pause' | 'resume' }
   | { kind: 'step'; frames: number }
   | { kind: 'call'; method: string; args: CallArg[] }
@@ -85,8 +85,22 @@ export function parseAction(token: string): Action {
       if (ms < 0) throw new Error(`"${token}": the time can't be negative`);
       return { kind, x, y, ms };
     }
-    case 'scene':
-      return { kind, key: text() };
+    case 'scene': {
+      // scene:<Key>;<name>=<number>;... : the options become the scene's data (players=2).
+      const [key, ...options] = text()
+        .split(';')
+        .map((part) => part.trim());
+      if (!key) throw new Error(`"${token}": expected scene:<Key>`);
+      if (options.length === 0) return { kind, key };
+      const data: Record<string, number> = {};
+      for (const option of options) {
+        const match = /^(\w+)=(-?\d+(?:\.\d+)?)$/.exec(option);
+        if (!match)
+          throw new Error(`"${token}": expected an option like players=2, got "${option}"`);
+        data[match[1]] = Number(match[2]);
+      }
+      return { kind, key, data };
+    }
     case 'pause':
     case 'resume':
       return { kind };

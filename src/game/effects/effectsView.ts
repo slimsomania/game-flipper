@@ -2,6 +2,7 @@ import type Phaser from 'phaser';
 import type { SimEvent } from '../../core/events';
 import type { SimSnapshot } from '../../core/simulation';
 import type { Tuning } from '../../core/tuning';
+import { PIXELS_PER_METER } from '../../core/constants';
 import { Effects } from './effects';
 import { sharedEffectLog } from './effectLog';
 
@@ -13,7 +14,7 @@ export interface EffectsView {
    * Start the effects for the events drained this frame, log them, and draw the effects as they
    * are at the snapshot's tick: the camera's place and the particles in the air.
    */
-  update(events: readonly SimEvent[], snapshot: SimSnapshot, tuning: Tuning): void;
+  update(events: readonly SimEvent[], snapshot: SimSnapshot, tuning: Tuning, baseX?: number): void;
   /** Put an end to every effect and the camera back at rest (before the scene is paused). */
   stop(): void;
 }
@@ -35,8 +36,13 @@ export function createEffectsView(scene: Phaser.Scene): EffectsView {
   let drawing = false;
 
   return {
-    update(events, snapshot, tuning) {
-      for (const cue of effects.handle(events, snapshot.bottle, tuning)) log.record(cue);
+    update(events, snapshot, tuning, baseX) {
+      // `baseX` (meters) replaces the bottle's own when the throw is drawn mirrored.
+      const base = baseX === undefined ? snapshot.bottle : { x: baseX, y: snapshot.bottle.y };
+      for (const cue of effects.handle(events, base, tuning)) {
+        const burst = cue.name === 'burst' || cue.name === 'capBurst';
+        log.record(cue, burst ? base.x * PIXELS_PER_METER : undefined);
+      }
 
       const offset = effects.cameraOffset(snapshot.tick);
       camera.setScroll(offset.x, offset.y);
