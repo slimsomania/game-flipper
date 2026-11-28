@@ -12,6 +12,7 @@ import { createButton, type ButtonView } from './buttonView';
 import { FULLSCREEN_BUTTON, HOME_CARD, HOME_CARD_CLOSE, HOME_CARD_TEXT } from './fullscreenLayout';
 import { fullscreenIcon } from './fullscreenIcon';
 import { drawIcon } from './iconDraw';
+import { dimPage } from './pageDim';
 
 /** Names in the scene: what `window.__FLIPPER__.fullscreenButton()` and `buttons()` find. */
 export const FULLSCREEN_BUTTON_NAME = 'fullscreenButton';
@@ -54,8 +55,15 @@ export function createFullscreenControl(scene: Phaser.Scene): ButtonView | null 
     scene.add
       .graphics()
       .setDepth(BLOCKER_DEPTH)
-      .fillStyle(0x14202e, 0.45)
+      .fillStyle(HOME_CARD.dim.color, HOME_CARD.dim.alpha)
       .fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    // The canvas is letterboxed: dim the bars and the safe area around it too.
+    const undimPage = dimPage(
+      scene,
+      HOME_CARD.dim.color,
+      HOME_CARD.dim.alpha,
+      `${scene.scene.key}:homeCard`,
+    );
     const { x: cx, y: cy, width: cw, height: ch, radius: cr } = HOME_CARD;
     scene.add
       .graphics()
@@ -90,6 +98,7 @@ export function createFullscreenControl(scene: Phaser.Scene): ButtonView | null 
       closeCard = null;
       scene.events.off('pause', onPause);
       for (const object of made) object.destroy();
+      undimPage();
       scene.game.canvas.style.cursor = '';
     };
   };

@@ -26,6 +26,8 @@ export const HOME_CARD = {
   textY: 250,
   textSize: 36,
   textWidth: 680,
+  /** The veil over everything behind the card, the page around the canvas included. */
+  dim: { color: 0x14202e, alpha: 0.45 },
   close: { x: GAME_WIDTH / 2, y: 470, width: 280, height: 96 },
 } as const;
 

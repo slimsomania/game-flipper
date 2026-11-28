@@ -21,7 +21,7 @@ Pushes to `dev` run nothing on GitHub: the harness runs `npm run verify` locally
 
 1. Human: on GitHub, open a pull request with base `main` and compare `dev`. Wait for the CI check to pass, then merge with **Create a merge commit** (not squash or rebase, so `dev` and `main` keep the same commits).
 2. Human: ask an agent session to release.
-3. Agent: `git fetch origin`, pick the next version (minor for new features, patch for fixes), and tag the tip of `main`: `git tag -a v1.1.0 origin/main -m "v1.1.0"`, then `git push origin v1.1.0`. Write the release notes from `git log --oneline <previous tag>..v1.1.0`.
+3. Agent: `git fetch origin`, pick the next version (minor for new features, patch for fixes), and tag the tip of `main`: `git tag -a v1.1.0 origin/main -m "v1.1.0"`, then `git push origin v1.1.0`. Write the release notes from `git log --oneline <previous tag>..v1.1.0`. Publish them as a GitHub Release for that tag (title `Flipsy v1.1.0`, starting with the play link; Releases → Draft a new release, or `gh release create v1.1.0`), so the repo's Releases page and its Latest badge show the version.
 4. GitHub runs Deploy. The game is live a few minutes after it turns green.
 
 ## Roll back
