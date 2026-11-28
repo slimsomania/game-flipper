@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import type { SimSnapshot } from '../../src/core/simulation';
 
 /**
@@ -160,4 +160,54 @@ export async function stepFrames(page: Page, frames: number): Promise<SimSnapsho
   }, frames);
   if (!state) throw new Error('No simulation is running (is the Game scene active?)');
   return state;
+}
+
+/**
+ * Record, in the page, every arrow key event the window sees and every frame on which the power
+ * bar's value changed, with `performance.now()` times. `expectPowerWithLog` prints the record when
+ * the power is not what a test expects, so a failure on CI shows which events moved the bar.
+ */
+export async function recordPowerLog(page: Page): Promise<() => Promise<string>> {
+  await page.evaluate(() => {
+    const log: string[] = [];
+    (window as unknown as { __powerLog: string[] }).__powerLog = log;
+    const at = () => performance.now().toFixed(1);
+    const power = () => window.__FLIPPER__!.state()?.power;
+    for (const type of ['keydown', 'keyup'] as const) {
+      window.addEventListener(
+        type,
+        (event) => {
+          if (event.key.startsWith('Arrow')) {
+            log.push(
+              `${at()} ${type} ${event.key} repeat=${event.repeat} eventTime=${event.timeStamp.toFixed(1)} power=${power()}`,
+            );
+          }
+        },
+        true,
+      );
+    }
+    let last = power();
+    const frame = () => {
+      const now = power();
+      if (now !== last) log.push(`${at()} frame power ${last} -> ${now}`);
+      last = now;
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+  return () =>
+    page.evaluate(() => (window as unknown as { __powerLog: string[] }).__powerLog.join('\n'));
+}
+
+/** `expect.poll` on the power bar's value; when it fails, the error carries the power log. */
+export async function expectPowerWithLog(
+  page: Page,
+  expected: number,
+  log: () => Promise<string>,
+): Promise<void> {
+  try {
+    await expect.poll(() => powerOf(page)).toBe(expected);
+  } catch (error) {
+    throw new Error(`${(error as Error).message}\n\nPower log:\n${await log()}`);
+  }
 }
