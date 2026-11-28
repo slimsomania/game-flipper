@@ -81,13 +81,30 @@ In every case the result is the same: one number, **power**, from 0 to 100%. The
 - The round also counts its **landings** (successful throws out of 10). The difficulty targets in section 3 count landings, not points.
 - A streak counter is shown during play (consecutive landings) but has no effect on points yet.
 - The **best round score** is saved in the browser (local storage) and shown on the title screen and the round summary. Settings (mute) are saved too.
-- Later ideas, not now: two-player and three-player turn-taking modes, streak bonuses, daily challenge.
+- Later ideas, not now: a three-player mode, streak bonuses, daily challenge.
+
+### Two-player mode (from M11)
+
+Two friends play against each other on one phone or PC, passing it between turns. Each player has their own side of the screen; only the side whose turn it is can be played, and the other side is grayed out. No network and no accounts: everything happens on the one device.
+
+- **Starting it.** The Title screen has two play buttons: **1 Player** (the game as before) and **2 Players** (section 6).
+- **Layout.** One table, as wide as in solo play. Player 1's hand, bottle and power bar are on the left; Player 2's are on the right, mirrored, so Player 2's throw drifts to the left and both bottles land toward the middle of the table. Each side shows its label ("Player 1", "Player 2"), that player's score and that player's streak.
+- **Active and waiting.** The active side is drawn in full color, with that player's own color on their label and accents (for example orange for Player 1 and purple for Player 2, never the water's blue, section 8). The waiting side is grayed out: its bottle, power bar and label. The waiting bottle is only a picture, not part of the physics, so a thrown bottle can't hit it. A banner says whose turn it is ("Player 2's turn · Throw 3 / 10").
+- **Turns.** The players alternate every throw: Player 1, Player 2, Player 1, … for 10 throws each, 20 in all. Player 1 always starts. After the result message the turn passes by itself: the other side lights up and the first side grays out. There is no "ready" card between turns; the next throw is simply the next player's push or Space.
+- **Same bottles.** Both throws of a pair use the same water level: on throw 3, both players get a bottle with the same water, so neither gets easier bottles. The waiting player's grayed bottle already shows the water it will have.
+- **Controls.** Every input of section 7 works for whichever player is active: the push, the power bar with slide-and-tap on a phone, Up/Down, the wheel and Space. Each player's power bar keeps its own value between that player's throws.
+- **Scoring.** The same as solo, counted per player: points per flip, 5 for the cap, landings and the streak.
+- **End.** After 10 throws each, the summary shows the winner ("Player 1 wins!") in their color, or "Draw!" on equal points. Below it are both players' points and landings, a **Play again** button (a new two-player game) and a **Title** button.
+- **Pause and restart.** As in solo play. Restart starts the whole two-player game over. Quitting to the title abandons it.
+- **Best score.** A two-player game never changes the saved best score: that stays a solo record.
+- **Fair sides.** A mirrored throw must behave exactly like a normal one: the same power and water give the same result on either side, so the targets of section 3 hold for both players. The simplest way is to simulate Player 2's throw like any other and only draw it mirrored, rather than building mirrored physics.
+- **Room on the table.** With a hand at each end, check that a strong throw from either side still lands on the table and doesn't fly past the other player's end more often than in solo play. If it does, the table may be wider in this mode.
 
 ## 6. Screens and UI
 
 Screens, in order: **Title → Play → Round summary → Play again or Title**. Pause is an overlay on Play.
 
-- **Title:** the game name (**Flipsy**, section 1), a Play button, a **How to play** button (from M10), the best score, a mute toggle, and a one-line hint about the controls. Under the best score, a small, quiet credit line: "Created and designed by Vlas" (from M10).
+- **Title:** the game name (**Flipsy**, section 1), a Play button (from M11, two: **1 Player** and **2 Players**, section 5), a **How to play** button (from M10), the best score, a mute toggle, and a one-line hint about the controls. Under the best score, a small, quiet credit line: "Created and designed by Vlas" (from M10).
 - **Play:** the table, the bottle with its visible water level, the power bar, the throw number ("Throw 3 / 10"), the current score, the streak, and the result flash and message after each throw.
 - **Round summary:** the round's points ("Score: 14") and its landings ("Landed 7 / 10"), the best score (with a "New best!" note if beaten), a Play again button and a Title button.
 - **Pause overlay:** Resume, **How to play** (from M10) and Quit to title.
@@ -170,11 +187,13 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **M8, fullscreen, home-screen app, phone power bar, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, setting the power on the bar and tapping to throw on a phone (section 7), then the performance budget and the production-build check, measured on a phone as well as a laptop.
 - **M9, review fixes:** fixes from the outside reviews of M6 to M8 (planned by the agents, 2026-11-25).
 - **M10, cap bonus, How to play and the Flipsy name:** a landing on the cap scores 5 with its own message, effect and sound, and the cap checks of section 3 (no cap farming, and the points rule re-checked with the cap at 5); the How to play card with its buttons, the H key, its pictures and its first-Play opening (section 6); the credit line on the Title and the card; and the name players see becomes Flipsy (the Title, the browser tab's title, the web app manifest and the iPhone home-screen title), with internal names left as Flipper (section 1); and the link preview when the game address is shared (section 10).
-- Later (not planned yet): two- and three-player modes, more objects, more surfaces.
+- **M11, two-player mode:** the local two-player game of section 5: the 1 Player and 2 Players buttons on the Title, the mirrored second side with its grayed-out waiting state, alternating turns with the same water for both throws of a pair, per-player scores and streaks, the winner or draw on the summary, and the checks that both sides are equally fair and that throws from either end stay on the table.
+- Later (not planned yet): a three-player mode, more objects, more surfaces.
 
 ## 12. Out of scope
 
-- Two-player and three-player modes (planned for later, but build nothing for them now).
+- A three-player mode, and playing with friends over the internet (online play, shared challenge links, ghost replays). Build nothing for them now.
+- The two-player mode is wanted, but only from M11. Don't build it before then.
 - Objects other than the bottle, and surfaces other than the single table.
 - Levels, wind, targets, time limits, online leaderboards, accounts.
 - Music.
@@ -240,6 +259,12 @@ Decided after the M9 review (2026-11-26):
 - **A How to play card (section 6).** New players get no explanation beyond a one-line controls hint. The card explains the goal, the controls, the water-to-power idea and the scoring. It states the principle "more water, more power" but no numbers, so it doesn't break "Hints: none beyond the visible water level": the player still judges each bottle from its water alone. It opens by itself once, at the first Play, and pauses play while open.
 - **Credit (section 6).** "Created and designed by Vlas" appears on the Title screen and on the How to play card.
 - **The name players see is Flipsy (section 1).** Only what players see changes; the project, code, save data and docs keep the name Flipper.
+
+Decided on 2026-11-28:
+
+- **Play with a friend, on one device (section 5, M11).** The simplest way to play together: two players share one phone or PC and take turns, each on their own side of the screen, with the waiting side grayed out. Playing at the same time on a split screen (it needs two-finger touch) and online play (it needs a server or shared links) were considered and left for later.
+- **Turns alternate every throw, with the same water for both throws of a pair.** It keeps both players involved and makes the bottles fair. A tie is a draw, with no sudden death. There is no "ready" card between turns, the names are fixed as Player 1 and Player 2, and the mode is for exactly two players.
+- **A two-player game doesn't count toward the best score.** With players taking turns it isn't comparable to a solo round.
 
 Still open, to be settled by playtesting after M1:
 
