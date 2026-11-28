@@ -1330,9 +1330,9 @@
       "depends_on": [
         "F059"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Added src/game/view/mirror.ts (x to GAME_WIDTH - x, angle negated); GameScene takes players in its data and draws the live bottle, shadow, off-screen marker, replay and burst base mirrored while duel.active is 2; the power bar is one container moved to the mirrored place. Hooks drawnBottle() and powerBar(), effects() entries for bursts carry x, startScene passes data ?? {} so a bare start is solo, and snap accepts scene:Game;players=2. Verified by tests/unit/mirror.test.ts, tests/e2e/duelMirror.spec.ts and snaps of Player 2 aiming and mid-flight.",
+      "notes": "Added src/game/view/mirror.ts (x to GAME_WIDTH - x, angle negated); GameScene takes players in its data and draws the live bottle, shadow, off-screen marker, replay and burst base mirrored while duel.active is 2; the power bar is one container moved to the mirrored place. Hooks drawnBottle() and powerBar(), effects() entries for bursts carry x, startScene passes data ?? {} so a bare start is solo, and snap accepts scene:Game;players=2. Verified by tests/unit/mirror.test.ts, tests/e2e/duelMirror.spec.ts and snaps of Player 2 aiming and mid-flight. Reviewed: harness verify after session 176 covers the code (only GAME_DESIGN.md changed since); npm test 1010/1010; e2e duelMirror, effects, shadow, offscreen, replayPlay, powerBarMouse 26/26; a throwaway e2e check (deleted) found the off-screen marker, 36 flight frames of the shadow and 92 replay frames mirrored on Player 2's throw, the bar and bottle back on the left for Player 1, R during Player 2's turn back to Player 1 on the left, and rapid duel/solo startScene ending solo; 1024x576 snaps of Player 2 aiming, mid-flight and the next pair read as a mirror.",
       "review_feedback": ""
     },
     {
