@@ -2615,3 +2615,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F061 → needs_review
 - Issues / follow-ups: the stack is compact (24/36/24 px) because the left bar's caption starts at y 210 and the stack must stay below the corner buttons' hit areas (y ≥ 100). The picture's box carries 2 px of texture padding. The solo HUD is unchanged. F062 should make the grayed side ignore input.
 - Next: F062 can read `duelSides()` for which side is active; the grayed bar is `power-bar-waiting`, a separate container from the live `power-bar`.
+
+> [harness] session 178 · builder F061 · todo → needs_review · ok · verify passed · 1 commit(s) · 88 tool calls · 8m 52s · ~$1.18 API-equivalent

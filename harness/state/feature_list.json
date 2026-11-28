@@ -1352,7 +1352,7 @@
         "F060"
       ],
       "status": "needs_review",
-      "attempts": 0,
+      "attempts": 1,
       "notes": "Built the duel HUD in src/game/view: duelText.ts (banner and side lines), duelLayout.ts (positions, estimated boxes), duelHudView.ts (banner, stacks, hook data) and waitingSideView.ts (grayed bar and baked bottle picture behind the live bottle); powerBarView takes name/grayed options; hook duelSides(). Verified by unit tests/duelHud.test.ts, e2e duelHud.spec.ts (desktop) and phone/duelHud.spec.ts (readability and Graphics budget), and snaps of both turns at 1280x720 and --phone. Assumption: when the waiting player has no throws left (Player 1 during Player 2's last throw), their side shows no bottle picture, only the grayed label and bar. Design update 2026-11-28: no player colors (orange/purple dropped); the waiting side is grayed out and disabled.",
       "review_feedback": ""
     },
