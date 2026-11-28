@@ -1309,9 +1309,9 @@
       "depends_on": [
         "F051"
       ],
-      "status": "needs_review",
+      "status": "done",
       "attempts": 1,
-      "notes": "Built src/core/duel.ts (Duel: turn pass, a Round per player, saved bar values, water per pair with the next pair drawn when Player 2's turn starts) and src/core/resultWait.ts (the result delay/replay state moved out of simulation.ts, now 331 lines). `players` option, and `players` and `duel` in the snapshot. Verified by tests/unit/duel.test.ts, the full npm test (1005 pass), and round/pauseActions e2e. Fair-sides test compares poses to 1e-9, because a bottle made later in the same world differs in the last bits (about 2e-15) from the first; the discrete outcome is exact.",
+      "notes": "Built src/core/duel.ts (Duel: turn pass, a Round per player, saved bar values, water per pair with the next pair drawn when Player 2's turn starts) and src/core/resultWait.ts (the result delay/replay state moved out of simulation.ts, now 331 lines). `players` option, and `players` and `duel` in the snapshot. Verified by tests/unit/duel.test.ts, the full npm test (1005 pass), and round/pauseActions e2e. Fair-sides test compares poses to 1e-9, because a bottle made later in the same world differs in the last bits (about 2e-15) from the first; the discrete outcome is exact. Reviewed: harness verify after session 174 covers the code (empty diff since a145a54); npm test 1005/1005; e2e round, pauseActions, replay, resultTiming, power (desktop) 32/32; own throwaway unit checks (solo water sequence unchanged, restart mid-P2-flight / after roundOver with water and bars, repeated skip/restart, lockedWater option) all passed; solo snap at 1024x576 shows players 1, duel null and normal play.",
       "review_feedback": ""
     },
     {
