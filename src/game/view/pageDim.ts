@@ -4,13 +4,23 @@ import type Phaser from 'phaser';
 export const PAGE_DIM_ID = 'page-dim';
 
 let element: HTMLDivElement | null = null;
-/** The scenes whose veil is up: How to play can open over Pause, and both dim. */
-const owners = new Set<string>();
+/** The veils that are up, by owner: How to play can open over Pause, and both dim. */
+const owners = new Map<string, { color: number; alpha: number }>();
 
-function place(canvas: HTMLCanvasElement, color: number, alpha: number): void {
-  if (!element || owners.size === 0) return;
+function place(canvas: HTMLCanvasElement): void {
+  if (!element) return;
+  if (owners.size === 0) {
+    element.style.display = 'none';
+    return;
+  }
   // Each open dialog dims the canvas once more (How to play over Pause): match that outside it.
-  const total = 1 - (1 - alpha) ** owners.size;
+  let clear = 1;
+  let color = 0;
+  for (const veil of owners.values()) {
+    clear *= 1 - veil.alpha;
+    color = veil.color; // the dialogs share one tint; the latest wins
+  }
+  const total = 1 - clear;
   // Read the canvas box every time: the window may have been resized since the veil went up.
   const box = canvas.getBoundingClientRect();
   const r = (color >> 16) & 0xff;
@@ -29,10 +39,15 @@ function place(canvas: HTMLCanvasElement, color: number, alpha: number): void {
 /**
  * The part of a dialog's veil outside the canvas: the letterbox bars and the safe-area padding,
  * which the in-canvas veil can't reach (the same trick as `pageFlash.ts`: an element laid exactly
- * over the canvas paints only its box-shadow, so the two veils meet without overlapping). It goes
- * up while `scene` runs and comes down when the last scene that raised it shuts down.
+ * over the canvas paints only its box-shadow, so the two veils meet without overlapping). It stays
+ * up until the returned function is called; `owner` names it among the other open veils.
  */
-export function dimPageWhile(scene: Phaser.Scene, color: number, alpha: number): void {
+export function dimPage(
+  scene: Phaser.Scene,
+  color: number,
+  alpha: number,
+  owner: string = scene.scene.key,
+): () => void {
   const canvas = scene.game.canvas;
   if (!element) {
     element = document.createElement('div');
@@ -40,16 +55,22 @@ export function dimPageWhile(scene: Phaser.Scene, color: number, alpha: number):
     Object.assign(element.style, { position: 'fixed', zIndex: '-1', pointerEvents: 'none' });
     document.body.appendChild(element);
   }
-  const key = scene.scene.key;
-  owners.add(key);
+  owners.set(owner, { color, alpha });
   // Phaser may re-center the canvas after it reports the new size: place the veil a frame later.
-  const refit = () => requestAnimationFrame(() => place(canvas, color, alpha));
-  place(canvas, color, alpha);
+  const refit = () => requestAnimationFrame(() => place(canvas));
+  place(canvas);
   scene.scale.on('resize', refit);
-  scene.events.once('shutdown', () => {
+  let up = true;
+  return () => {
+    if (!up) return;
+    up = false;
     scene.scale.off('resize', refit);
-    owners.delete(key);
-    if (owners.size === 0 && element) element.style.display = 'none';
-    else place(canvas, color, alpha);
-  });
+    owners.delete(owner);
+    place(canvas);
+  };
+}
+
+/** `dimPage` while `scene` runs: the veil comes down when the scene shuts down. */
+export function dimPageWhile(scene: Phaser.Scene, color: number, alpha: number): void {
+  scene.events.once('shutdown', dimPage(scene, color, alpha));
 }

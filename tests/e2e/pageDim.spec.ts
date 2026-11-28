@@ -1,12 +1,20 @@
 import { expect, test, type Page } from '@playwright/test';
 import { PAGE_DIM_ID } from '../../src/game/view/pageDim';
-import { openGame } from './helpers';
+import {
+  buttonNamed,
+  cardOpen,
+  clickFullscreenButton,
+  clickGame,
+  stubFullscreen,
+} from './fullscreenHelpers';
+import { openGame, openTitle, startGame } from './helpers';
 import { clickHowTo, expectPaused, pauseWith } from './pauseHelpers';
 import { activeScenes } from './roundHelpers';
 
 /*
  * A dialog's veil covers the whole window, not only the canvas: the page element around the canvas
- * (the letterbox bars and the safe area) is dimmed while the pause overlay or How to play is open.
+ * (the letterbox bars and the safe area) is dimmed while the pause overlay, How to play or the
+ * home-screen card is open.
  */
 
 /** The page veil: shown or not, laid over the canvas or not, and the alpha of its tint. */
@@ -52,5 +60,35 @@ test('the pause overlay and How to play dim the page around the canvas too', asy
   await page.keyboard.press('Escape');
   await expectPaused(page, false);
   await expect.poll(async () => (await pageDim(page))!.shown).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test('the home-screen card dims the page around the canvas too, and over the pause overlay', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1600, height: 720 });
+  await stubFullscreen(page, 'unsupported');
+  const errors = await openTitle(page, '?seed=7');
+
+  // On the title screen.
+  await clickFullscreenButton(page);
+  await expect.poll(() => cardOpen(page)).toBe(true);
+  const card = await pageDim(page);
+  expect(card).toMatchObject({ shown: true, overCanvas: true });
+  expect(card!.alpha).toBeGreaterThan(0);
+  await clickGame(page, await buttonNamed(page, 'homeCardClose'));
+  await expect.poll(() => cardOpen(page)).toBe(false);
+  await expect.poll(async () => (await pageDim(page))!.shown).toBe(false);
+
+  // Over the pause overlay it dims once more, and closing it leaves the pause veil as it was.
+  await startGame(page);
+  await pauseWith(page);
+  const paused = await pageDim(page);
+  await clickFullscreenButton(page);
+  await expect.poll(() => cardOpen(page)).toBe(true);
+  await expect.poll(async () => (await pageDim(page))!.alpha).toBeGreaterThan(paused!.alpha);
+  await clickGame(page, await buttonNamed(page, 'homeCardClose'));
+  await expect.poll(() => cardOpen(page)).toBe(false);
+  await expect.poll(async () => (await pageDim(page))!.alpha).toBeCloseTo(paused!.alpha, 2);
   expect(errors).toEqual([]);
 });
