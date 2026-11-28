@@ -6,7 +6,7 @@ The game is published at https://slimsomania.github.io/game-flipper/ by GitHub P
 
 - `dev`: all work happens here. The harness and agent sessions commit and push to `dev`.
 - `main`: stable code. It only changes when the human merges a pull request from `dev`. The "Protect main" ruleset (Settings → Rules) enforces it: no direct pushes, force pushes or deletion; a pull request whose `verify` check passed; merge commits only.
-- `v*` tags on `main` (`v1.0.0`, `v1.1.0`, `v1.0.1`): releases. Pushing a tag deploys the game.
+- `v*` tags on `main` (`v1.0.0`, `v1.1.0`, `v1.0.1`): releases. Pushing a tag deploys the game. The "Protect release tags" ruleset stops a published `v*` tag from being moved, deleted or force-pushed; creating a new one is allowed. GitHub has no rule for which branch a tag points at, so the deploy workflow refuses tags that are not on `main`.
 
 ## Workflows
 
@@ -30,5 +30,5 @@ Actions → Deploy → Run workflow, and enter an older tag such as `v1.0.0`. Th
 
 ## Rules
 
-- Never push to `main` directly and never move or delete a published tag.
+- Never push to `main` directly and never move or delete a published tag (both rulesets enforce this).
 - A tag that is not on `main` is refused by the deploy workflow.
