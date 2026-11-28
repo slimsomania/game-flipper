@@ -2598,3 +2598,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F060 → needs_review
 - Issues / follow-ups: one unit test failed once while Playwright ran in parallel and passed on two reruns (load timing, not identified). The burst's particle velocities are not mirrored, only its start (they're symmetric). Container rotation is wrapped by Phaser, so drawnBottle().angle can differ from the mirrored snapshot angle by a full turn: compare modulo 2π.
 - Next: F061 can read the same `duel.active` in GameScene.draw; the HUD and waiting side are not touched yet.
+
+> [harness] session 176 · builder F060 · todo → needs_review · ok · verify passed · 1 commit(s) · 51 tool calls · 12m 41s · ~$1.06 API-equivalent
