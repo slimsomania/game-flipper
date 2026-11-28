@@ -1,11 +1,13 @@
 import { World, type Body } from 'planck';
 import { Bottle, isFinitePose, type BottlePose } from './bottle';
-import { GRAVITY, SIM_DT, stepsFor } from './constants';
+import { GRAVITY, SIM_DT } from './constants';
 import { SimEvents, type SimEvent } from './events';
 import { MouseControl } from './mouseControl';
 import { LandingJudge, type Outcome } from './outcome';
 import { PowerMeter } from './powerMeter';
-import { ThrowRecorder, replayFrameAt, replayStepCount, type ReplayFrame } from './replay';
+import { Duel } from './duel';
+import { ThrowRecorder, type ReplayFrame } from './replay';
+import { ResultWait } from './resultWait';
 import { Round } from './round';
 import { createRng } from './rng';
 import { snapshotBody, type LastThrow, type Phase, type SimSnapshot } from './snapshot';
@@ -27,6 +29,8 @@ export interface SimulationOptions {
   tuning?: Partial<Tuning>;
   /** Give every bottle this water level (0 to 1) instead of a random one; see `lockWater`. */
   lockedWater?: number | null;
+  /** 2 runs a duel (see `Duel`); the default, 1, is solo play. */
+  players?: 1 | 2;
 }
 
 export class Simulation {
@@ -38,15 +42,9 @@ export class Simulation {
   private readonly table: Body;
   /** What happened, for the scene to drain each frame (sound, effects): see `drainEvents`. */
   private readonly events: SimEvents;
-  /**
-   * The power bar. The scene forwards key presses, releases and wheel notches to it, and any phase
-   * may adjust it, so the player can set the next throw while a result is still showing.
-   */
+  /** The power bar: any phase may adjust it. In a duel it holds the active player's value. */
   readonly powerMeter: PowerMeter;
-  /**
-   * The mouse's hand on the held bottle: grab, push, release (D25). While the bottle is grabbed the
-   * power bar shows the live push; a release throws through `throwBottle` with source `mouse`.
-   */
+  /** The mouse's hand on the held bottle (D25); a release throws with source `mouse`. */
   readonly mouse: MouseControl;
   /** The current throw, frame by frame, and its landing clip (F026). */
   private readonly recorder = new ThrowRecorder(() => this.currentTuning);
@@ -55,18 +53,14 @@ export class Simulation {
   private result: Outcome | null = null;
   private currentPhase: Phase = 'aiming';
   private thrown: LastThrow | null = null;
-  /** The books of the current round: its throws, points, landings and streak. */
-  private readonly round = new Round(() => this.currentTuning);
+  /** The books of a solo round: its throws, points, landings and streak. */
+  private readonly soloRound = new Round(() => this.currentTuning);
+  /** The two-player rules, or null in solo play. */
+  private readonly duel: Duel | null;
   /** Every bottle released since the simulation began (a restart doesn't reset it). */
   private throwCount = 0;
-  /** Steps since the outcome was decided, counted during `result`. */
-  private resultSteps = 0;
-  /** The result's delay (steps), replay speed and total length, fixed when the outcome is set (D15). */
-  private resultDelaySteps = 0;
-  private resultReplaySpeed = 1;
-  private resultTotalSteps = 0;
-  /** The landing clip taken when the outcome was decided; it is replayed after the result delay. */
-  private replayClip: ReplayFrame[] = [];
+  /** The delay and replay after the outcome is decided, counted during `result`. */
+  private readonly wait = new ResultWait();
   private ticks = 0;
 
   constructor(options: SimulationOptions = {}) {
@@ -92,7 +86,17 @@ export class Simulation {
 
     this.table = createTable(this.world);
     this.events = new SimEvents(this.world, this.table, () => this.ticks);
-    this.bottle = new Bottle(this.world, this.currentTuning, this.water.next());
+    const firstWater = this.water.next();
+    this.bottle = new Bottle(this.world, this.currentTuning, firstWater);
+    this.duel =
+      options.players === 2
+        ? new Duel(() => this.currentTuning, this.water, this.powerMeter, firstWater)
+        : null;
+  }
+
+  /** The books of the player whose turn it is (the only player, in solo play). */
+  private get round(): Round {
+    return this.duel ? this.duel.round : this.soloRound;
   }
 
   /** The tuning in effect: the defaults, the constructor's overrides and any `setTuning` calls. */
@@ -106,14 +110,14 @@ export class Simulation {
   }
 
   /**
-   * Give every bottle this water level (clamped to 0..1) from now on, or `null` to go back to the
-   * seeded random levels. For tuning tools: the held bottle takes the level at once (while it is
-   * `aiming`), and a number that isn't finite is ignored. The random draw is still made for every
-   * bottle, so unlocking carries on with the seed's own sequence (see `WaterSupply`).
+   * Give every bottle this water level (0..1) from now on, or `null` for the seeded random levels
+   * again (see `WaterSupply`). The held bottle takes it at once; a non-finite number is ignored.
    */
   lockWater(level: number | null): void {
     const locked = this.water.lock(level);
-    if (locked !== null) this.setWater(locked);
+    if (locked === null) return;
+    this.duel?.relock(locked);
+    this.setWater(locked);
   }
 
   get phase(): Phase {
@@ -125,11 +129,7 @@ export class Simulation {
     return this.ticks;
   }
 
-  /**
-   * Change tuning values. They apply to the held bottle (its mass and surface) and to every later
-   * throw, but never to a bottle already in flight: a throw is a launch impulse computed from the
-   * tuning at that moment, and a flying bottle keeps the body it was launched with.
-   */
+  /** Change tuning values: they apply to the held bottle and later throws, never to one in flight. */
   setTuning(overrides: Partial<Tuning>): void {
     this.currentTuning = { ...this.currentTuning, ...overrides };
     if (this.currentPhase === 'aiming') this.bottle.applyTuning(this.currentTuning);
@@ -185,8 +185,9 @@ export class Simulation {
 
   /** The result has been shown: on to the next bottle, or to the end of the round after the last. */
   private endResult(): void {
-    if (!this.round.complete) {
-      this.nextBottle();
+    const next = this.duel ? this.duel.endTurn() : this.round.complete ? null : this.water.next();
+    if (next !== null) {
+      this.nextBottle(next);
       return;
     }
     // No new bottle: the last one stays where it landed. Nothing can be thrown until a restart.
@@ -197,36 +198,37 @@ export class Simulation {
 
   /**
    * Replace the bottle that has been judged with a fresh one in the hand: upright, still, with
-   * the next water level from the seeded random numbers. Back to `aiming` with no outcome.
+   * the given water level. Back to `aiming` with no outcome.
    */
-  private nextBottle(): void {
+  private nextBottle(water: number): void {
     this.bottle.destroy();
-    this.bottle = new Bottle(this.world, this.currentTuning, this.water.next());
+    this.bottle = new Bottle(this.world, this.currentTuning, water);
     this.judge = null;
     this.result = null;
     this.recorder.clear();
-    this.replayClip = [];
+    this.wait.clear();
     this.currentPhase = 'aiming';
   }
 
   /**
-   * Start the round again from any phase (aiming, in flight, during a result, or after the round
-   * ended): throw 1, no points, no landings, no streak, and a new bottle waiting in the hand. A
-   * bottle in flight is gone and a grab with the mouse is dropped. The seed's sequence of water
-   * levels carries on (the new bottle is its next one), so a restart never repeats the same ten
-   * bottles. The power bar, `throws`, `lastThrow` and the clock (`tick`) are left as they are.
+   * Start the round again from any phase: throw 1, empty books, a new bottle in the hand (a flight
+   * is gone, a mouse grab dropped). The seed's water sequence carries on, so a restart never
+   * repeats the same bottles. The power bar, `throws`, `lastThrow` and `tick` are left as they are.
+   * In a duel the whole duel starts over, Player 1 first, each player keeping their bar value.
    */
   restartRound(): void {
     this.mouse.cancel();
+    if (this.duel) {
+      this.nextBottle(this.duel.restart());
+      return;
+    }
     this.round.reset();
-    this.nextBottle();
+    this.nextBottle(this.water.next());
   }
 
   /**
-   * Release the held bottle from an exact pose, as if it had been thrown from there: position,
-   * angle and (optionally) velocities, with its current water level. For tests and tuning tools,
-   * so a landing can be set up directly. Like a throw it only works while `aiming`, and returns
-   * false otherwise (or if a number in the pose isn't finite). It leaves `lastThrow` as it was.
+   * Release the held bottle from an exact pose (for tests and tuning tools). Works only while
+   * `aiming` and with finite numbers, else returns false. It leaves `lastThrow` as it was.
    * `pose.turns` is counted as rotation already made, so an upright bottle can still succeed.
    */
   placeBottle(pose: BottlePose): boolean {
@@ -260,21 +262,15 @@ export class Simulation {
       this.result = this.judge.observe(this.bottle.landingSample(this.table));
       if (this.result) this.showResult(this.result);
     } else if (this.currentPhase === 'result') {
-      this.resultSteps++;
-      if (this.resultSteps >= this.resultTotalSteps) this.endResult();
+      if (this.wait.step()) this.endResult();
     }
   }
 
   private showResult(outcome: Outcome): void {
     this.recorder.end();
-    this.replayClip = this.recorder.clip();
+    this.wait.begin(this.currentTuning, this.recorder.clip());
     this.round.judged(outcome);
     this.events.judged(outcome);
-    this.resultSteps = 0;
-    this.resultDelaySteps = stepsFor(this.currentTuning.resultDelaySeconds);
-    this.resultReplaySpeed = this.currentTuning.replaySpeed;
-    this.resultTotalSteps =
-      this.resultDelaySteps + replayStepCount(this.replayClip.length, this.resultReplaySpeed);
     this.currentPhase = 'result';
   }
 
@@ -320,21 +316,16 @@ export class Simulation {
       },
       lastThrow: this.thrown && { ...this.thrown },
       outcome: this.result && { ...this.result },
-      resultSteps: this.currentPhase === 'result' ? this.resultSteps : null,
-      replay:
-        this.currentPhase === 'result'
-          ? replayFrameAt(
-              this.replayClip,
-              this.resultSteps - this.resultDelaySteps,
-              this.resultReplaySpeed,
-            )
-          : null,
+      resultSteps: this.currentPhase === 'result' ? this.wait.steps : null,
+      replay: this.currentPhase === 'result' ? this.wait.frame() : null,
       score: this.round.score,
       throws: this.throwCount,
       throwNumber: this.round.throwNumber(this.currentPhase === 'aiming'),
       throwsPerRound: this.round.length,
       landings: this.round.landings,
       streak: this.round.streak,
+      players: this.duel ? 2 : 1,
+      duel: this.duel?.snapshot() ?? null,
     };
   }
 }

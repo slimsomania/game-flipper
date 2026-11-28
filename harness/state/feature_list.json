@@ -1309,9 +1309,9 @@
       "depends_on": [
         "F051"
       ],
-      "status": "todo",
+      "status": "needs_review",
       "attempts": 0,
-      "notes": "Assumptions: restartRound() keeps each player's bar value (as a solo restart keeps the bar); in a duel `throws` still counts every release.",
+      "notes": "Built src/core/duel.ts (Duel: turn pass, a Round per player, saved bar values, water per pair with the next pair drawn when Player 2's turn starts) and src/core/resultWait.ts (the result delay/replay state moved out of simulation.ts, now 331 lines). `players` option, and `players` and `duel` in the snapshot. Verified by tests/unit/duel.test.ts, the full npm test (1005 pass), and round/pauseActions e2e. Fair-sides test compares poses to 1e-9, because a bottle made later in the same world differs in the last bits (about 2e-15) from the first; the discrete outcome is exact.",
       "review_feedback": ""
     },
     {

@@ -1,4 +1,5 @@
 import type { Body } from 'planck';
+import type { DuelSnapshot } from './duel';
 import type { Outcome } from './outcome';
 import type { ReplayFrame } from './replay';
 import type { ThrowSource } from './throw';
@@ -111,6 +112,15 @@ export interface SimSnapshot {
    * on the score. Back to 0 on `restartRound()`.
    */
   streak: number;
+  /** 1 for solo play, 2 for a duel. */
+  players: 1 | 2;
+  /**
+   * The duel, or null in solo play. In a duel `score`, `landings`, `streak`, `power` and
+   * `throwNumber` describe the active player (`throwNumber` is the pair number); `sides` has both
+   * players' books and bar values, and `waitingWater` is the water the waiting player's next bottle
+   * will have (null when they have no throws left).
+   */
+  duel: DuelSnapshot | null;
 }
 
 /** The pose, speeds and sleep state of a planck body as plain numbers. */
