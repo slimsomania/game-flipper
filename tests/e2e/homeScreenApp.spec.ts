@@ -37,8 +37,8 @@ async function checkManifestAndIcons(page: Page): Promise<void> {
   expect(res.status()).toBe(200);
   const manifest = (await res.json()) as Manifest;
   expect(manifest).toMatchObject({
-    name: 'Flipper',
-    short_name: 'Flipper',
+    name: 'Flipsy',
+    short_name: 'Flipsy',
     display: 'fullscreen',
     orientation: 'landscape',
   });
@@ -75,7 +75,7 @@ test('the head has the iPhone home-screen tags', async ({ page }) => {
   const meta = (name: string) => page.locator(`meta[name="${name}"]`).getAttribute('content');
   expect(await meta('apple-mobile-web-app-capable')).toBe('yes');
   expect(await meta('mobile-web-app-capable')).toBe('yes');
-  expect(await meta('apple-mobile-web-app-title')).toBe('Flipper');
+  expect(await meta('apple-mobile-web-app-title')).toBe('Flipsy');
   expect(await meta('apple-mobile-web-app-status-bar-style')).toBe('black-translucent');
 });
 

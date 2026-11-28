@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { HowToData } from './HowToScene';
 import { markReady } from '../../debug/testHooks';
 import { detectInputKind } from '../inputKind';
 import { requestPhoneFullscreen } from '../pageGuards';
@@ -57,7 +58,7 @@ export class TitleScene extends Phaser.Scene {
   /** The How to play card opens over this scene, which waits, paused, until the card closes. */
   private openHowTo(): void {
     if (this.starting || !this.scene.isActive()) return;
-    this.scene.launch('HowTo');
+    this.scene.launch('HowTo', { from: 'Title' } satisfies HowToData);
     this.scene.pause();
   }
 
@@ -66,6 +67,7 @@ export class TitleScene extends Phaser.Scene {
     if (this.starting) return;
     this.starting = true;
     if (pointer?.wasTouch) requestPhoneFullscreen(); // inside the tap, which the browser needs
-    this.scene.start('Game');
+    // The first Play in this browser opens the How to play card over throw 1 (the Game scene does it).
+    this.scene.start('Game', { showHowTo: !saveStore().load().seenHowTo });
   }
 }

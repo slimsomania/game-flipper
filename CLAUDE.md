@@ -54,6 +54,7 @@ Flipper is a browser game: throw a bottle so it flips in the air and lands uprig
 
 ## Git
 
+- All work happens on `dev`. `main` holds released code and only changes when the human merges a pull request from `dev`; never commit or push to `main`. Releases are `v*` tags on `main`, and pushing one deploys the game to GitHub Pages: see `docs/RELEASE.md`.
 - Commit each completed unit of work with a conventional message: `feat(F012): …`, `fix(F012): …`, `test: …`, `refactor: …`, `docs: …`.
 - In a session a human started (not the harness), sync after every commit: `git pull --ff-only`, then `git push`. If the pull can't fast-forward or the push is rejected, stop and tell the human; never force-push or merge to get around it.
 - Inside the harness, don't push: the harness syncs the branch itself after each session.

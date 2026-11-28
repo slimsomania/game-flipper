@@ -50,7 +50,6 @@ export function createTitleView(
     onActivate: onPlay,
   });
   if (texts.startHint !== null) line(layout.startHintY, texts.startHint, 24, COLORS.muted, false);
-  line(layout.bestY, texts.bestLine, 40, COLORS.text);
   const howTo = createButton(scene, {
     ...layout.howTo,
     name: 'howToButton',
@@ -58,6 +57,8 @@ export function createTitleView(
     fontSize: 32,
     onActivate: onHowTo,
   });
+  line(layout.bestY, texts.bestLine, 40, COLORS.text);
+  line(layout.creditY, texts.creditLine, layout.creditSize, COLORS.muted, false);
   line(layout.controlsHintY, texts.controlsHint, 26, COLORS.text, false);
 
   return { play: button, howTo };

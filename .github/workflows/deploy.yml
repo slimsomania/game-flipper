@@ -1,0 +1,63 @@
+name: Deploy
+
+# Publishes the game to GitHub Pages when a version tag (v1.0.0, v1.1.0, ...) is pushed.
+# The tag must point at a commit on main. Every commit on main already passed the full verify gate
+# (e2e included) on its pull request, which the "Protect main" ruleset requires, so this only runs
+# the quick checks (typecheck, unit tests) before it builds and publishes.
+# To roll back, run this workflow by hand ("Run workflow") with an older tag.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy, e.g. v1.0.0'
+        required: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+      - name: Check the tag is on main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::This tag is not on main. Only commits merged into main can be released."
+            exit 1
+          fi
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

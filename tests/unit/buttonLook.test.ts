@@ -48,8 +48,10 @@ describe('SUMMARY_LAYOUT', () => {
     expect(ys[0]).toBeGreaterThan(top);
     expect(ys[ys.length - 1]).toBeLessThan(bottom);
     // The lines of the best score (36 px and 32 px text) don't touch each other or the line above.
-    expect(SUMMARY_LAYOUT.bestY - SUMMARY_LAYOUT.landedY).toBeGreaterThanOrEqual(50);
-    expect(SUMMARY_LAYOUT.newBestY - SUMMARY_LAYOUT.bestY).toBeGreaterThanOrEqual(36);
+    // A text box can be about 1.3 times its font size tall, so two lines need half of 1.3 times
+    // both sizes between their centers: 36 + 32 px text needs 44.2 px (40 overlapped on Linux CI).
+    expect(SUMMARY_LAYOUT.bestY - SUMMARY_LAYOUT.landedY).toBeGreaterThanOrEqual(0.65 * (44 + 36));
+    expect(SUMMARY_LAYOUT.newBestY - SUMMARY_LAYOUT.bestY).toBeGreaterThanOrEqual(0.65 * (36 + 32));
     // The button and its lip stay clear of the lines around it.
     expect(playAgain.y - playAgain.height / 2).toBeGreaterThan(SUMMARY_LAYOUT.newBestY + 20);
     expect(playAgain.y + playAgain.height / 2 + BUTTON_LIP).toBeLessThan(

@@ -2,9 +2,11 @@ import { expect, test } from '@playwright/test';
 import { HAND_X, HAND_Y } from '../../src/core/bottle';
 import { DEFAULT_TUNING } from '../../src/core/tuning';
 import {
+  expectPowerWithLog,
   gameState,
   openGame,
   powerOf,
+  recordPowerLog,
   recordKeydownRepeats,
   settleInput,
   stepFrames,
@@ -20,15 +22,16 @@ test('the power bar starts at 50, and a tap on ArrowUp or ArrowDown moves it one
   const errors = await openGame(page, '?seed=7');
   await page.evaluate(() => window.__FLIPPER__!.pause());
   expect(await powerOf(page)).toBe(50);
+  const log = await recordPowerLog(page);
 
   await page.keyboard.press('ArrowUp');
-  await expect.poll(() => powerOf(page)).toBe(50 + TAP);
+  await expectPowerWithLog(page, 50 + TAP, log);
   await page.keyboard.press('ArrowUp');
-  await expect.poll(() => powerOf(page)).toBe(50 + 2 * TAP);
+  await expectPowerWithLog(page, 50 + 2 * TAP, log);
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
-  await expect.poll(() => powerOf(page)).toBe(50 - TAP);
+  await expectPowerWithLog(page, 50 - TAP, log);
   expect(errors).toEqual([]);
 });
 
@@ -125,8 +128,9 @@ test('Space while aiming throws with the bar value', async ({ page }) => {
   await page.evaluate(() => window.__FLIPPER__!.pause());
 
   // Raise the bar with three taps, then read what it shows: that is what the throw must use.
+  const log = await recordPowerLog(page);
   for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
-  await expect.poll(() => powerOf(page)).toBe(50 + 3 * TAP);
+  await expectPowerWithLog(page, 50 + 3 * TAP, log);
   const aiming = await gameState(page);
   expect(aiming).toMatchObject({ phase: 'aiming', lastThrow: null, throws: 0 });
 

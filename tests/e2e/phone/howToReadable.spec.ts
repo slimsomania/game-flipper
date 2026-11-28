@@ -3,6 +3,7 @@ import { HOW_TO_LAYOUT } from '../../../src/game/view/howToLayout';
 import { howToTexts } from '../../../src/game/view/howToText';
 import { openTitle, settleInput } from '../helpers';
 import { gamePoint } from '../mouseHelpers';
+import { expectPicturesClean } from '../howToPictureHelpers';
 
 // F053 on the phone: the card's texts are at least 24 game px tall, inside the card and clear of
 // each other and of the picture strip, name no key, and the buttons' hit areas are at least 88x88.
@@ -71,6 +72,8 @@ test('the How to play card reads well on the phone', async ({ page }) => {
   }
   const last = boxes.reduce((m, b) => (b.bottom > m.bottom ? b : m));
   expect(last.text).toBe('Created and designed by Vlas');
+
+  await expectPicturesClean(page, 'touch');
 
   await tapButton(page, 'closeButton');
   await expect.poll(() => page.evaluate(() => window.__FLIPPER__!.howToOpen())).toBe(false);

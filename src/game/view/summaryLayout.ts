@@ -23,8 +23,12 @@ export const SUMMARY_LAYOUT = {
   scoreY: 216,
   landedY: 302,
   bestY: 358,
-  /** "New best!" under the best score; the row stays free when the round didn't set a best. */
-  newBestY: 398,
+  /**
+   * "New best!" under the best score; the row stays free when the round didn't set a best. The gap
+   * leaves room for both lines' full text boxes, which run to about 1.3 times the font size on some
+   * systems (Linux Chromium's fonts made a 40 px gap overlap).
+   */
+  newBestY: 406,
   playAgain: {
     x: ROW_LEFT + PLAY_AGAIN_WIDTH / 2,
     y: ROW_Y,

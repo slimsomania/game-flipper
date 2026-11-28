@@ -15,7 +15,7 @@ status: ready
 
 # Flipper: game design
 
-Created and designed by Vlas.
+Idea by Vlas. Developed by Oleksii Kozlovskyi.
 
 ## 1. Concept
 
@@ -154,7 +154,9 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - The logical canvas is **1280×720 landscape**, scaled to fit the window. The scaffold still has the old 720×1280 portrait values (`GAME_WIDTH` and `GAME_HEIGHT` in `src/core/constants.ts`, `docs/ARCHITECTURE.md`, the Playwright viewport in `playwright.config.ts`); the first feature must switch them over. We can change the orientation again later.
 - Fullscreen (from M8): on a desktop, the fullscreen button or F fills the whole monitor with the game, still at 16:9 with bars on the sides if the monitor's shape differs. On an Android phone, fullscreen hides the browser's bars, as in M7. No browser on an iPhone can make a web page fullscreen (all of them use Safari's engine), so the iPhone way is the home-screen app below, and the fullscreen button explains how to add it (section 6).
 - Home-screen app (from M8): the game can be added to a phone's home screen ("Add to Home Screen" in Safari, "Install app" or "Add to Home screen" in Chrome). Opened from its icon, it starts without the browser's address bar and tabs, held sideways, with the game's own name (**Flipsy** from M10, section 1) and icon. This needs a web app manifest and the iPhone's home-screen tags in index.html, and an icon drawn by the project itself. It is not an offline app: it still loads from the page's address.
-- Later: itch.io or a hosted page, an offline app.
+- Hosting (2026-11-27): the game is public at https://slimsomania.github.io/game-flipper/ (GitHub Pages), published from version tags on `main` (`docs/RELEASE.md`).
+- Link preview (from M10): sharing that address in a chat or social app shows a card with the name Flipsy, one line about the game ("Flip a water bottle and land it upright. A free skill game for your browser and phone.") and a 1200×630 picture drawn by the project itself.
+- Later: itch.io, an offline app.
 
 ## 11. Milestones
 
@@ -167,7 +169,7 @@ PC browser: mouse and keyboard. Phone (from M7): touch, see below the table.
 - **M7, phones:** play on a phone with touch, as in sections 7 and 10: the finger push and its tuning, taps for every button and for skipping, the sideways-only message, no scrolling or zooming, readable text and big enough buttons, phone e2e tests, and a way for the human to open the game on a real phone. It comes after M6 so the finger push is tuned once, against the final bottle and its sloshing water.
 - **M8, fullscreen, home-screen app, phone power bar, performance and release check:** the fullscreen button and the home-screen app of sections 6, 7 and 10, setting the power on the bar and tapping to throw on a phone (section 7), then the performance budget and the production-build check, measured on a phone as well as a laptop.
 - **M9, review fixes:** fixes from the outside reviews of M6 to M8 (planned by the agents, 2026-11-25).
-- **M10, cap bonus, How to play and the Flipsy name:** a landing on the cap scores 5 with its own message, effect and sound, and the cap checks of section 3 (no cap farming, and the points rule re-checked with the cap at 5); the How to play card with its buttons, the H key, its pictures and its first-Play opening (section 6); the credit line on the Title and the card; and the name players see becomes Flipsy (the Title, the browser tab's title, the web app manifest and the iPhone home-screen title), with internal names left as Flipper (section 1).
+- **M10, cap bonus, How to play and the Flipsy name:** a landing on the cap scores 5 with its own message, effect and sound, and the cap checks of section 3 (no cap farming, and the points rule re-checked with the cap at 5); the How to play card with its buttons, the H key, its pictures and its first-Play opening (section 6); the credit line on the Title and the card; and the name players see becomes Flipsy (the Title, the browser tab's title, the web app manifest and the iPhone home-screen title), with internal names left as Flipper (section 1); and the link preview when the game address is shared (section 10).
 - Later (not planned yet): two- and three-player modes, more objects, more surfaces.
 
 ## 12. Out of scope

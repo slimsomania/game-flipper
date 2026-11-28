@@ -1,6 +1,6 @@
 {
-  "name": "Flipper",
-  "short_name": "Flipper",
+  "name": "Flipsy",
+  "short_name": "Flipsy",
   "description": "Throw a bottle so it flips in the air and lands upright.",
   "start_url": "./",
   "scope": "./",

@@ -4,6 +4,7 @@ import { COLORS, FONT_FAMILY } from '../theme';
 import { createButton, type ButtonView } from './buttonView';
 import { PAUSE_LAYOUT } from './pauseLayout';
 import type { PauseTexts } from './pauseText';
+import { dimPageWhile } from './pageDim';
 
 const DIM_DEPTH = 0;
 const CARD_DEPTH = 1;
@@ -11,12 +12,14 @@ const TEXT_DEPTH = 2;
 
 export interface PauseActions {
   onResume: () => void;
+  onHowTo: () => void;
   onRestart: () => void;
   onQuit: () => void;
 }
 
 export interface PauseView {
   resume: ButtonView;
+  howTo: ButtonView;
   restart: ButtonView;
   quit: ButtonView;
 }
@@ -39,6 +42,7 @@ export function createPauseView(
     .setDepth(DIM_DEPTH)
     .fillStyle(layout.dim.color, layout.dim.alpha)
     .fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  dimPageWhile(scene, layout.dim.color, layout.dim.alpha);
 
   const { x, y, width, height, radius } = layout.card;
   scene.add
@@ -66,6 +70,7 @@ export function createPauseView(
     createButton(scene, { ...spot, name, label, fontSize: 38, depth: TEXT_DEPTH, onActivate });
   const view = {
     resume: button(layout.resume, 'resumeButton', texts.resumeLabel, actions.onResume),
+    howTo: button(layout.howTo, 'howToButton', texts.howToLabel, actions.onHowTo),
     restart: button(layout.restart, 'restartButton', texts.restartLabel, actions.onRestart),
     quit: button(layout.quit, 'quitButton', texts.quitLabel, actions.onQuit),
   };

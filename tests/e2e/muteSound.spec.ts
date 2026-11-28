@@ -190,7 +190,7 @@ test.describe('the choice is remembered', () => {
 
     await page.keyboard.press('KeyM');
     await expect.poll(() => muteState(page)).toEqual(MUTED);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 5, muted: true });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 5, muted: true, seenHowTo: false });
     expect(
       await page.evaluate(() =>
         Object.keys(window.localStorage).filter((key) => key.startsWith('flipper.save')),
@@ -212,7 +212,7 @@ test.describe('the choice is remembered', () => {
 
     await page.keyboard.press('KeyM');
     await expect.poll(() => muteState(page)).toEqual(MUTED);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 5, muted: true });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 5, muted: true, seenHowTo: false });
     expect(errors).toEqual([]);
   });
 

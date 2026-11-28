@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { HOW_TO_LAYOUT } from '../../src/game/view/howToLayout';
 import { howToTexts } from '../../src/game/view/howToText';
 import { TITLE_LAYOUT } from '../../src/game/view/titleLayout';
+import { expectPicturesClean } from './howToPictureHelpers';
 import { clickAt } from './pauseHelpers';
 import { openTitle, recordKeydownRepeats, settleInput, visibleTexts } from './helpers';
 import { gameState } from './helpers';
@@ -47,6 +48,14 @@ test.describe('opening the card', () => {
     expect(texts).toContain(words.closeLabel);
     for (const line of words.lines) expect(texts).toContain(line);
     expect(errors).toEqual([]);
+  });
+
+  test('the water-to-power pictures are baked images inside the card, clear of the text', async ({
+    page,
+  }) => {
+    await open(page);
+    await expectPicturesClean(page, 'keyboard');
+    expect(await page.evaluate(() => window.__FLIPPER__!.howToPicture())).not.toBeNull();
   });
 
   test('the H key opens it', async ({ page }) => {

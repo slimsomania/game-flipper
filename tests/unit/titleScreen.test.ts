@@ -8,11 +8,12 @@ import { titleTexts } from '../../src/game/view/titleText';
 describe('titleTexts', () => {
   it('words the screen as the design does: name, Play, the best score, the controls', () => {
     expect(titleTexts(14)).toEqual({
-      name: 'Flipper',
+      name: 'Flipsy',
       playLabel: 'Play',
       howToLabel: 'How to play',
       startHint: 'or press Enter or Space',
       bestLine: 'Best: 14',
+      creditLine: 'Created and designed by Vlas',
       controlsHint: 'Up/Down or wheel: power · Space: throw · or grab the bottle and push up',
     });
   });
@@ -48,13 +49,27 @@ describe('TITLE_LAYOUT', () => {
     },
     { name: 'play', top: play.y - play.height / 2, bottom: play.y + play.height / 2 + BUTTON_LIP },
     { name: 'startHint', top: TITLE_LAYOUT.startHintY - 14, bottom: TITLE_LAYOUT.startHintY + 14 },
+    {
+      name: 'howTo',
+      top: TITLE_LAYOUT.howTo.y - TITLE_LAYOUT.howTo.height / 2,
+      bottom: TITLE_LAYOUT.howTo.y + TITLE_LAYOUT.howTo.height / 2 + BUTTON_LIP,
+    },
     { name: 'best', top: TITLE_LAYOUT.bestY - 24, bottom: TITLE_LAYOUT.bestY + 24 },
+    {
+      name: 'credit',
+      top: TITLE_LAYOUT.creditY - TITLE_LAYOUT.creditSize * 0.6,
+      bottom: TITLE_LAYOUT.creditY + TITLE_LAYOUT.creditSize * 0.6,
+    },
     {
       name: 'controls',
       top: TITLE_LAYOUT.controlsHintY - 16,
       bottom: TITLE_LAYOUT.controlsHintY + 16,
     },
   ];
+
+  it('sets the credit smaller than the best line (40 px)', () => {
+    expect(TITLE_LAYOUT.creditSize).toBeLessThan(40);
+  });
 
   it('centers the Play button on the canvas', () => {
     expect(play.x).toBe(GAME_WIDTH / 2);

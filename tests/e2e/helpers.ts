@@ -1,12 +1,37 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import type { SimSnapshot } from '../../src/core/simulation';
 
 /**
  * Opens the page and waits until it accepts input: the game boots to the Title scene, so there is
  * no simulation yet. Returns a live list of console and page errors; assert it is empty at the end
  * of the test. Tests of the title screen itself use this; every other test wants `openGame`.
+ *
+ * The How to play card opens by itself at the first Play in a browser (F056), so unless
+ * `firstVisit` is true, a save marking it as seen is put in an empty localStorage first: a test
+ * that presses Play for something else then keeps testing what it did before.
  */
-export async function openTitle(page: Page, query = ''): Promise<string[]> {
+export async function openTitle(page: Page, query = '', firstVisit = false): Promise<string[]> {
+  if (!firstVisit) {
+    await page.addInitScript(() => {
+      try {
+        const key = 'flipper.save.v1';
+        const text = window.localStorage.getItem(key);
+        let entry: Record<string, unknown> = { version: 1, best: 0, muted: false };
+        if (text !== null) {
+          try {
+            entry = JSON.parse(text) as Record<string, unknown>;
+          } catch {
+            return; // a damaged entry is left for the test that put it there
+          }
+        }
+        if (entry !== null && typeof entry === 'object' && !('seenHowTo' in entry)) {
+          window.localStorage.setItem(key, JSON.stringify({ ...entry, seenHowTo: true }));
+        }
+      } catch {
+        // Blocked storage: nothing to preset.
+      }
+    });
+  }
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
   page.on('console', (msg) => {
@@ -38,7 +63,7 @@ export async function startGame(page: Page, replayOff = true): Promise<void> {
  * a live list of console and page errors; assert it is empty at the end of the test.
  */
 export async function openGame(page: Page, query = '', replayOff = true): Promise<string[]> {
-  const errors = await openTitle(page, query);
+  const errors = await openTitle(page, query, true);
   await startGame(page, replayOff);
   return errors;
 }
@@ -135,4 +160,54 @@ export async function stepFrames(page: Page, frames: number): Promise<SimSnapsho
   }, frames);
   if (!state) throw new Error('No simulation is running (is the Game scene active?)');
   return state;
+}
+
+/**
+ * Record, in the page, every arrow key event the window sees and every frame on which the power
+ * bar's value changed, with `performance.now()` times. `expectPowerWithLog` prints the record when
+ * the power is not what a test expects, so a failure on CI shows which events moved the bar.
+ */
+export async function recordPowerLog(page: Page): Promise<() => Promise<string>> {
+  await page.evaluate(() => {
+    const log: string[] = [];
+    (window as unknown as { __powerLog: string[] }).__powerLog = log;
+    const at = () => performance.now().toFixed(1);
+    const power = () => window.__FLIPPER__!.state()?.power;
+    for (const type of ['keydown', 'keyup'] as const) {
+      window.addEventListener(
+        type,
+        (event) => {
+          if (event.key.startsWith('Arrow')) {
+            log.push(
+              `${at()} ${type} ${event.key} repeat=${event.repeat} eventTime=${event.timeStamp.toFixed(1)} power=${power()}`,
+            );
+          }
+        },
+        true,
+      );
+    }
+    let last = power();
+    const frame = () => {
+      const now = power();
+      if (now !== last) log.push(`${at()} frame power ${last} -> ${now}`);
+      last = now;
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+  return () =>
+    page.evaluate(() => (window as unknown as { __powerLog: string[] }).__powerLog.join('\n'));
+}
+
+/** `expect.poll` on the power bar's value; when it fails, the error carries the power log. */
+export async function expectPowerWithLog(
+  page: Page,
+  expected: number,
+  log: () => Promise<string>,
+): Promise<void> {
+  try {
+    await expect.poll(() => powerOf(page)).toBe(expected);
+  } catch (error) {
+    throw new Error(`${(error as Error).message}\n\nPower log:\n${await log()}`);
+  }
 }

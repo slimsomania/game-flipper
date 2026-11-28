@@ -1,6 +1,12 @@
-# Flipper
+# Flipsy
 
-Throw a bottle, flip it in the air, land it upright. Flipper is a browser game built feature by feature by autonomous Claude Code agents.
+**[▶ Play Flipsy in your browser](https://slimsomania.github.io/game-flipper/)**
+
+Throw a bottle, flip it in the air, land it upright. Every bottle holds a different amount of water, and the water level is your only clue to how hard to throw. A double flip scores more than a single, a triple more still, but their windows are narrower. Plays in a desktop browser and on phones held sideways.
+
+## About this repository
+
+Players see the game as Flipsy; inside the repository it is called Flipper (package name, code, docs, harness). It is built feature by feature by autonomous Claude Code agents driven by the harness in `harness/`.
 
 ## Quick start
 

@@ -96,6 +96,7 @@ const expected: Record<Screen, string[]> = {
     'muteButton',
     'fullscreenButton',
     'resumeButton',
+    'howToButton',
     'restartButton',
     'quitButton',
   ],

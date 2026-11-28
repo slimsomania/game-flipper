@@ -4,6 +4,7 @@ import type { InputKind } from '../inputKind';
 export interface PauseTexts {
   title: string;
   resumeLabel: string;
+  howToLabel: string;
   restartLabel: string;
   quitLabel: string;
   /** Under the buttons: the keys that pause and resume; null on a touch device (no keys). */
@@ -19,6 +20,7 @@ export function pauseTexts(kind: InputKind = 'keyboard'): PauseTexts {
   return {
     title: 'Paused',
     resumeLabel: 'Resume',
+    howToLabel: 'How to play',
     restartLabel: 'Restart',
     quitLabel: 'Quit to title',
     keyHint: kind === 'touch' ? null : 'Esc or P to resume',

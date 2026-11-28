@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hitBox } from '../../src/game/view/buttonView';
+import { FULLSCREEN_BUTTON } from '../../src/game/view/fullscreenLayout';
 import { MUTE_BUTTON } from '../../src/game/view/muteLayout';
 import { FLIPPED } from '../shared';
 import { gameState, openGame, recordKeydownRepeats, settleInput } from './helpers';
@@ -88,7 +89,9 @@ test.describe('the M key and the button', () => {
     expect(box.x + box.width / 2).toBe(area.right);
     expect(box.y - box.height / 2).toBe(area.top);
     expect(area.right).toBeLessThanOrEqual(1280);
-    expect(MUTE_BUTTON.x + MUTE_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
+    // The fullscreen button has the corner; the speaker is right next to it.
+    expect(FULLSCREEN_BUTTON.x + FULLSCREEN_BUTTON.width / 2).toBe(1280 - MUTE_BUTTON.margin);
+    expect(area.right).toBeLessThan(hitBox(FULLSCREEN_BUTTON).left);
     // Far from the round HUD on the left.
     expect(box.x).toBeGreaterThan(1280 * 0.75);
     expect(box.y).toBeLessThan(720 / 6);

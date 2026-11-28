@@ -64,7 +64,7 @@ test('the best score is stored under the versioned localStorage key', async ({ p
 
   await playRound(page, [flipped(3)]);
 
-  expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false });
+  expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false, seenHowTo: false });
   // One entry for the save, and it is the versioned one.
   const keys = await page.evaluate(() => Object.keys(window.localStorage));
   expect(keys.filter((key) => key.startsWith('flipper.save'))).toEqual([SAVE_KEY]);
@@ -82,13 +82,13 @@ test('the best score carries over a reload: 3, then 2 (no new best), then 12 (ne
   await reload(page);
   await playRound(page, [flipped(2)]);
   await expectSummary(page, { score: 2, best: 3, newBest: false });
-  expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false });
+  expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false, seenHowTo: false });
 
   // Play again in the same visit: a round of 12 points (six doubles) beats it.
   await playAgain(page);
   await playRound(page, Array(6).fill(flipped(2)));
   await expectSummary(page, { score: 12, best: 12, newBest: true });
-  expect(await savedEntry(page)).toEqual({ version: 1, best: 12, muted: false });
+  expect(await savedEntry(page)).toEqual({ version: 1, best: 12, muted: false, seenHowTo: false });
 
   // And the new best is the one a later visit starts from.
   await reload(page);
@@ -122,7 +122,12 @@ test('a full 10-throw round saves its points as the best', async ({ page }) => {
 
   expect(ROUND).toHaveLength(10);
   await expectSummary(page, { score: POINTS, best: POINTS, newBest: true });
-  expect(await savedEntry(page)).toEqual({ version: 1, best: POINTS, muted: false });
+  expect(await savedEntry(page)).toEqual({
+    version: 1,
+    best: POINTS,
+    muted: false,
+    seenHowTo: false,
+  });
   expect(errors).toEqual([]);
 });
 
@@ -134,7 +139,7 @@ test('a damaged save is ignored and then replaced', async ({ page }) => {
 
   await playRound(page, [flipped(1)]);
   await expectSummary(page, { score: 1, best: 1, newBest: true });
-  expect(await savedEntry(page)).toEqual({ version: 1, best: 1, muted: false });
+  expect(await savedEntry(page)).toEqual({ version: 1, best: 1, muted: false, seenHowTo: false });
   expect(errors).toEqual([]);
 });
 

@@ -19,9 +19,11 @@ export interface SaveData {
   best: number;
   /** True when the player turned the sound off (false, sound on, by default). */
   muted: boolean;
+  /** True once the How to play card has opened by itself at the first Play (false by default). */
+  seenHowTo: boolean;
 }
 
-export const defaultSave = (): SaveData => ({ best: 0, muted: false });
+export const defaultSave = (): SaveData => ({ best: 0, muted: false, seenHowTo: false });
 
 /** Read a save from the entry's text; every field that is missing or not valid is its default. */
 export function parseSave(text: string | null): SaveData {
@@ -36,9 +38,10 @@ export function parseSave(text: string | null): SaveData {
   if (typeof data !== 'object' || data === null) return save;
   const record = data as Record<string, unknown>;
   if (record.version !== VERSION) return save;
-  const { best, muted } = record;
+  const { best, muted, seenHowTo } = record;
   if (typeof best === 'number' && Number.isSafeInteger(best) && best >= 0) save.best = best;
   if (typeof muted === 'boolean') save.muted = muted;
+  if (typeof seenHowTo === 'boolean') save.seenHowTo = seenHowTo;
   return save;
 }
 
@@ -76,7 +79,11 @@ export class SaveStore {
       return { ...this.lastSaved };
     }
     if (!this.writeFailed) return stored;
-    return { best: Math.max(this.lastSaved.best, stored.best), muted: this.lastSaved.muted };
+    return {
+      best: Math.max(this.lastSaved.best, stored.best),
+      muted: this.lastSaved.muted,
+      seenHowTo: this.lastSaved.seenHowTo || stored.seenHowTo,
+    };
   }
 
   /** Change some fields of the save, keeping the rest. Returns the save as it now is. */

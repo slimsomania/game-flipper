@@ -54,7 +54,7 @@ test.describe('what the title screen shows', () => {
 
     expect(await activeScenes(page)).toEqual(['Title']);
     const texts = await visibleTexts(page);
-    expect(texts).toContain('Flipper');
+    expect(texts).toContain('Flipsy');
     expect(texts).toContain('Play');
     expect(texts).toContain('Best: 17');
     expect(texts).toContain(HINT);
@@ -220,14 +220,12 @@ test.describe('back from the round summary', () => {
     await page.mouse.click(at.x, at.y);
 
     await expect.poll(() => activeScenes(page)).toEqual(['Title']);
-    expect(await visibleTexts(page)).toEqual(
-      expect.arrayContaining(['Flipper', 'Play', 'Best: 3']),
-    );
+    expect(await visibleTexts(page)).toEqual(expect.arrayContaining(['Flipsy', 'Play', 'Best: 3']));
     expect(await visibleTexts(page)).not.toContain('Best: 1');
     expect(await visibleTexts(page)).not.toContain('Round over');
     // The finished round is gone: no simulation runs, and the saved best is the one shown.
     expect(await page.evaluate(() => window.__FLIPPER__!.state())).toBeNull();
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 3, muted: false, seenHowTo: true });
     expect(errors).toEqual([]);
   });
 
@@ -305,18 +303,18 @@ test.describe('the mute toggle on the title screen', () => {
 
     await clickMuteButton(page);
     await expect.poll(() => muteState(page)).toEqual(MUTED);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: true });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: true, seenHowTo: true });
 
     await page.keyboard.press('KeyM'); // the key undoes what the button did
     await expect.poll(() => muteState(page)).toEqual(ON);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: false });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: false, seenHowTo: true });
 
     await page.keyboard.press('KeyM'); // and the other way round
     await expect.poll(() => muteState(page)).toEqual(MUTED);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: true });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: true, seenHowTo: true });
     await clickMuteButton(page);
     await expect.poll(() => muteState(page)).toEqual(ON);
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: false });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 0, muted: false, seenHowTo: true });
 
     // Neither the click nor the key left the title.
     expect(await activeScenes(page)).toEqual(['Title']);
@@ -330,7 +328,7 @@ test.describe('the mute toggle on the title screen', () => {
     await page.keyboard.press('KeyM');
     await expect.poll(() => muteState(page)).toEqual(MUTED);
 
-    expect(await savedEntry(page)).toEqual({ version: 1, best: 9, muted: true });
+    expect(await savedEntry(page)).toEqual({ version: 1, best: 9, muted: true, seenHowTo: true });
     expect(await visibleTexts(page)).toContain('Best: 9');
   });
 

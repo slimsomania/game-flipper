@@ -6,6 +6,13 @@ import { BAR_BOTTOM, BAR_HEIGHT, BAR_LEFT, BAR_TOP, BAR_WIDTH, BAR_X } from './p
 
 /** Room around the baked track so its outline isn't cut. */
 const BAR_PAD = 4;
+/** The track's corner radius and outline width. */
+const TRACK_RADIUS = 8;
+const OUTLINE = 2;
+/** The fill stays this far inside the track's edge, clear of the outline. */
+const FILL_INSET = 3;
+const FILL_HEIGHT = BAR_HEIGHT - 2 * FILL_INSET;
+const FILL_RADIUS = TRACK_RADIUS - FILL_INSET;
 
 export interface PowerBarView {
   /** Fill the bar to `power` (0 to 100) and show it as a whole percentage. */
@@ -28,9 +35,15 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
       .image(boxLeft, boxTop, bakedTexture(scene, key, boxWidth, boxHeight, draw))
       .setOrigin(0, 0);
   bakedImage('powerBarTrack', (g) => {
-    g.fillStyle(COLORS.powerTrack, 1).fillRoundedRect(BAR_PAD, BAR_PAD, BAR_WIDTH, BAR_HEIGHT, 8);
-    g.lineStyle(2, COLORS.powerOutline, 1);
-    g.strokeRoundedRect(BAR_PAD, BAR_PAD, BAR_WIDTH, BAR_HEIGHT, 8);
+    g.fillStyle(COLORS.powerTrack, 1).fillRoundedRect(
+      BAR_PAD,
+      BAR_PAD,
+      BAR_WIDTH,
+      BAR_HEIGHT,
+      TRACK_RADIUS,
+    );
+    g.lineStyle(OUTLINE, COLORS.powerOutline, 1);
+    g.strokeRoundedRect(BAR_PAD, BAR_PAD, BAR_WIDTH, BAR_HEIGHT, TRACK_RADIUS);
   });
 
   const fill = scene.add.graphics();
@@ -67,13 +80,22 @@ export function createPowerBarView(scene: Phaser.Scene): PowerBarView {
     update(power) {
       if (power === drawn) return;
       drawn = power;
-      const height = (BAR_HEIGHT * power) / MAX_POWER;
+      const height = (FILL_HEIGHT * power) / MAX_POWER;
       fill.clear();
       if (height > 0) {
-        // A flat-topped rectangle: the track's rounded corners show at the very bottom and top.
+        // Inside the outline, with its corners rounded to follow the track's: flat on top until
+        // the bar is full, so the level reads as a line.
+        const bottomRadius = Math.min(FILL_RADIUS, height / 2);
+        const topRadius = height >= FILL_HEIGHT - FILL_RADIUS ? bottomRadius : 0;
         fill
           .fillStyle(COLORS.powerFill, 1)
-          .fillRect(BAR_LEFT + 3, BAR_BOTTOM - height, BAR_WIDTH - 6, height);
+          .fillRoundedRect(
+            BAR_LEFT + FILL_INSET,
+            BAR_BOTTOM - FILL_INSET - height,
+            BAR_WIDTH - 2 * FILL_INSET,
+            height,
+            { tl: topRadius, tr: topRadius, bl: bottomRadius, br: bottomRadius },
+          );
       }
       label.setText(`${Math.round(power)}%`);
     },

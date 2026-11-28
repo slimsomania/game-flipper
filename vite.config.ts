@@ -1,6 +1,14 @@
 import { defineConfig } from 'vitest/config';
+import { SITE_URL } from './site.config';
 
 export default defineConfig({
+  plugins: [
+    {
+      // Fills %SITE_URL% in index.html (the link-preview tags need absolute addresses).
+      name: 'site-url',
+      transformIndexHtml: (html: string) => html.replaceAll('%SITE_URL%', SITE_URL),
+    },
+  ],
   // Relative asset paths, so the built game runs from any folder or static host.
   base: './',
   server: { port: 5173 },

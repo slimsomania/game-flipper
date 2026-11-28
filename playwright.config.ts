@@ -17,7 +17,8 @@ export default defineConfig({
   retries: 0,
   timeout: 30_000,
   expect: { timeout: 5_000 },
-  reporter: [['list']],
+  // On GitHub Actions, also report failures as annotations: they show on the run page and in the public API.
+  reporter: process.env.GITHUB_ACTIONS ? [['list'], ['github']] : [['list']],
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',

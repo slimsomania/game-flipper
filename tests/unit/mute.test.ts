@@ -165,7 +165,7 @@ describe('toggleMute, setMute and restoreMute', () => {
     const store = new SaveStore(memoryStorage());
     store.recordRound(7);
     toggleMute(runningSfx().sfx, store);
-    expect(store.load()).toEqual({ best: 7, muted: true });
+    expect(store.load()).toEqual({ best: 7, muted: true, seenHowTo: false });
   });
 
   it('restoreMute makes a new page start muted when the last visit ended muted', () => {
