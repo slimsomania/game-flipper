@@ -2581,3 +2581,5 @@ best-scoring fixed power (95, no error)                            55.5%        
 - Status: F059 → needs_review
 - Issues / follow-ups: a bottle made later in the same world differs from the first in the last bits (rotation off by about 2e-15), so the fair-sides test compares poses to 1e-9 rather than exactly; the result, reason, turns and points are exact. After lockWater(null) in a duel an already drawn pair keeps its locked level until redrawn. simulation.ts is still 331 lines; a further split (snapshot assembly) would reach 300.
 - Next: F060 can read `state().duel` and `players`; the active player is `duel.active`, and `bottle.water` is the held bottle's water.
+
+> [harness] session 174 · builder F059 · todo → needs_review · ok · verify passed · 1 commit(s) · 55 tool calls · 5m 39s · ~$0.78 API-equivalent
